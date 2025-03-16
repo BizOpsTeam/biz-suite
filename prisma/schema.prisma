@@ -19,4 +19,15 @@ model UserModel {
   email String @unique
   password String
   createdAt DateTime @default(now())
+  RefreshToken RefreshToken[]
 }
+
+model RefreshToken {
+  id         String  @id @default(uuid())
+  token      String  @unique
+  userId     String  @unique
+  user       UserModel    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+}
+
