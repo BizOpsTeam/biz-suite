@@ -3,20 +3,18 @@ import { TUser } from "../constants/types";
 import prisma from "../config/db";
 import appAssert from "../utils/appAssert";
 import { CONFLICT, UNAUTHORIZED } from "../constants/http";
-import { hashPassword } from "../utils/bcrypt";
+import { comparePasswords, hashPassword } from "../utils/bcrypt";
 
 export const createUserAccount = async(user: TUser) => {
     //check if user already exists in database
     const existingUser = await prisma.userModel.findUnique({ where: { email: user.email }});
     appAssert(!existingUser, CONFLICT ,"User already exists", "409")
 
-    //hash the password before storing it in the database
     const hashedPassword = await hashPassword(user.password)
 
     //if not, create a new user in the database
     const newUser = await prisma.userModel.create({data: {...user, password: hashedPassword}, select: { email: true, id: true, createdAt: true, name: true}})
 
-    //return the new user object with the accessToken
     return newUser
 } 
 
@@ -41,3 +39,20 @@ export const verifyRefreshTokenInDB = async (token: string) => {
 
     return storedToken.userId;
 };
+
+
+export const loginUser = async(email: string, password: string) => {
+    const user = await prisma.userModel.findUnique({ where: { email } });
+    appAssert(user, UNAUTHORIZED, "Invalid email or password");
+
+    const isPasswordValid = await comparePasswords(password, user.password)
+    appAssert(isPasswordValid, UNAUTHORIZED, "Invalid email or password");
+    return user
+}
+
+export const revokeAllRefreshTokensForAUser = async(userId: string) => {
+    const deletedTokens = await prisma.refreshToken.deleteMany({ 
+        where: {userId}
+    })
+    console.log(deletedTokens)
+}
