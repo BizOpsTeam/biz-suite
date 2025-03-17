@@ -1,12 +1,13 @@
 import { Response } from "express";
 import { CREATED, NOT_FOUND, UNAUTHORIZED } from "../constants/http";
-import { createUserAccount, loginUser, revokeAllRefreshTokensForAUser, saveRefreshToken } from "../services/auth.service";
+import { createUserAccount, loginUser, revokeAllRefreshTokensForAUser, saveRefreshToken, verifyRefreshTokenInDB } from "../services/auth.service";
 import catchErrors from "../utils/catchErrors";
 import { generateAccessToken, generateRefreshToken, verifyAccessToken } from "../utils/jwt";
 import { loginSchema, userSchema } from "../zodSchema/user.zodSchema";
 import { configDotenv } from "dotenv";
 import appAssert from "../utils/appAssert";
 import path from "path";
+import { oneHourFromNow } from "../utils/dates";
 
 configDotenv();
 
@@ -58,7 +59,7 @@ export const loginHandler = catchErrors(async(req, res) => {
     //set refresh token as httpOnly cookie
     setRefreshTokenCookie(refreshToken, res)
 
-    res.json({ data: user, accessToken, message: 'Logged in successfully' })
+    res.json({ data: user, accessToken, expiresIn: oneHourFromNow() , message: 'Logged in successfully' })
 } )
 
 
@@ -78,4 +79,26 @@ export const logoutHandler = catchErrors(async (req, res) => {
     //clear refresh token cookie
     res.clearCookie("refreshToken");
     res.json({ message: "Logged out successfully" });
+})
+
+
+export const refreshTokenHandler = catchErrors(async(req, res) => {
+    //get refreshToken from request cookies
+    const refreshToken = req.cookies["refreshToken"];
+    appAssert(refreshToken, UNAUTHORIZED, "No refresh token provided");
+
+    //verify the refreshToken in the database
+    const userId = await verifyRefreshTokenInDB(refreshToken);
+    appAssert(userId, UNAUTHORIZED, "Invalid or expired refresh token");
+    await revokeAllRefreshTokensForAUser(userId)
+
+    //generate new access token and refresh token
+    const accessToken = generateAccessToken(userId);
+    const newRefreshToken = generateRefreshToken(userId);
+
+    //save the new refresh token in the database
+    await saveRefreshToken(newRefreshToken, userId);
+    setRefreshTokenCookie(newRefreshToken, res);
+
+    res.json({ accessToken, expiresIn: oneHourFromNow() , message: "Refreshed successfully" });
 })
