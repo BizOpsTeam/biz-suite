@@ -5,11 +5,15 @@ import notFoundHandler from "./middlewares/notFoundHandler"
 import errorHandler from "./middlewares/errorHandler"
 import adminRoutes from "./routes/admin.routes"
 import authRoutes from './routes/auth.routes';
+import { setupSwagger } from './swagger';
 
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+
+//setup Swagger docs
+setupSwagger(app)
 
 //----------------cors config-----------------------//
 app.use(cors({
