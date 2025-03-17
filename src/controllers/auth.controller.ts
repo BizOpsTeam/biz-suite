@@ -1,11 +1,12 @@
 import { Response } from "express";
-import { CREATED, UNAUTHORIZED } from "../constants/http";
+import { CREATED, NOT_FOUND, UNAUTHORIZED } from "../constants/http";
 import { createUserAccount, loginUser, revokeAllRefreshTokensForAUser, saveRefreshToken } from "../services/auth.service";
 import catchErrors from "../utils/catchErrors";
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt";
+import { generateAccessToken, generateRefreshToken, verifyAccessToken } from "../utils/jwt";
 import { loginSchema, userSchema } from "../zodSchema/user.zodSchema";
 import { configDotenv } from "dotenv";
 import appAssert from "../utils/appAssert";
+import path from "path";
 
 configDotenv();
 
@@ -13,8 +14,7 @@ const setRefreshTokenCookie = (token: string, res: Response) => {
     res.cookie("refreshToken", token, {
         httpOnly: true, 
         secure: process.env.NODE_ENV === "production", 
-        path: "/refresh",
-        sameSite: "strict", 
+        sameSite: "lax", 
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 }
@@ -35,15 +35,11 @@ export const registerHandler = catchErrors(async (req, res) => {
 
     //set refresh token as httpOnly cookie
     setRefreshTokenCookie(refreshToken, res)
-
-    //send a response with the created user
     res.status(CREATED).json({ data: newUser, accessToken, message: 'User registered successfully' })
 })
 
 export const loginHandler = catchErrors(async(req, res) => {
     const { body } = req;
-    console.log(body)
-    //validate request body
     const validatedUser = loginSchema.parse(body)
 
     //login user service
@@ -64,3 +60,22 @@ export const loginHandler = catchErrors(async(req, res) => {
 
     res.json({ data: user, accessToken, message: 'Logged in successfully' })
 } )
+
+
+export const logoutHandler = catchErrors(async (req, res) => {
+    //get accessToken from request headers
+    const accessToken = req.headers["authorization"]?.split(" ")[1];
+    appAssert(accessToken, UNAUTHORIZED, "No access token provided")
+
+    //get userId from the accessToken
+    const user = verifyAccessToken(accessToken);
+
+    appAssert(user, UNAUTHORIZED, "No userId provided")
+
+    // revoke all refresh tokens in the database for this user
+    await revokeAllRefreshTokensForAUser(user.id);
+
+    //clear refresh token cookie
+    res.clearCookie("refreshToken");
+    res.json({ message: "Logged out successfully" });
+})

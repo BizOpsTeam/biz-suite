@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import dotenv from "dotenv"
+import cookieParser from "cookie-parser"
 import cors from "cors"
 import notFoundHandler from "./middlewares/notFoundHandler"
 import errorHandler from "./middlewares/errorHandler"
@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.routes';
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 //----------------cors config-----------------------//
 app.use(cors({
@@ -20,10 +21,6 @@ app.use(cors({
 
 
 //-------------routes-------------------------//
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
-});
-
 //-------auth routes---------//
 app.use('/auth', authRoutes)
 

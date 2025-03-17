@@ -51,8 +51,7 @@ export const loginUser = async(email: string, password: string) => {
 }
 
 export const revokeAllRefreshTokensForAUser = async(userId: string) => {
-    const deletedTokens = await prisma.refreshToken.deleteMany({ 
+    await prisma.refreshToken.deleteMany({ 
         where: {userId}
     })
-    console.log(deletedTokens)
 }
