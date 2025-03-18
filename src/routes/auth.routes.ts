@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { loginHandler, logoutHandler, refreshTokenHandler, registerHandler } from "../controllers/auth.controller";
+import { loginHandler, logoutHandler, refreshTokenHandler, registerHandler, verifyEmailHandler } from "../controllers/auth.controller";
 
 const authRoutes = Router()
 
@@ -111,5 +111,6 @@ authRoutes.post('/register', registerHandler)
 authRoutes.post('/login', loginHandler)
 authRoutes.post('/logout', logoutHandler)
 authRoutes.post('/refresh', refreshTokenHandler)
+authRoutes.post('/verify-email', verifyEmailHandler)
 
 export default authRoutes

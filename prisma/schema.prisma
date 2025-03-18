@@ -19,6 +19,9 @@ model UserModel {
   email String @unique
   password String
   createdAt DateTime @default(now())
+  isEmailVerified Boolean @default(false)
+  emailVerificationToken String? @unique
+  emailVerificationExpires DateTime?
   RefreshToken RefreshToken[]
 }
 

@@ -8,6 +8,7 @@ import { configDotenv } from "dotenv";
 import appAssert from "../utils/appAssert";
 import path from "path";
 import { oneHourFromNow } from "../utils/dates";
+import { sendVerificationEmail, updateEmailVerified, verifyEmailToken } from "../services/email.service";
 
 configDotenv();
 
@@ -26,6 +27,7 @@ export const registerHandler = catchErrors(async (req, res) => {
     const validatedUser = userSchema.parse(body)
     //call service to create a new user in the database
     const newUser = await createUserAccount(validatedUser)
+    await sendVerificationEmail(newUser.id) // provide an email parameter on production
 
     //generate jwt tokens
     const accessToken = generateAccessToken(newUser.id)
@@ -101,4 +103,19 @@ export const refreshTokenHandler = catchErrors(async(req, res) => {
     setRefreshTokenCookie(newRefreshToken, res);
 
     res.json({ accessToken, expiresIn: oneHourFromNow() , message: "Refreshed successfully" });
+})
+
+
+export const verifyEmailHandler = catchErrors(async(req, res) => {
+    const { query } = req;
+    const { token } = query;
+    appAssert(token && typeof token === 'string', NOT_FOUND, "No token provided");
+
+    //verify email using the provided token
+    const user = await verifyEmailToken(token);
+    appAssert(user.id, NOT_FOUND, "Invalid or expired email verification token");
+
+    //update the user's emailVerified field in the database
+    await updateEmailVerified(user.id);
+    res.json({ message: "Email verified successfully" });
 })
