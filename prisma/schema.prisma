@@ -23,6 +23,7 @@ model UserModel {
   emailVerificationToken String? @unique
   emailVerificationExpires DateTime?
   RefreshToken RefreshToken[]
+  ResetPassword ResetPasswordModel[]
 }
 
 model RefreshToken {
@@ -34,3 +35,11 @@ model RefreshToken {
   expiresAt  DateTime
 }
 
+model ResetPasswordModel {
+  id String @id @default(uuid())
+  token  String @unique
+  userId String @unique
+  user UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}

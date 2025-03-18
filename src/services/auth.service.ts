@@ -55,3 +55,33 @@ export const revokeAllRefreshTokensForAUser = async(userId: string) => {
         where: {userId}
     })
 }
+
+export const storeHashedToken = async(token: string, userId: string, expiresAt: Date) => {
+    await prisma.resetPasswordModel.create({
+        data: {
+            userId: userId,
+            token,
+            expiresAt
+        }
+    })
+}
+
+export const verifyResetPasswordToken = async (token: string) => {
+    const resetPasswordToken = await prisma.resetPasswordModel.findUnique({
+        where: { token, expiresAt: { gt: new Date()} },
+        select: { userId: true, expiresAt: true }
+    });
+
+    appAssert(resetPasswordToken, UNAUTHORIZED ,`Tokne is not valid`)
+    return resetPasswordToken.userId
+}
+
+export const updatePassword = async (userId: string, newPassword: string) => {
+    const hashedPassword = await hashPassword(newPassword);
+    await prisma.userModel.update({
+        where: {id: userId },
+        data: {
+            password: hashedPassword
+        }
+    })
+}

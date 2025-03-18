@@ -1,14 +1,14 @@
 import { Response } from "express";
-import { CREATED, NOT_FOUND, UNAUTHORIZED } from "../constants/http";
-import { createUserAccount, loginUser, revokeAllRefreshTokensForAUser, saveRefreshToken, verifyRefreshTokenInDB } from "../services/auth.service";
+import crypto from "crypto"
+import { CREATED, NOT_FOUND, OK, UNAUTHORIZED } from "../constants/http";
+import { createUserAccount, loginUser, revokeAllRefreshTokensForAUser, saveRefreshToken, storeHashedToken, updatePassword, verifyRefreshTokenInDB, verifyResetPasswordToken } from "../services/auth.service";
 import catchErrors from "../utils/catchErrors";
 import { generateAccessToken, generateRefreshToken, verifyAccessToken } from "../utils/jwt";
 import { loginSchema, userSchema } from "../zodSchema/user.zodSchema";
 import { configDotenv } from "dotenv";
 import appAssert from "../utils/appAssert";
-import path from "path";
 import { oneHourFromNow } from "../utils/dates";
-import { sendVerificationEmail, updateEmailVerified, verifyEmailToken } from "../services/email.service";
+import { sendResetPasswordEmail, sendVerificationEmail, updateEmailVerified, verifyEmail, verifyEmailToken } from "../services/email.service";
 
 configDotenv();
 
@@ -61,7 +61,7 @@ export const loginHandler = catchErrors(async(req, res) => {
     //set refresh token as httpOnly cookie
     setRefreshTokenCookie(refreshToken, res)
 
-    res.json({ data: user, accessToken, expiresIn: oneHourFromNow() , message: 'Logged in successfully' })
+    res.status(OK).json({ data: user, accessToken, expiresIn: oneHourFromNow() , message: 'Logged in successfully' })
 } )
 
 
@@ -80,7 +80,7 @@ export const logoutHandler = catchErrors(async (req, res) => {
 
     //clear refresh token cookie
     res.clearCookie("refreshToken");
-    res.json({ message: "Logged out successfully" });
+    res.status(OK).json({ message: "Logged out successfully" });
 })
 
 
@@ -102,7 +102,7 @@ export const refreshTokenHandler = catchErrors(async(req, res) => {
     await saveRefreshToken(newRefreshToken, userId);
     setRefreshTokenCookie(newRefreshToken, res);
 
-    res.json({ accessToken, expiresIn: oneHourFromNow() , message: "Refreshed successfully" });
+    res.status(OK).json({ accessToken, expiresIn: oneHourFromNow() , message: "Refreshed successfully" });
 })
 
 
@@ -117,5 +117,44 @@ export const verifyEmailHandler = catchErrors(async(req, res) => {
 
     //update the user's emailVerified field in the database
     await updateEmailVerified(user.id);
-    res.json({ message: "Email verified successfully" });
+    res.status(OK).json({ message: "Email verified successfully" });
 })
+
+export const forgotPasswordHandler = catchErrors(async(req, res) => {
+    const { email } = req.body
+    appAssert(email, NOT_FOUND, "Email address not found")
+    //validate email
+    const user = await verifyEmail(email)
+    appAssert(user, OK, "If email exists, a valid email has been sent")
+
+    //send reset email token
+    const resetToken = crypto.randomBytes(32).toString('hex')
+    const resetPasswordUrl = `${process.env.APP_URL}/auth/reset-password?token=${resetToken}`
+    const expiresAt = oneHourFromNow()
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex')
+    
+    await storeHashedToken(hashedToken, user.id, expiresAt) 
+    await sendResetPasswordEmail(resetPasswordUrl)
+
+    res.status(OK).json("'If this email exists, a reset link has been sent.")
+})
+
+
+export const resetPasswordHandler = (catchErrors(async (req, res) => {
+    const { query, body } = req;
+    const { token } = query;
+    appAssert(token && typeof token ==='string', NOT_FOUND, "No token provided")
+
+    //validate password
+    const { password } = body
+    appAssert(password && password.length >= 8 && password.length <= 100, NOT_FOUND, "Password must be between 8 and 100 characters")
+
+    //verify the reset token in the database
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
+    const userId = await verifyResetPasswordToken(hashedToken)
+    appAssert(userId, NOT_FOUND, "Invalid or expired reset password token");
+
+    //update the user's password in the database
+    await updatePassword(userId, password)
+    res.status(OK).json({ message: "Password reset successfully" });
+}))

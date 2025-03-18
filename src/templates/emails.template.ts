@@ -257,3 +257,77 @@ export const emailVerifiedSuccessfullyTemplate = () => (`
 </body>
 </html>
 `)
+
+export const resetPasswordTemplate = (resetPasswordUrl: string) => (`<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f7;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: #007bff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #888;
+        }
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Password Reset Request</h1>
+    <p>Hi there,</p>
+    <p>You recently requested to reset your password for your account. Click the button below to proceed:</p>
+    
+    <a href=${resetPasswordUrl} class="btn">Reset Password</a>
+
+    <p>If you didn’t request this, you can safely ignore this email.</p>
+    
+    <p style="margin-top: 20px;">For security reasons, this link will expire in 15 minutes.</p>
+    
+    <p class="footer">Need help? <a href="{{SUPPORT_LINK}}">Contact Support</a></p>
+</div>
+
+</body>
+</html>
+`)
