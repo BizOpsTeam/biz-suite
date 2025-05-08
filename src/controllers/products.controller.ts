@@ -1,5 +1,5 @@
-import { BAD_REQUEST, CREATED, UNAUTHORIZED } from "../constants/http";
-import { createProduct, createProductCategory } from "../services/products.service";
+import { BAD_REQUEST, CREATED, OK, UNAUTHORIZED } from "../constants/http";
+import { createProduct, createProductCategory, getProductCategories } from "../services/products.service";
 import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErrors";
 import { productCategorySchema, productSchema } from "../zodSchema/product.zodSchema";
@@ -30,4 +30,9 @@ export const addProductCategoryHandler = catchErrors(async (req, res) => {
     const productCategory = await createProductCategory({ name, description })
 
     res.status(CREATED).json({ data: productCategory, message: "Product category added successfully" });
+})
+
+export const getProductCategoriesHandler = catchErrors(async (req, res) => {
+    const productCategories = await getProductCategories()
+    res.status(OK).json({ data: productCategories, message: "Product categories fetched successfully" });
 })

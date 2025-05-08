@@ -27,3 +27,9 @@ export const createProductCategory = async (categoryData: IProductCategoryData) 
         select: { id: true, name: true, description: true, createdAt: true },
     })
 }
+
+export const getProductCategories = async () => {
+    return await prisma.category.findMany({
+        select: { id: true, name: true, description: true, createdAt: true },
+    })
+}
