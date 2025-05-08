@@ -33,3 +33,17 @@ export const getProductCategories = async () => {
         select: { id: true, name: true, description: true, createdAt: true },
     })
 }
+
+export const getProductCategoryById = async (id: string) => {
+    return await prisma.category.findUnique({
+        where: { id },
+        select: { id: true, name: true, description: true, createdAt: true },
+    })
+}
+
+export const getMyProducts = async (userId: string) => {
+    return await prisma.product.findMany({
+        where: { ownerId: userId },
+        select: { id: true, name: true, price: true, stock: true, category: true, description: true, images: true, createdAt: true },
+    })
+}
