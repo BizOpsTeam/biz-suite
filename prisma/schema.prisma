@@ -24,6 +24,7 @@ model UserModel {
   emailVerificationExpires DateTime?
   RefreshToken             RefreshToken[]
   ResetPassword            ResetPasswordModel[]
+  ownedProducts            Product[]
 }
 
 model RefreshToken {
@@ -44,7 +45,7 @@ model ResetPasswordModel {
   expiresAt DateTime
 }
 
-model Image{
+model Image {
   id        String   @id @default(uuid())
   url       String
   productId String
@@ -64,6 +65,8 @@ model Product {
   createdAt   DateTime   @default(now())
   saleItems   SaleItem[]
   updatedAt   DateTime   @updatedAt
+  ownerId    String
+  owner      UserModel  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
 model Category {

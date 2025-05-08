@@ -1,4 +1,4 @@
-import { BAD_REQUEST, CREATED } from "../constants/http";
+import { BAD_REQUEST, CREATED, UNAUTHORIZED } from "../constants/http";
 import { createProduct, createProductCategory } from "../services/products.service";
 import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErrors";
@@ -9,8 +9,14 @@ export const addProductHandler = catchErrors(async (req, res) => {
     const { body } = req;
     const { name, price, stock, categoryId, description, images } = productSchema.parse(body);
 
+    // get userId from request
+    const userId = req.user?.id;
+    appAssert(userId, UNAUTHORIZED, "User ID is required");
+
+    console.log("userId", userId)
+
     // Create product
-    const product = await createProduct({ name, price, stock, categoryId, description, images })
+    const product = await createProduct({ name, price, stock, categoryId, description, images },  userId)
 
     res.status(CREATED).json({ data: product, message: "Product added successfully" });
 })

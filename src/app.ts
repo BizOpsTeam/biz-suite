@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.routes';
 import { setupSwagger } from './swagger';
 import salesRoutes from './routes/sales.route';
 import productsRoutes from './routes/products.routes';
+import { authenticateUser } from './middlewares/authenticateUser';
 
 
 const app = express();
@@ -36,7 +37,7 @@ app.use('/admin', adminRoutes)
 //-------sales routes---------//
 app.use('/sales', salesRoutes)
 //-------product routes---------//
-app.use('/products', productsRoutes)
+app.use('/products', authenticateUser, productsRoutes)
 
 
 //---------------error handling---------------------//
