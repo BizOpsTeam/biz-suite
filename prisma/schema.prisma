@@ -14,32 +14,102 @@ datasource db {
 }
 
 model UserModel {
-  id String @id @default(uuid())
-  name String 
-  email String @unique
-  password String
-  createdAt DateTime @default(now())
-  isEmailVerified Boolean @default(false)
-  emailVerificationToken String? @unique
+  id                       String               @id @default(uuid())
+  name                     String
+  email                    String               @unique
+  password                 String
+  createdAt                DateTime             @default(now())
+  isEmailVerified          Boolean              @default(false)
+  emailVerificationToken   String?              @unique
   emailVerificationExpires DateTime?
-  RefreshToken RefreshToken[]
-  ResetPassword ResetPasswordModel[]
+  RefreshToken             RefreshToken[]
+  ResetPassword            ResetPasswordModel[]
 }
 
 model RefreshToken {
-  id         String  @id @default(uuid())
-  token      String  @unique
-  userId     String  @unique
-  user       UserModel    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  expiresAt  DateTime
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String    @unique
+  user      UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
 }
 
 model ResetPasswordModel {
-  id String @id @default(uuid())
-  token  String @unique
-  userId String @unique
-  user UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String    @unique
+  user      UserModel @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
   expiresAt DateTime
+}
+
+model Image{
+  id        String   @id @default(uuid())
+  url       String
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  stock       Int
+  images      Image[] 
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  saleItems   SaleItem[]
+  updatedAt   DateTime   @updatedAt
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Sale {
+  id            String     @id @default(uuid()) 
+  customerId    String
+  customer      Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  totalAmount   Float
+  taxAmount     Float
+  discount      Float
+  paymentMethod String // e.g., "cash", "credit card", etc.
+  status        String // e.g., "completed", "pending", "refunded", etc.
+  channel       String // e.g., "in-store", "online", etc.
+  saleItems     SaleItem[]
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model SaleItem {
+  id        String   @id @default(uuid())
+  saleId    String
+  sale      Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int
+  price     Float
+  discount  Float
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  name      String
+  phone     String?
+  email     String?
+  location  String?
+  sales     Sale[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

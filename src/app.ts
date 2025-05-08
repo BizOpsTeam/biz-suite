@@ -6,6 +6,8 @@ import errorHandler from "./middlewares/errorHandler"
 import adminRoutes from "./routes/admin.routes"
 import authRoutes from './routes/auth.routes';
 import { setupSwagger } from './swagger';
+import salesRoutes from './routes/sales.route';
+import productsRoutes from './routes/products.routes';
 
 
 const app = express();
@@ -30,6 +32,11 @@ app.use('/auth', authRoutes)
 
 //---admin route-----//
 app.use('/admin', adminRoutes)
+
+//-------sales routes---------//
+app.use('/sales', salesRoutes)
+//-------product routes---------//
+app.use('/products', productsRoutes)
 
 
 //---------------error handling---------------------//
