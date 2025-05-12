@@ -11,9 +11,7 @@ export const addProductHandler = catchErrors(async (req, res) => {
 
     // get userId from request
     const userId = req.user?.id;
-    appAssert(userId, UNAUTHORIZED, "User ID is required");
-
-    console.log("userId", userId)
+    appAssert(userId, UNAUTHORIZED, "User ID is required")
 
     // Create product
     const product = await createProduct({ name, price, stock, categoryId, description, images },  userId)
