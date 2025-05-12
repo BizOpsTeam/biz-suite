@@ -64,9 +64,18 @@ model Product {
   category    Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   createdAt   DateTime   @default(now())
   saleItems   SaleItem[]
+  taxes TaxOnProduct[]
   updatedAt   DateTime   @updatedAt
   ownerId    String
   owner      UserModel  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+}
+
+model TaxOnProduct {
+  id String @id @default(uuid())
+  name String
+  amount Float
+  productId String
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Category {
@@ -78,14 +87,20 @@ model Category {
   updatedAt   DateTime  @updatedAt
 }
 
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  CREDIT
+  MOBILE_MONEY
+}
+
 model Sale {
   id            String     @id @default(uuid()) 
-  customerId    String
-  customer      Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerName String
   totalAmount   Float
   taxAmount     Float
   discount      Float
-  paymentMethod String // e.g., "cash", "credit card", etc.
+  paymentMethod PaymentMethod // e.g., "cash", "credit card", etc.
   status        String // e.g., "completed", "pending", "refunded", etc.
   channel       String // e.g., "in-store", "online", etc.
   saleItems     SaleItem[]
@@ -103,16 +118,7 @@ model SaleItem {
   quantity  Int
   price     Float
   discount  Float
+  tax       Float
   createdAt DateTime @default(now())
 }
 
-model Customer {
-  id        String   @id @default(uuid())
-  name      String
-  phone     String?
-  email     String?
-  location  String?
-  sales     Sale[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}

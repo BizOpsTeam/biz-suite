@@ -12,9 +12,12 @@ export type TCustomerData = {
 }
 
 export interface ISaleItemData {
+    // saleId: string
+    productId: string
     quantity: number
     price: number
     discount: number
+    tax: number
 }
 
 export interface IProductData {
@@ -32,5 +35,14 @@ export interface IProductCategoryData {
 }
 
 export type TSaleData = {
-    
+    customerName: string
+    items: ISaleItemData[]
+    paymentMethod: PaymentMethod
+    totalAmount: number
+    totalDiscount: number
+    totalTax: number
+    channel: string
+    notes: string
 }
+
+export type PaymentMethod = "CASH" | "CREDIT_CARD" | "CREDIT" | "MOBILE_MONEY"

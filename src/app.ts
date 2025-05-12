@@ -35,7 +35,7 @@ app.use('/auth', authRoutes)
 app.use('/admin', adminRoutes)
 
 //-------sales routes---------//
-app.use('/sales', salesRoutes)
+app.use('/sales', authenticateUser ,salesRoutes)
 //-------product routes---------//
 app.use('/products', authenticateUser, productsRoutes)
 
