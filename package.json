@@ -25,6 +25,7 @@
         "bcryptjs": "^3.0.2",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
+        "date-fns": "^4.1.0",
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
         "helmet": "^8.0.0",
@@ -50,5 +51,14 @@
         "prisma": "^6.5.0",
         "ts-node": "^10.9.2",
         "typescript": "^5.8.2"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "@prisma/client",
+            "@prisma/engines",
+            "@scarf/scarf",
+            "esbuild",
+            "prisma"
+        ]
     }
 }

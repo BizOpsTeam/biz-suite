@@ -4,7 +4,6 @@ import { z } from "zod"
 export const PaymentMethodEnum = z.enum(["CASH", "CREDIT_CARD", "CREDIT", "MOBILE_MONEY"]);
 
 export const saleItemSchema = z.object({
-    // saleId: z.string().min(10),
     productId: z.string().min(10),
     quantity: z.number().int().positive(),
     price: z.number().positive(),
@@ -17,7 +16,11 @@ export const saleSchema = z.object({
     paymentMethod: PaymentMethodEnum,
     channel: z.string(),
     notes: z.string().max(300),
-    items: z.array(saleItemSchema).min(1)
+    items: z.array(saleItemSchema).min(1),
+    dueDate: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date format" })
+    .transform((val) => new Date(val)).optional()
 })
 
 

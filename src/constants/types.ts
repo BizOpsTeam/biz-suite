@@ -43,6 +43,7 @@ export type TSaleData = {
     totalTax: number
     channel: string
     notes: string
+    dueDate?: Date
 }
 
 export type PaymentMethod = "CASH" | "CREDIT_CARD" | "CREDIT" | "MOBILE_MONEY"
