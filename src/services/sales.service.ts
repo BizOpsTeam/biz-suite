@@ -1,10 +1,27 @@
 import prisma from "../config/db";
+import { BAD_REQUEST } from "../constants/http";
 import { TSaleData } from "../constants/types";
+import AppError from "../errors/AppError";
 import { generateInvoiceNumber } from "../utils/prismaHelpers";
 
 export const createSale = async (saleData: TSaleData) => {
 
     const sale = await prisma.$transaction(async (tx) => {
+
+        //make sure there are enough products in inventory to 
+        for (const item of saleData.items) {
+            const product = await tx.product.findUnique({ where: { id: item.productId } });
+        
+            if (!product || product.stock < item.quantity) {
+              throw new AppError(BAD_REQUEST,`INSUFFICIENT_STOCK for product ${product?.id}`);
+            }
+        
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { decrement: item.quantity } },
+            });
+          }
+
         const newSale = await tx.sale.create({
             data: {
                 channel: saleData.channel,

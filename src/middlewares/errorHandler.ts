@@ -3,13 +3,14 @@ import AppError from "../errors/AppError"
 import dotenv from "dotenv"
 import { ZodError } from "zod"
 import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "../constants/http"
+import { Prisma } from "@prisma/client"
 
 dotenv.config()
 
-const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
+const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Response, next: NextFunction): void => {
 
     // Handle Zod validation errors
-    if (err instanceof ZodError) { 
+    if (err instanceof ZodError) {
         res.status(BAD_REQUEST).json({
             status: "error",
             message: "Validation failed",
@@ -18,7 +19,48 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
                 message: e.message,
             })),
         });
-        return;  // Zod errors are handled above, so we don't need to continue here.
+    }
+
+    // Handle Prisma known errors
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        res.status(400).json({
+            status: "error",
+            message: "Database request error",
+            errorCode: err.code,
+            meta: err.meta,
+        });
+    }
+
+    // Handle Prisma validation errors (bad queries)
+    if (err instanceof Prisma.PrismaClientValidationError) {
+         res.status(400).json({
+            status: "error",
+            message: "Database validation error",
+        });
+    }
+
+    // Handle Prisma unknown errors
+    if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+        res.status(500).json({
+            status: "error",
+            message: "Unknown database error",
+        });
+    }
+
+    // Handle Prisma client initialization errors
+    if (err instanceof Prisma.PrismaClientInitializationError) {
+         res.status(500).json({
+            status: "error",
+            message: "Database initialization failed",
+        });
+    }
+
+    // Handle Prisma client panic (Rust engine crash)
+    if (err instanceof Prisma.PrismaClientRustPanicError) {
+         res.status(500).json({
+            status: "error",
+            message: "Database engine crashed",
+        });
     }
 
     // Handle custom AppErrors
@@ -28,7 +70,6 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
             message: err.message,
             errorCode: err.errorCode || "INTERNAL_ERROR",
         });
-        return;
     }
 
     // Handle unexpected errors
