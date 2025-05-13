@@ -21,9 +21,12 @@ export const createProduct = async (productData: IProductData, userId: string ) 
     })
 }
 
-export const createProductCategory = async (categoryData: IProductCategoryData) => {
+export const createProductCategory = async (categoryData: IProductCategoryData, ownerId: string) => {
     return await prisma.category.create({
-        data: categoryData,
+        data: {
+            ...categoryData,
+            ownerId: ownerId
+        },
         select: { id: true, name: true, description: true, createdAt: true },
     })
 }

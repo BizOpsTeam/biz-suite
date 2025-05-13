@@ -9,6 +9,7 @@ import { setupSwagger } from './swagger';
 import salesRoutes from './routes/sales.route';
 import productsRoutes from './routes/products.routes';
 import { authenticateUser } from './middlewares/authenticateUser';
+import invoicesRoutes from './routes/invoices.routes';
 
 
 const app = express();
@@ -36,6 +37,7 @@ app.use('/admin', adminRoutes)
 
 //-------sales routes---------//
 app.use('/sales', authenticateUser ,salesRoutes)
+app.use('/invoices', authenticateUser, invoicesRoutes)
 //-------product routes---------//
 app.use('/products', authenticateUser, productsRoutes)
 

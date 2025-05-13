@@ -1,11 +1,15 @@
 
 import { Response, Request } from "express";
 import catchErrors from "../utils/catchErrors";
-import { CREATED } from "../constants/http";
-import { createSale } from "../services/sales.service";
+import { CREATED, OK, UNAUTHORIZED } from "../constants/http";
+import { createSale, getSalesStats } from "../services/sales.service";
 import { saleSchema } from "../zodSchema/sale.zondSchema";
+import appAssert from "../utils/appAssert";
 
 export const addSaleHandler = catchErrors(async (req: Request, res: Response) => {
+    const userId = req.user?.id
+    appAssert(userId, UNAUTHORIZED, "unauthorized, login to create a sale")
+
     const { body } = req;
     const { customerName, items, paymentMethod, channel, notes } = saleSchema.parse(body);
 
@@ -14,7 +18,18 @@ export const addSaleHandler = catchErrors(async (req: Request, res: Response) =>
     const totalDiscount = items.reduce((sum, item) => sum + item.discount, 0)
 
     // Create sale
-    const sale = await createSale({customerName, items, channel, notes, paymentMethod, totalAmount, totalDiscount, totalTax})
+    const sale = await createSale({customerName, items, channel, notes, paymentMethod, totalAmount, totalDiscount, totalTax}, userId)
 
     res.status(CREATED).json({ data: sale, message: "Sale added successfully" });
+})
+
+
+export const getSalesStatsHandler = catchErrors(async (req, res) => {
+    const userId = req.user?.id
+    appAssert(userId, UNAUTHORIZED, "unathorized, login to get your sales stats")
+
+    const { period = "day"} = req.query 
+
+    const stats = await getSalesStats(period as string, userId)
+    res.status(OK).json({data: stats, message: "stats retrieved successfully"})
 })

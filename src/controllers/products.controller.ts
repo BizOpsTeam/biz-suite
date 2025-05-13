@@ -21,11 +21,15 @@ export const addProductHandler = catchErrors(async (req, res) => {
 
 
 export const addProductCategoryHandler = catchErrors(async (req, res) => {
+
+    const ownerId = req.user?.id
+    appAssert(ownerId, UNAUTHORIZED, "Unauthorized, Login to perform this action")
+
     const { body } = req;
     const { name, description } = productCategorySchema.parse(body);
 
     // Create product category
-    const productCategory = await createProductCategory({ name, description })
+    const productCategory = await createProductCategory({ name, description }, ownerId)
 
     res.status(CREATED).json({ data: productCategory, message: "Product category added successfully" });
 })
