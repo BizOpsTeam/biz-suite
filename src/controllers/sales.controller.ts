@@ -1,8 +1,8 @@
 
 import { Response, Request } from "express";
 import catchErrors from "../utils/catchErrors";
-import { CREATED, OK, UNAUTHORIZED } from "../constants/http";
-import { createSale, getSales, getSalesStats } from "../services/sales.service";
+import { CREATED, NOT_FOUND, OK, UNAUTHORIZED } from "../constants/http";
+import { createSale, deleteSale, getSales, getSalesStats } from "../services/sales.service";
 import { saleSchema } from "../zodSchema/sale.zondSchema";
 import appAssert from "../utils/appAssert";
 
@@ -41,4 +41,15 @@ export const getAllSalesHandler = catchErrors(async(req, res) => {
 
     const allSales = await getSales(userId)
     res.status(OK).json({ data: allSales, message: "Sales fetched successfully"})
+})
+
+export const deleteSaleHandler = catchErrors(async(req, res) => {
+    const userId = req.user?.id
+    const { saleId } = req.params
+
+    appAssert(userId, UNAUTHORIZED, "Unathorized, login to perform this action")
+    appAssert(saleId, NOT_FOUND, `Sale with id ${saleId} not found`)
+
+    await deleteSale( String(saleId) ,userId)
+    res.status(OK).json({ message: "Saled deleted successfully"})
 })

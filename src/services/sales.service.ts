@@ -173,3 +173,13 @@ export const getSales = async (ownerId: string) => {
         }
     })
 }
+
+export const deleteSale = async(saleId: string, ownerId: string) => {
+    const sale = await prisma.sale.findUnique({ where : { id : saleId }})
+
+    if(!sale || sale.ownerId !== ownerId){
+        throw new AppError(BAD_REQUEST, "Sale not found or access denied")
+    }
+
+    return await prisma.sale.delete({ where: { id: saleId }})
+}
