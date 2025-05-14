@@ -1,4 +1,4 @@
-import { subDays, subMonths, subWeeks, subYears } from "date-fns";
+import { startOfToday, subDays, subMonths, subWeeks, subYears } from "date-fns";
 import prisma from "../config/db";
 import { BAD_REQUEST } from "../constants/http";
 import { TSaleData } from "../constants/types";
@@ -89,15 +89,16 @@ export const getSalesStats = async (period: string, ownerId: string) => {
     switch (period) {
         case "day":
             startDate = subDays(new Date(), 0)
-            dateTruncUnit = "week"
+            return getTodaysSales()
             break
         case "week":
             startDate = subWeeks(new Date(), 4);
             dateTruncUnit = "week";
+            return await getWeeklySalesStats(ownerId)
             break;
         case "month":
-            startDate = subMonths(new Date(), 6);
-            dateTruncUnit = "month";
+            const currentYear = new Date().getFullYear()
+            return await getMonthlySalesStats(currentYear, ownerId) 
             break;
         case "year":
             startDate = subYears(new Date(), 3);
@@ -121,4 +122,54 @@ export const getSalesStats = async (period: string, ownerId: string) => {
     `);
 
     return results
+}
+
+export const getTodaysSales = async () => {
+    return await prisma.sale.findMany({
+        where: {
+            createdAt: {
+                gte: startOfToday()
+            }
+        }
+    })
+}
+
+export const getWeeklySalesStats = async (ownerId: string) => {
+    const startDate = subDays(new Date(), 6); // last 7 days including today
+
+    return await prisma.$queryRawUnsafe<
+        { day: string; total: number }[]
+    >(`
+  SELECT 
+    TO_CHAR("createdAt", 'YYYY-MM-DD') AS date,
+    SUM("totalAmount") AS total
+  FROM "Sale"
+  WHERE "createdAt" >= $1 AND "ownerId" = $2
+  GROUP BY date
+  ORDER BY date ASC
+  `,
+        startDate,
+        ownerId
+    );
+}
+
+export const getMonthlySalesStats = async (year: number, ownerId: string) => {
+    return await prisma.$queryRawUnsafe(`
+      SELECT 
+        TO_CHAR("createdAt", 'YYYY-MM') AS month,
+        SUM("totalAmount") AS total
+      FROM "Sale"
+      WHERE EXTRACT(YEAR FROM "createdAt") = $1
+        AND "ownerId" = $2
+      GROUP BY TO_CHAR("createdAt", 'YYYY-MM')
+      ORDER BY month;
+    `, year, ownerId);
+}
+
+export const getSales = async (ownerId: string) => {
+    return await prisma.sale.findMany({
+        where: {
+            ownerId: ownerId
+        }
+    })
 }

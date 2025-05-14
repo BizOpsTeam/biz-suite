@@ -2,7 +2,7 @@
 import { Response, Request } from "express";
 import catchErrors from "../utils/catchErrors";
 import { CREATED, OK, UNAUTHORIZED } from "../constants/http";
-import { createSale, getSalesStats } from "../services/sales.service";
+import { createSale, getSales, getSalesStats } from "../services/sales.service";
 import { saleSchema } from "../zodSchema/sale.zondSchema";
 import appAssert from "../utils/appAssert";
 
@@ -32,4 +32,13 @@ export const getSalesStatsHandler = catchErrors(async (req, res) => {
 
     const stats = await getSalesStats(period as string, userId)
     res.status(OK).json({data: stats, message: "stats retrieved successfully"})
+})
+
+
+export const getAllSalesHandler = catchErrors(async(req, res) => {
+    const userId = req.user?.id
+    appAssert(userId, UNAUTHORIZED, "Unathorized, login to get sales data")
+
+    const allSales = await getSales(userId)
+    res.status(OK).json({ data: allSales, message: "Sales fetched successfully"})
 })
