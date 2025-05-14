@@ -1,5 +1,5 @@
 import { BAD_REQUEST, CREATED, OK, UNAUTHORIZED } from "../constants/http";
-import { createProduct, createProductCategory, getMyProducts, getProductCategories, getProductCategoryById } from "../services/products.service";
+import { createProduct, createProductCategory, getMyProducts, getProductCategories, getProductCategoryById, updateCategory } from "../services/products.service";
 import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErrors";
 import { productCategorySchema, productSchema } from "../zodSchema/product.zodSchema";
@@ -53,4 +53,17 @@ export const getProductsHandler = catchErrors(async (req, res) => {
     appAssert(userId, UNAUTHORIZED, "Login to view your products");
     const products = await getMyProducts(userId)
     res.status(OK).json({ data: products, message: "Products fetched successfully" });
+})
+
+
+export const updateCategoryHandler = catchErrors(async (req, res) => {
+    const userId = req.user?.id
+    const { id: categoryId } = req.params
+
+    const updateData = req.body
+
+    appAssert(userId, UNAUTHORIZED, "Login to update the category")
+
+    const updatedCategory = await updateCategory(userId, categoryId, updateData)
+    res.status(204).json({ data: updateCategory, message: "category updated successfully"})
 })

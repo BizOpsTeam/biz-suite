@@ -50,3 +50,15 @@ export const getMyProducts = async (userId: string) => {
         select: { id: true, name: true, price: true, stock: true, category: true, description: true, images: true, createdAt: true },
     })
 }
+
+export const updateCategory = async(ownerId: string, categoryId: string, updateData: { name?: string; description?: string}) => {
+    return await prisma.category.update({
+        where: {
+            id: categoryId,
+            ownerId: ownerId
+        },
+        data: {
+            ...updateData
+        }
+    })
+}
