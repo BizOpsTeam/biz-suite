@@ -13,7 +13,7 @@ export const getProductHandler = catchErrors(async (req, res) => {
 
     const product = await getProductById(String(id), userId)
     if(!product){
-        res.status(NOT_FOUND).json({ data: null, message: `Product with id ${id} not found`})
+        return res.status(NOT_FOUND).json({ data: null, message: `Product with id ${id} not found`})
     }
     res.status(OK).json({ data: product , message: "Product successfully returned"})
 }) 
