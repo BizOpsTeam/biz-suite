@@ -1,8 +1,8 @@
-import swaggerJsdoc from "swagger-jsdoc"
+import swaggerJsdocLib from "swagger-jsdoc"
 import swaggerUi from "swagger-ui-express"
 import { Express } from "express"
 
-const options: swaggerJsdoc.Options = {
+const options: swaggerJsdocLib.Options = {
     swaggerDefinition: {
         openapi: '3.0.0',
         info: {
@@ -16,7 +16,6 @@ const options: swaggerJsdoc.Options = {
                 description: "Development server",
             },
         ],
-
         components: {
             schemas: {
                 Product: {
@@ -85,6 +84,147 @@ const options: swaggerJsdoc.Options = {
                     properties: {
                         url: { type: 'string' }
                     }
+                },
+                RegisterInput: {
+                    type: 'object',
+                    required: ['name', 'email', 'password'],
+                    properties: {
+                        name: {
+                            type: 'string',
+                            example: 'John Doe'
+                        },
+                        email: {
+                            type: 'string',
+                            format: 'email',
+                            example: 'johndoe@example.com'
+                        },
+                        password: {
+                            type: 'string',
+                            format: 'password',
+                            example: 'StrongP@ssw0rd'
+                        }
+                    }
+                },
+                LoginInput: {
+                    type: 'object',
+                    required: ['email', 'password'],
+                    properties: {
+                        email: {
+                            type: 'string',
+                            format: 'email',
+                            example: 'johndoe@example.com'
+                        },
+                        password: {
+                            type: 'string',
+                            format: 'password',
+                            example: 'StrongP@ssw0rd'
+                        }
+                    }
+                },
+                ForgotPasswordInput: {
+                    type: 'object',
+                    required: ['email'],
+                    properties: {
+                        email: {
+                            type: 'string',
+                            format: 'email',
+                            example: 'johndoe@example.com'
+                        }
+                    }
+                },
+                ResetPasswordInput: {
+                    type: 'object',
+                    required: ['password'],
+                    properties: {
+                        password: {
+                            type: 'string',
+                            format: 'password',
+                            example: 'NewStrongP@ssw0rd'
+                        }
+                    }
+                },
+                User: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            example: '12345'
+                        },
+                        name: {
+                            type: 'string',
+                            example: 'John Doe'
+                        },
+                        email: {
+                            type: 'string',
+                            example: 'johndoe@example.com'
+                        },
+                        createdAt: {
+                            type: 'string',
+                            format: 'date-time'
+                        }
+                    }
+                },
+                SaleInput: {
+                    type: 'object',
+                    required: ['customerName', 'items', 'paymentMethod', 'channel'],
+                    properties: {
+                        customerName: { type: 'string' },
+                        items: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/SaleItemInput' }
+                        },
+                        paymentMethod: {
+                            type: 'string',
+                            enum: ['CASH', 'CREDIT', 'CARD', 'OTHER']
+                        },
+                        channel: { type: 'string', example: 'in-store' },
+                        notes: { type: 'string' }
+                    }
+                },
+                SaleItemInput: {
+                    type: 'object',
+                    required: ['productId', 'quantity', 'price'],
+                    properties: {
+                        productId: { type: 'string' },
+                        quantity: { type: 'integer' },
+                        price: { type: 'number' },
+                        discount: { type: 'number' },
+                        tax: { type: 'number' }
+                    }
+                },
+                Sale: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        customerName: { type: 'string' },
+                        channel: { type: 'string' },
+                        paymentMethod: { type: 'string' },
+                        discount: { type: 'number' },
+                        taxAmount: { type: 'number' },
+                        totalAmount: { type: 'number' },
+                        status: { type: 'string' },
+                        notes: { type: 'string' },
+                        createdAt: { type: 'string', format: 'date-time' }
+                    }
+                },
+                SalesStats: {
+                    type: 'object',
+                    properties: {
+                        period: { type: 'string', description: 'The period (date, week, month, or year)' },
+                        total: { type: 'number', description: 'Total sales amount for the period' }
+                    }
+                },
+                Invoice: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        customerName: { type: 'string' },
+                        totalAmount: { type: 'number' },
+                        status: { type: 'string' },
+                        dueDate: { type: 'string', format: 'date-time' },
+                        createdAt: { type: 'string', format: 'date-time' }
+                        // Add more fields as needed based on your actual invoice model
+                    }
                 }
             },
             securitySchemes: {
@@ -99,8 +239,8 @@ const options: swaggerJsdoc.Options = {
     apis: ["src/routes/*.ts"],
 }
 
-const swaggerDocs = swaggerJsdoc(options)
+const swaggerSpec = swaggerJsdocLib(options)
 
 export const setupSwagger = (app: Express) => {
-    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
