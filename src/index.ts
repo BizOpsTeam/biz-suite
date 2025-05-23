@@ -8,5 +8,6 @@ const port = process.env.PORT || 3000
 console.log("port Number: ", port)
 
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  console.log(`🚀Server running on http://localhost:${port}`);
+  console.log(`📚 API Docs running on http://localhost:${port}/api-docs/`)
 });
