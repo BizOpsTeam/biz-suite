@@ -21,6 +21,14 @@ export const createProduct = async (productData: IProductData, userId: string ) 
     })
 }
 
+export const getProductById = async (prodcutId: string) => {
+    return await prisma.product.findFirst({
+        where: {
+            id: prodcutId
+        }
+    })
+}
+
 export const createProductCategory = async (categoryData: IProductCategoryData, ownerId: string) => {
     return await prisma.category.create({
         data: {
