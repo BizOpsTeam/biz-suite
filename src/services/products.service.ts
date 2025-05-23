@@ -1,5 +1,7 @@
 import { IProductCategoryData, IProductData } from "../constants/types";
 import prisma from "../config/db";
+import AppError from "../errors/AppError";
+import { CONFLICT, UNAUTHORIZED } from "../constants/http";
 
 export const createProduct = async (productData: IProductData, userId: string ) => {    
 
@@ -8,7 +10,7 @@ export const createProduct = async (productData: IProductData, userId: string ) 
     });
     
     if (!userExists) {
-        throw new Error(`User with ID ${userId} does not exist`);
+        throw new AppError(UNAUTHORIZED, "Unauthorized to perform this action")
     }
 
     return await prisma.product.create({
@@ -21,10 +23,11 @@ export const createProduct = async (productData: IProductData, userId: string ) 
     })
 }
 
-export const getProductById = async (prodcutId: string) => {
+export const getProductById = async (prodcutId: string, userId: string) => {
     return await prisma.product.findFirst({
         where: {
-            id: prodcutId
+            id: prodcutId,
+            ownerId: userId
         }
     })
 }

@@ -11,7 +11,7 @@ export const getProductHandler = catchErrors(async (req, res) => {
     appAssert(userId, UNAUTHORIZED, "Unauthorized, login to perform this action")
     appAssert(id, NOT_FOUND, "Product Id required")
 
-    const product = await getProductById(String(id))
+    const product = await getProductById(String(id), userId)
     if(!product){
         res.status(NOT_FOUND).json({ data: null, message: `Product with id ${id} not found`})
     }
