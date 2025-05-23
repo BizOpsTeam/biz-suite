@@ -6,7 +6,7 @@ import { productCategorySchema, productSchema } from "../zodSchema/product.zodSc
 
 
 export const getProductHandler = catchErrors(async (req, res) => {
-    const { id } = req.query
+    const { id } = req.params
     const userId = req.user?.id
     appAssert(userId, UNAUTHORIZED, "Unauthorized, login to perform this action")
     appAssert(id, NOT_FOUND, "Product Id required")
