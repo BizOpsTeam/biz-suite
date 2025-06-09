@@ -87,7 +87,7 @@ const options: swaggerJsdocLib.Options = {
                 },
                 RegisterInput: {
                     type: 'object',
-                    required: ['name', 'email', 'password'],
+                    required: ['name', 'email', 'password', 'role'],
                     properties: {
                         name: {
                             type: 'string',
@@ -102,6 +102,12 @@ const options: swaggerJsdocLib.Options = {
                             type: 'string',
                             format: 'password',
                             example: 'StrongP@ssw0rd'
+                        },
+                        role: {
+                            type: 'string',
+                            enum: ['admin', 'worker', 'user'],
+                            example: 'admin',
+                            description: 'Role of the user'
                         }
                     }
                 },
@@ -157,6 +163,12 @@ const options: swaggerJsdocLib.Options = {
                         email: {
                             type: 'string',
                             example: 'johndoe@example.com'
+                        },
+                        role: {
+                            type: 'string',
+                            enum: ['admin', 'worker', 'user'],
+                            example: 'admin',
+                            description: 'Role of the user'
                         },
                         createdAt: {
                             type: 'string',
@@ -232,6 +244,50 @@ const options: swaggerJsdocLib.Options = {
                     type: 'http',
                     scheme: 'bearer',
                     bearerFormat: 'JWT'
+                }
+            },
+        },
+        paths: {
+            '/users': {
+                post: {
+                    summary: 'Register a new user (admin, worker, or user)',
+                    tags: ['Users'],
+                    description: 'Creates a new user account and returns an access token.',
+                    requestBody: {
+                        required: true,
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    $ref: '#/components/schemas/RegisterInput'
+                                }
+                            }
+                        }
+                    },
+                    responses: {
+                        201: {
+                            description: 'User registered successfully',
+                            content: {
+                                'application/json': {
+                                    schema: {
+                                        type: 'object',
+                                        properties: {
+                                            data: { $ref: '#/components/schemas/User' },
+                                            accessToken: {
+                                                type: 'string',
+                                                example: 'eyJhbGciOiJIUzI1NiIsInR...'
+                                            },
+                                            message: {
+                                                type: 'string',
+                                                example: 'User registered successfully'
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        400: { description: 'Invalid input data' },
+                        409: { description: 'User already exists' }
+                    }
                 }
             }
         }
