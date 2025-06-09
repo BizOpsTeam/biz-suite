@@ -4,10 +4,11 @@ import { BAD_REQUEST } from "../constants/http";
 import { TSaleData } from "../constants/types";
 import AppError from "../errors/AppError";
 import { generateInvoiceNumber } from "../utils/prismaHelpers";
+import { Prisma } from '@prisma/client';
 
 export const createSale = async (saleData: TSaleData, ownerId: string) => {
 
-    const sale = await prisma.$transaction(async (tx) => {
+    const sale = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
 
         //make sure there are enough products in inventory to 
         for (const item of saleData.items) {
@@ -137,9 +138,8 @@ export const getTodaysSales = async () => {
 export const getWeeklySalesStats = async (ownerId: string) => {
     const startDate = subDays(new Date(), 6); // last 7 days including today
 
-    return await prisma.$queryRawUnsafe<
-        { day: string; total: number }[]
-    >(`
+    return await prisma.$queryRawUnsafe(
+  `
   SELECT 
     TO_CHAR("createdAt", 'YYYY-MM-DD') AS date,
     SUM("totalAmount") AS total
@@ -150,11 +150,12 @@ export const getWeeklySalesStats = async (ownerId: string) => {
   `,
         startDate,
         ownerId
-    );
+    ) as { day: string; total: number }[];
 }
 
 export const getMonthlySalesStats = async (year: number, ownerId: string) => {
-    return await prisma.$queryRawUnsafe(`
+    return await prisma.$queryRawUnsafe(
+      `
       SELECT 
         TO_CHAR("createdAt", 'YYYY-MM') AS month,
         SUM("totalAmount") AS total
@@ -163,7 +164,7 @@ export const getMonthlySalesStats = async (year: number, ownerId: string) => {
         AND "ownerId" = $2
       GROUP BY TO_CHAR("createdAt", 'YYYY-MM')
       ORDER BY month;
-    `, year, ownerId);
+    `, year, ownerId) as { month: string; total: number }[];
 }
 
 export const getSales = async (ownerId: string) => {
