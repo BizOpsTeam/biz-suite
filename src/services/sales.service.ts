@@ -112,7 +112,8 @@ export const getSalesStats = async (period: string, ownerId: string) => {
 
     const startDateISO = startDate.toISOString();
 
-    const results = await prisma.$queryRawUnsafe<any[]>(`
+    const results = await prisma.$queryRawUnsafe(
+      `
       SELECT 
         DATE_TRUNC('${dateTruncUnit}', "createdAt") AS period,
         SUM("totalAmount") AS total
@@ -120,7 +121,7 @@ export const getSalesStats = async (period: string, ownerId: string) => {
       WHERE "createdAt" >= '${startDateISO}' AND "ownerId" = '${ownerId}'
       GROUP BY period
       ORDER BY period ASC
-    `);
+    `) as any[];
 
     return results
 }
