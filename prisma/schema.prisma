@@ -17,7 +17,7 @@ model UserModel {
   id                       String               @id @default(uuid())
   name                     String
   email                    String               @unique
-  role                     Role                 @default(admin)
+  role                     String               @default("worker")
   password                 String
   createdAt                DateTime             @default(now())
   isEmailVerified          Boolean              @default(false)
@@ -32,11 +32,6 @@ model UserModel {
 }
 
 
-enum Role {
-  admin
-  worker
-  user
-}
 
 model RefreshToken {
   id        String    @id @default(uuid())

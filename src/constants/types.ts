@@ -2,7 +2,7 @@ export type TUser = {
     name: string
     email: string
     password: string
-    role?: string
+    role?: TRole
 }
 
 export type TRole = "admin" | "worker" | "user"

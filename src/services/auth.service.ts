@@ -3,7 +3,6 @@ import prisma from "../config/db";
 import appAssert from "../utils/appAssert";
 import { CONFLICT, UNAUTHORIZED } from "../constants/http";
 import { comparePasswords, hashPassword } from "../utils/bcrypt";
-import { Role } from "@prisma/client";
 
 export const createUserAccount = async(user: TUser) => {
     //check if user already exists in database
@@ -11,15 +10,10 @@ export const createUserAccount = async(user: TUser) => {
     appAssert(!existingUser, CONFLICT ,"User already exists", "409")
 
     const hashedPassword = await hashPassword(user.password)
-    if(!user.role){
-        user.role = "worker"
-    }
-    // Ensure role is set using the Prisma enum and is lowercase
-    const role = Role[user.role.toLowerCase() as keyof typeof Role];
 
     //if not, create a new user in the database
     const newUser = await prisma.userModel.create({
-        data: { ...user, password: hashedPassword, role },
+        data: { ...user, password: hashedPassword, role: user.role || "worker" },
         select: { email: true, id: true, createdAt: true, name: true}
     })
 
