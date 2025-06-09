@@ -17,6 +17,7 @@ model UserModel {
   id                       String               @id @default(uuid())
   name                     String
   email                    String               @unique
+  role                     Role                 @default(admin)
   password                 String
   createdAt                DateTime             @default(now())
   isEmailVerified          Boolean              @default(false)
@@ -28,6 +29,13 @@ model UserModel {
   ownedSales               Sale[]
   ownedCategories          Category[]
   Invoice                  Invoice[]
+}
+
+
+enum Role {
+  admin
+  worker
+  user
 }
 
 model RefreshToken {

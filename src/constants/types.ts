@@ -4,6 +4,10 @@ export type TUser = {
     password: string
 }
 
+export type TRole = "admin" | "worker" | "user"
+
+
+
 export type TCustomerData = {
     name: string
     email?: string

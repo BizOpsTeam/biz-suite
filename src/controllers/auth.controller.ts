@@ -26,6 +26,10 @@ export const registerHandler = catchErrors(async (req, res) => {
     const { body } = req
     //validate request body
     const validatedUser = userSchema.parse(body)
+    if(validatedUser.role === "user" || validatedUser.role === "worker"){
+        let userWorkerPassword = '00000000'
+        validatedUser.password = userWorkerPassword
+    }
     //call service to create a new user in the database
     const newUser = await createUserAccount(validatedUser)
     await sendVerificationEmail(newUser.id) // provide an email parameter on production

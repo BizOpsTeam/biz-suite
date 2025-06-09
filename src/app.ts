@@ -10,6 +10,8 @@ import salesRoutes from './routes/sales.route';
 import productsRoutes from './routes/products.routes';
 import { authenticateUser } from './middlewares/authenticateUser';
 import invoicesRoutes from './routes/invoices.routes';
+import userRoutes from './routes/user.routes';
+import { isAdmin, isWorker } from './middlewares/verifyUserRole';
 
 
 const app = express();
@@ -41,6 +43,8 @@ app.use('/invoices', authenticateUser, invoicesRoutes)
 //-------product routes---------//
 app.use('/products', authenticateUser, productsRoutes)
 
+//-------user routes---------//
+app.use('/users', authenticateUser, isAdmin, userRoutes)
 
 //---------------error handling---------------------//
 app.use(notFoundHandler)
