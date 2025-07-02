@@ -15,6 +15,10 @@ import {
 dotenv.config()
 
 const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Response, next: NextFunction): void => {
+    // Check if headers have already been sent
+    if (res.headersSent) {
+        return next(err);
+    }
 
     // Handle Zod validation errors
     if (err instanceof ZodError) {
@@ -26,6 +30,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
                 message: e.message,
             })),
         });
+        return;
     }
 
     // Handle Prisma known errors
@@ -36,6 +41,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
             errorCode: (err as any).code,
             meta: (err as any).meta,
         });
+        return;
     }
 
     // Handle Prisma validation errors (bad queries)
@@ -44,6 +50,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
             status: "error",
             message: "Database validation error",
         });
+        return;
     }
 
     // Handle Prisma unknown errors
@@ -52,6 +59,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
             status: "error",
             message: "Unknown database error",
         });
+        return;
     }
 
     // Handle Prisma client initialization errors
@@ -60,6 +68,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
             status: "error",
             message: "Database initialization failed",
         });
+        return;
     }
 
     // Handle Prisma client panic (Rust engine crash)
@@ -68,6 +77,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
             status: "error",
             message: "Database engine crashed",
         });
+        return;
     }
 
     // Handle custom AppErrors
@@ -77,6 +87,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
             message: err.message,
             errorCode: (err as any).errorCode || "INTERNAL_ERROR",
         });
+        return;
     }
 
     // Handle unexpected errors

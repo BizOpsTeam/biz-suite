@@ -17,7 +17,7 @@ model UserModel {
   id                       String               @id @default(uuid())
   name                     String
   email                    String               @unique
-  role                     String               @default("worker")
+  role                     String               @default("admin")
   password                 String
   createdAt                DateTime             @default(now())
   isEmailVerified          Boolean              @default(false)

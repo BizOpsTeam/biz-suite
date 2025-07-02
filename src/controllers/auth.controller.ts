@@ -9,17 +9,26 @@ import { configDotenv } from "dotenv";
 import appAssert from "../utils/appAssert";
 import { oneHourFromNow } from "../utils/dates";
 import { sendResetPasswordEmail, sendVerificationEmail, updateEmailVerified, verifyEmail, verifyEmailToken } from "../services/email.service";
+import AppError from "../errors/AppError";
 
 configDotenv();
 
 const setRefreshTokenCookie = (token: string, res: Response) => {
-    res.cookie("refreshToken", token, {
+    const isProduction = process.env.NODE_ENV === "production";
+    
+    const cookieOptions = {
         httpOnly: true, 
-        secure: process.env.NODE_ENV === "production", 
-        sameSite: "none", 
+        secure: isProduction, 
+        sameSite: (isProduction ? "none" : "lax") as "none" | "lax", 
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         path: "/auth/refresh"
-    });
+    };
+    
+    console.log("=== Cookie Settings ===");
+    console.log("Cookie options:", cookieOptions);
+    console.log("=======================");
+    
+    res.cookie("refreshToken", token, cookieOptions);
 }
 
 export const registerHandler = catchErrors(async (req, res) => {
@@ -61,10 +70,17 @@ export const loginHandler = catchErrors(async(req, res) => {
     const refreshToken = generateRefreshToken(user.id)
 
     //save the refresh token in the database
-    await saveRefreshToken(refreshToken, user.id)
-
+    await saveRefreshToken(refreshToken, user.id) 
+    
     //set refresh token as httpOnly cookie
     setRefreshTokenCookie(refreshToken, res)
+    
+    // Add debugging for cookie setting
+    console.log("=== Login Debug Info ===");
+    console.log("Setting refresh token cookie for user:", user.id);
+    console.log("Cookie value:", `${refreshToken.substring(0, 20)}...`);
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+    console.log("=========================");
 
     res.status(OK).json({ data: user, accessToken, expiresIn: oneHourFromNow() , message: 'Logged in successfully' })
 } )
@@ -83,8 +99,14 @@ export const logoutHandler = catchErrors(async (req, res) => {
     // revoke all refresh tokens in the database for this user
     await revokeAllRefreshTokensForAUser(user.id);
 
-    //clear refresh token cookie
-    res.clearCookie("refreshToken");
+    //clear refresh token cookie with same settings
+    const isProduction = process.env.NODE_ENV === "production";
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        path: "/auth/refresh"
+    });
     res.status(OK).json({ message: "Logged out successfully" });
 })
 
@@ -92,7 +114,22 @@ export const logoutHandler = catchErrors(async (req, res) => {
 export const refreshTokenHandler = catchErrors(async(req, res) => {
     //get refreshToken from request cookies
     const refreshToken = req.cookies["refreshToken"];
-    appAssert(refreshToken, UNAUTHORIZED, "No refresh token provided");
+    
+    // Add comprehensive debugging information
+    console.log("=== Refresh Token Debug Info ===");
+    console.log("Request method:", req.method);
+    console.log("Request URL:", req.url);
+    console.log("Request headers:", req.headers);
+    console.log("All cookies received:", req.cookies);
+    console.log("Refresh token found:", !!refreshToken);
+    console.log("Refresh token value:", refreshToken ? `${refreshToken.substring(0, 20)}...` : "null");
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+    console.log("================================");
+    
+    if (!refreshToken) {
+        console.log("No refresh token in cookies. Available cookies:", Object.keys(req.cookies));
+        throw new AppError(UNAUTHORIZED, "No refresh token provided", "REFRESH_TOKEN_MISSING");
+    }
 
     //verify the refreshToken in the database
     const userId = await verifyRefreshTokenInDB(refreshToken);

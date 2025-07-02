@@ -6,7 +6,7 @@ export const userSchema = z.object({
     name: z.string().min(1).max(50),
     email: z.string().email(),
     password: z.string().min(8).max(100),
-    role: z.enum(["admin", "worker", "user"]),
+    role: z.enum(["admin", "worker", "user"]).default("admin"),
 })
 
 export const loginSchema = z.object({

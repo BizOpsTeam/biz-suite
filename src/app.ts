@@ -46,9 +46,10 @@ app.use('/products', authenticateUser, productsRoutes)
 //-------user routes---------//
 app.use('/users', authenticateUser, isAdmin, userRoutes)
 
-//---------------error handling---------------------//
+// Not found handler for unmatched routes
 app.use(notFoundHandler)
+
+// Error handling middleware should be last
 app.use(errorHandler)
 
 export default app;
-
