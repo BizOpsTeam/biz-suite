@@ -31,6 +31,15 @@ app.use(cors({
 
 
 //-------------routes-------------------------//
+
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).json({ message: "Hello World" })
+})
+
+app.get("/healthz", (req: Request, res: Response) => {
+  res.status(200).json({ message: "OK" })
+})
+
 //-------auth routes---------//
 app.use('/auth', authRoutes)
 

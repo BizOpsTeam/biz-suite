@@ -1,1 +1,12 @@
-app = "biz-suite-voarww" 
+app = "biz-suite-voarww"
+
+[http_service]
+  internal_port = 3000
+
+  [[http_service.checks]]
+    interval = 10000
+    timeout = 2000
+    grace_period = "5s"
+    method = "get"
+    path = "/healthz"
+    protocol = "http" 
