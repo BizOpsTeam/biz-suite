@@ -247,52 +247,11 @@ const options: swaggerJsdocLib.Options = {
                 }
             },
         },
-        paths: {
-            '/users': {
-                post: {
-                    summary: 'Register a new user (admin, worker, or user)',
-                    tags: ['Users'],
-                    description: 'Creates a new user account and returns an access token.',
-                    requestBody: {
-                        required: true,
-                        content: {
-                            'application/json': {
-                                schema: {
-                                    $ref: '#/components/schemas/RegisterInput'
-                                }
-                            }
-                        }
-                    },
-                    responses: {
-                        201: {
-                            description: 'User registered successfully',
-                            content: {
-                                'application/json': {
-                                    schema: {
-                                        type: 'object',
-                                        properties: {
-                                            data: { $ref: '#/components/schemas/User' },
-                                            accessToken: {
-                                                type: 'string',
-                                                example: 'eyJhbGciOiJIUzI1NiIsInR...'
-                                            },
-                                            message: {
-                                                type: 'string',
-                                                example: 'User registered successfully'
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        400: { description: 'Invalid input data' },
-                        409: { description: 'User already exists' }
-                    }
-                }
-            }
-        }
     },
-    apis: ["src/routes/*.ts"],
+    apis: [
+        "src/routes/*.ts",
+        "src/docs/routes/*.ts"
+    ],
 }
 
 const swaggerSpec = swaggerJsdocLib(options)
