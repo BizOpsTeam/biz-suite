@@ -6,64 +6,44 @@ import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErrors";
 
 
-export async function createCustomerHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    const validated = createCustomerSchema.parse(req.body);
-    const customer = await createCustomer(validated);
-    res.status(201).json({ success: true, data: customer });
-  } catch (err) {
-    next(err);
-  }
-}
+export const createCustomerHandler = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  const validated = createCustomerSchema.parse(req.body);
+  const customer = await createCustomer(validated);
+  res.status(201).json({ success: true, data: customer });
+});
 
-export async function getCustomersHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    const customers = await getCustomers();
-    res.json({ success: true, data: customers });
-  } catch (err) {
-    next(err);
-  }
-}
+export const getCustomersHandler = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  const customers = await getCustomers();
+  res.json({ success: true, data: customers });
+});
 
-export async function getCustomerByIdHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    const { id } = req.params;
-    const customer = await getCustomerById(id);
-    if (customer == null) {
-      return res.status(404).json({ success: false, message: "Customer not found" });
-    }
-    res.json({ success: true, data: customer });
-  } catch (err) {
-    next(err);
+export const getCustomerByIdHandler = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const customer = await getCustomerById(id);
+  if (customer == null) {
+    return res.status(404).json({ success: false, message: "Customer not found" });
   }
-}
+  res.json({ success: true, data: customer });
+});
 
-export async function updateCustomerHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    const { id } = req.params;
-    const validated = updateCustomerSchema.parse(req.body);
-    const customer = await updateCustomer(id, validated);
-    if (customer == null) {
-      return res.status(404).json({ success: false, message: "Customer not found" });
-    }
-    res.json({ success: true, data: customer });
-  } catch (err) {
-    next(err);
+export const updateCustomerHandler = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const validated = updateCustomerSchema.parse(req.body);
+  const customer = await updateCustomer(id, validated);
+  if (customer == null) {
+    return res.status(404).json({ success: false, message: "Customer not found" });
   }
-}
+  res.json({ success: true, data: customer });
+});
 
-export async function deleteCustomerHandler(req: Request, res: Response, next: NextFunction) {
-  try {
-    const { id } = req.params;
-    const customer = await deleteCustomer(id);
-    if (customer == null) {
-      return res.status(404).json({ success: false, message: "Customer not found" });
-    }
-    res.json({ success: true, message: "Customer deleted" });
-  } catch (err) {
-    next(err);
+export const deleteCustomerHandler = catchErrors(async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const customer = await deleteCustomer(id);
+  if (customer == null) {
+    return res.status(404).json({ success: false, message: "Customer not found" });
   }
-}
+  res.json({ success: true, message: "Customer deleted" });
+});
 
 
 

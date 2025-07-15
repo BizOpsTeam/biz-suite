@@ -12,6 +12,7 @@ import { authenticateUser } from './middlewares/authenticateUser';
 import invoicesRoutes from './routes/invoices.routes';
 import userRoutes from './routes/user.routes';
 import { isAdmin, isWorker } from './middlewares/verifyUserRole';
+import analyticsRoutes from './routes/analytics.routes';
 
 
 const app = express();
@@ -54,6 +55,9 @@ app.use('/products', authenticateUser, productsRoutes)
 
 //-------user routes---------//
 app.use('/users', authenticateUser, isAdmin, userRoutes)
+
+//-------analytics routes---------//
+app.use('/analytics', authenticateUser, isAdmin, analyticsRoutes);
 
 // Not found handler for unmatched routes
 app.use(notFoundHandler)
