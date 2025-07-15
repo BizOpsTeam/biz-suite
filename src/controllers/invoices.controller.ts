@@ -1,8 +1,10 @@
 import prisma from "../config/db";
 import { OK, UNAUTHORIZED } from "../constants/http";
-import { getInvoices, searchProducts } from "../services/invoices.service";
+import { getInvoices, searchProducts, updateInvoicePayment } from "../services/invoices.service";
 import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErrors";
+import { updateInvoicePaymentSchema } from "../zodSchema/invoice.zodSchema";
+import { Request, Response, NextFunction } from "express";
 
 export const getInvoicesHandler = catchErrors(async (req, res) => {
     const ownerId = req.user?.id
@@ -25,3 +27,14 @@ export const productSearchHandler = catchErrors(async (req, res) => {
 
     return res.status(OK).json({ data: searchResults, message: "search results returned sucessfully" })
 })
+
+export async function updateInvoicePaymentHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { id } = req.params;
+    const validated = updateInvoicePaymentSchema.parse(req.body);
+    const invoice = await updateInvoicePayment(id, validated);
+    res.json({ success: true, data: invoice });
+  } catch (err) {
+    next(err);
+  }
+}

@@ -1,8 +1,19 @@
 import { Router } from "express";
-import { registerHandler } from "../controllers/auth.controller";
+import {
+  createCustomerHandler,
+  getCustomersHandler,
+  getCustomerByIdHandler,
+  updateCustomerHandler,
+  deleteCustomerHandler
+} from "../controllers/user.controller";
 
-const userRoutes = Router();
+const router = Router();
 
-userRoutes.post("/", registerHandler);
+// Customer routes
+router.post("/customers", createCustomerHandler);
+router.get("/customers", getCustomersHandler);
+router.get("/customers/:id", getCustomerByIdHandler);
+router.patch("/customers/:id", updateCustomerHandler);
+router.delete("/customers/:id", deleteCustomerHandler);
 
-export default userRoutes;
+export default router;

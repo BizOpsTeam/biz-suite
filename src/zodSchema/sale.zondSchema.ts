@@ -12,7 +12,7 @@ export const saleItemSchema = z.object({
 })
 
 export const saleSchema = z.object({
-    customerName : z.string().min(3).max(50),
+    customerId: z.string().min(1, "Customer ID is required"),
     paymentMethod: PaymentMethodEnum,
     channel: z.string(),
     notes: z.string().max(300),

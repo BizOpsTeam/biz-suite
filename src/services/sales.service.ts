@@ -22,12 +22,19 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
                 where: { id: item.productId },
                 data: { stock: { decrement: item.quantity } },
             });
+
+            // Low stock alert (threshold: 5)
+            const updatedProduct = await tx.product.findUnique({ where: { id: item.productId } });
+            if (updatedProduct && updatedProduct.stock < 5) {
+                console.warn(`LOW STOCK ALERT: Product ${updatedProduct.id} has only ${updatedProduct.stock} left.`);
+                // Optionally, trigger notification/email here
+            }
         }
 
         const newSale = await tx.sale.create({
             data: {
                 channel: saleData.channel,
-                customerName: saleData.customerName,
+                customerId: saleData.customerId,
                 discount: saleData.totalDiscount,
                 paymentMethod: saleData.paymentMethod,
                 taxAmount: saleData.totalAmount,
@@ -49,17 +56,7 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
 
         await tx.saleItem.createMany({ data: saleItemsData })
 
-        //reduce stock
-        for (const item of saleData.items) {
-            await tx.product.update({
-                where: { id: item.productId },
-                data: {
-                    stock: {
-                        decrement: item.quantity,
-                    },
-                },
-            });
-        }
+        // Removed duplicate stock decrement here
 
         //create an invoice if sale status is credit
         if (newSale.status === "pending") {
@@ -181,6 +178,15 @@ export const deleteSale = async(saleId: string, ownerId: string) => {
 
     if(!sale || sale.ownerId !== ownerId){
         throw new AppError(BAD_REQUEST, "Sale not found or access denied")
+    }
+
+    // Restore stock for each product in the sale
+    const saleItems = await prisma.saleItem.findMany({ where: { saleId } });
+    for (const item of saleItems) {
+        await prisma.product.update({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } },
+        });
     }
 
     return await prisma.sale.delete({ where: { id: saleId }})

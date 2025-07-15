@@ -11,14 +11,14 @@ export const addSaleHandler = catchErrors(async (req: Request, res: Response) =>
     appAssert(userId, UNAUTHORIZED, "unauthorized, login to create a sale")
 
     const { body } = req;
-    const { customerName, items, paymentMethod, channel, notes } = saleSchema.parse(body);
+    const { customerId, items, paymentMethod, channel, notes } = saleSchema.parse(body);
 
     const totalAmount = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     const totalTax = items.reduce((sum, item) => sum + item.tax * item.quantity, 0)
     const totalDiscount = items.reduce((sum, item) => sum + item.discount, 0)
 
     // Create sale
-    const sale = await createSale({customerName, items, channel, notes, paymentMethod, totalAmount, totalDiscount, totalTax}, userId)
+    const sale = await createSale({customerId, items, channel, notes, paymentMethod, totalAmount, totalDiscount, totalTax}, userId)
 
     res.status(CREATED).json({ data: sale, message: "Sale added successfully" });
 })

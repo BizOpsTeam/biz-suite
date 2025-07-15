@@ -40,7 +40,7 @@ export interface IProductCategoryData {
 }
 
 export type TSaleData = {
-    customerName: string
+    customerId: string
     items: ISaleItemData[]
     paymentMethod: PaymentMethod
     totalAmount: number

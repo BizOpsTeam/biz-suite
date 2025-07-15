@@ -104,7 +104,6 @@ enum PaymentMethod {
 
 model Sale {
   id            String        @id @default(uuid())
-  customerName  String
   totalAmount   Float
   taxAmount     Float
   discount      Float
@@ -118,6 +117,8 @@ model Sale {
   owner         UserModel     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
 }
 
 model SaleItem {
@@ -133,6 +134,12 @@ model SaleItem {
   createdAt DateTime @default(now())
 }
 
+enum InvoiceStatus {
+  UNPAID
+  PARTIAL
+  PAID
+}
+
 model Invoice {
   id            String    @id @default(uuid())
   invoiceNumber String    @unique
@@ -145,4 +152,18 @@ model Invoice {
   isPaid        Boolean   @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  status        InvoiceStatus @default(UNPAID)
+  paidAmount    Float     @default(0)
+  paidAt        DateTime?
+}
+
+model Customer {
+  id        String    @id @default(uuid())
+  name      String
+  email     String    @unique
+  phone     String?
+  address   String?
+  sales     Sale[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }

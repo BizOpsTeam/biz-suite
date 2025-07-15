@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { getInvoicesHandler } from "../controllers/invoices.controller";
+import { getInvoicesHandler, updateInvoicePaymentHandler } from "../controllers/invoices.controller";
 
 const invoicesRoutes = Router()
 
 invoicesRoutes.get('/', getInvoicesHandler)
+invoicesRoutes.patch('/:id/payment', updateInvoicePaymentHandler);
 
 export default invoicesRoutes

@@ -13,3 +13,17 @@ export const loginSchema = z.object({
     email: z.string().email(),
     password: z.string().min(8).max(100),
 })
+
+export const createCustomerSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+});
+
+export const updateCustomerSchema = z.object({
+  name: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+});

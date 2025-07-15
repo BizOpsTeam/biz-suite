@@ -178,9 +178,9 @@ const options: swaggerJsdocLib.Options = {
                 },
                 SaleInput: {
                     type: 'object',
-                    required: ['customerName', 'items', 'paymentMethod', 'channel'],
+                    required: ['customerId', 'items', 'paymentMethod', 'channel'],
                     properties: {
-                        customerName: { type: 'string' },
+                        customerId: { type: 'string' },
                         items: {
                             type: 'array',
                             items: { $ref: '#/components/schemas/SaleItemInput' }
@@ -208,7 +208,7 @@ const options: swaggerJsdocLib.Options = {
                     type: 'object',
                     properties: {
                         id: { type: 'string' },
-                        customerName: { type: 'string' },
+                        customerId: { type: 'string' },
                         channel: { type: 'string' },
                         paymentMethod: { type: 'string' },
                         discount: { type: 'number' },
