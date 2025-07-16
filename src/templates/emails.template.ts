@@ -1,5 +1,6 @@
-
-export const emailVerificationTemplate = (verficationUrl: string) => (`<!DOCTYPE html>
+export const emailVerificationTemplate = (
+    verficationUrl: string,
+) => `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -64,9 +65,9 @@ export const emailVerificationTemplate = (verficationUrl: string) => (`<!DOCTYPE
     </div>
 </body>
 </html>
-`)
+`;
 
-export const emailVerifiedSuccessfullyTemplate = () => (`
+export const emailVerifiedSuccessfullyTemplate = () => `
     <!DOCTYPE html>
 <html>
 <head>
@@ -256,9 +257,11 @@ export const emailVerifiedSuccessfullyTemplate = () => (`
     </div>
 </body>
 </html>
-`)
+`;
 
-export const resetPasswordTemplate = (resetPasswordUrl: string) => (`<!DOCTYPE html>
+export const resetPasswordTemplate = (
+    resetPasswordUrl: string,
+) => `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -330,4 +333,4 @@ export const resetPasswordTemplate = (resetPasswordUrl: string) => (`<!DOCTYPE h
 
 </body>
 </html>
-`)
+`;

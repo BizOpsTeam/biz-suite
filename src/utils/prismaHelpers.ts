@@ -1,17 +1,22 @@
-import { format } from "date-fns"
-import prisma from "../config/db"
+import { format } from "date-fns";
+import prisma from "../config/db";
 
-export const generateInvoiceNumber = async() => {
-    const today = format(new Date(), "yyyyMMdd")
+export const generateInvoiceNumber = async (ownerId: string) => {
+    // Fetch user profile for numbering settings
+    const user = await prisma.userModel.findUnique({ where: { id: ownerId } });
+    if (!user) throw new Error("User not found for invoice numbering");
+    const prefix = user.invoicePrefix || "INV-";
+    const suffix = user.invoiceSuffix || "";
+    const sequence = user.invoiceSequenceNext || 1;
 
-    const todayCount = await prisma.invoice.count({
-        where: {
-            createdAt: {
-                gte: new Date(`${today.slice(0,4)}-${today.slice(4,6)}-${today.slice(6,8)}T00:00:00z`)
-            }
-        }
-    })
+    // Build invoice number
+    const invoiceNumber = `${prefix}${sequence}${suffix}`;
 
-    const padded = String(todayCount + 1).padStart(3,"0")
-    return `INV-${today}-${padded}`
-}
+    // Increment sequence for next invoice
+    await prisma.userModel.update({
+        where: { id: ownerId },
+        data: { invoiceSequenceNext: sequence + 1 },
+    });
+
+    return invoiceNumber;
+};

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+      background: #f6f8fa;
+      margin: 0;
+      padding: 0;
+      color: #222;
+    }
+    .invoice-container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 40px 32px 32px 32px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #eaeaea;
+      padding-bottom: 18px;
+      margin-bottom: 32px;
+    }
+    .company-details {
+      font-size: 1.1em;
+      line-height: 1.5;
+    }
+    .company-logo {
+      height: 60px;
+      object-fit: contain;
+    }
+    .invoice-title {
+      font-size: 2em;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 8px;
+    }
+    .info-table {
+      width: 100%;
+      margin-bottom: 32px;
+      font-size: 1em;
+    }
+    .info-table td {
+      padding: 4px 0;
+    }
+    .section-title {
+      font-size: 1.1em;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 8px;
+      margin-top: 24px;
+    }
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    .items-table th, .items-table td {
+      border: 1px solid #e2e8f0;
+      padding: 10px 8px;
+      text-align: left;
+    }
+    .items-table th {
+      background: #f7fafc;
+      font-weight: 600;
+      color: #2d3748;
+    }
+    .items-table tr:last-child td {
+      border-bottom: 2px solid #2b6cb0;
+    }
+    .summary-table {
+      width: 100%;
+      margin-bottom: 24px;
+      font-size: 1em;
+    }
+    .summary-table td {
+      padding: 6px 0;
+    }
+    .summary-table .label {
+      color: #4a5568;
+    }
+    .summary-table .value {
+      text-align: right;
+      font-weight: 600;
+    }
+    .total-row td {
+      font-size: 1.2em;
+      font-weight: 700;
+      color: #2b6cb0;
+      border-top: 2px solid #2b6cb0;
+      padding-top: 12px;
+    }
+    .footer {
+      margin-top: 32px;
+      text-align: center;
+      color: #718096;
+      font-size: 0.95em;
+    }
+    .thank-you {
+      font-size: 1.1em;
+      color: #2b6cb0;
+      font-weight: 600;
+      margin-top: 18px;
+    }
+    @media (max-width: 600px) {
+      .invoice-container {
+        padding: 16px 4px;
+      }
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .company-logo {
+        margin-bottom: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="invoice-container">
+    <div class="header">
+      <div class="company-details">
+        <img src="{{companyLogoUrl}}" alt="Company Logo" class="company-logo" />
+        <div><strong>{{companyName}}</strong></div>
+        <div>{{companyAddress}}</div>
+        <div>{{companyEmail}}</div>
+        <div>{{companyPhone}}</div>
+      </div>
+      <div style="text-align: right;">
+        <div class="invoice-title">INVOICE</div>
+        <div><strong>Invoice #:</strong> {{invoiceNumber}}</div>
+        <div><strong>Date:</strong> {{invoiceDate}}</div>
+        <div><strong>Due Date:</strong> {{dueDate}}</div>
+        <div><strong>Status:</strong> {{status}}</div>
+        <div><strong>Currency:</strong> {{currencyCode}}</div>
+      </div>
+    </div>
+
+    <table class="info-table">
+      <tr>
+        <td>
+          <div class="section-title">Billed To</div>
+          <div><strong>{{customerName}}</strong></div>
+          <div>{{customerAddress}}</div>
+          <div>{{customerEmail}}</div>
+          <div>{{customerPhone}}</div>
+        </td>
+        <td>
+          <div class="section-title">Payment</div>
+          <div><strong>Method:</strong> {{paymentMethod}}</div>
+          <div><strong>Reference:</strong> {{paymentReference}}</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="section-title">Items</div>
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Description</th>
+          <th>Qty</th>
+          <th>Unit Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each items}}
+        <tr>
+          <td>{{@index}}</td>
+          <td>{{description}}</td>
+          <td>{{quantity}}</td>
+          <td>{{currencySymbol}}{{unitPrice}}</td>
+          <td>{{currencySymbol}}{{total}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    <table class="summary-table">
+      <tr>
+        <td class="label">Subtotal</td>
+        <td class="value">{{currencySymbol}}{{subtotal}}</td>
+      </tr>
+      <tr>
+        <td class="label">Discount</td>
+        <td class="value">{{currencySymbol}}{{discount}}</td>
+      </tr>
+      <tr>
+        <td class="label">Tax</td>
+        <td class="value">{{currencySymbol}}{{tax}}</td>
+      </tr>
+      <tr class="total-row">
+        <td class="label">Total</td>
+        <td class="value">{{currencySymbol}}{{total}}</td>
+      </tr>
+      <tr>
+        <td class="label">Amount Paid</td>
+        <td class="value">{{currencySymbol}}{{amountPaid}}</td>
+      </tr>
+      <tr>
+        <td class="label">Balance Due</td>
+        <td class="value">{{currencySymbol}}{{balanceDue}}</td>
+      </tr>
+    </table>
+
+    <div class="thank-you">Thank you for your business!</div>
+    <div class="footer">
+      <div>{{footerNote}}</div>
+      <div>For support, contact <a href="mailto:{{supportEmail}}">{{supportEmail}}</a></div>
+    </div>
+  </div>
+</body>
+</html> 

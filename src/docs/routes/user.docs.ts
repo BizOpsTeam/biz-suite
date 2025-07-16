@@ -216,4 +216,104 @@ export const userDocs = `
  *       401:
  *         description: Unauthorized
  */
-`; 
+
+/**
+ * @swagger
+ * /users/profile:
+ *   patch:
+ *     summary: Update the authenticated user's profile (branding fields)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Acme Corp
+ *               logoUrl:
+ *                 type: string
+ *                 format: url
+ *                 example: https://example.com/logo.png
+ *               companyAddress:
+ *                 type: string
+ *                 example: 123 Main St, City, Country
+ *               companyPhone:
+ *                 type: string
+ *                 example: '+1234567890'
+ *               invoicePrefix:
+ *                 type: string
+ *                 example: "ACME-"
+ *                 description: Prefix for invoice numbers (e.g., "INV-", "ACME-")
+ *               invoiceSuffix:
+ *                 type: string
+ *                 example: "-2024"
+ *                 description: Suffix for invoice numbers (e.g., "-A", "-2024")
+ *               invoiceSequenceStart:
+ *                 type: integer
+ *                 example: 1000
+ *                 description: Starting number for invoice sequence (first invoice will use this)
+ *               invoiceSequenceNext:
+ *                 type: integer
+ *                 example: 1001
+ *                 description: Next invoice sequence number (auto-incremented by system)
+ *     responses:
+ *       200:
+ *         description: User profile updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/UserModel'
+ *       400:
+ *         description: Invalid input data
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @swagger
+ * /users/profile/logo:
+ *   post:
+ *     summary: Upload a company logo (Cloudinary)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               logo:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file (jpg, png, gif, webp, max 2MB)
+ *     responses:
+ *       200:
+ *         description: Logo uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 url:
+ *                   type: string
+ *                   format: url
+ *       400:
+ *         description: No file uploaded or upload failed
+ *       401:
+ *         description: Unauthorized
+ */
+`;

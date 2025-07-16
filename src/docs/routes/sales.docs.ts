@@ -128,4 +128,4 @@ export const salesDocs = `
  *       404:
  *         description: Sale not found
  */
-`; 
+`;

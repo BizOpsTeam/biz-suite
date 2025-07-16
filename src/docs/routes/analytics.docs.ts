@@ -21,7 +21,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year, custom]
  *         required: false
- *         description: Period to aggregate sales (default: month)
+ *         description: "Period to aggregate sales (default: month)"
  *       - in: query
  *         name: startDate
  *         schema:
@@ -91,7 +91,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year, custom]
  *         required: false
- *         description: Period to group sales (default: month)
+ *         description: "Period to group sales (default: month)"
  *       - in: query
  *         name: startDate
  *         schema:
@@ -146,7 +146,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year, custom]
  *         required: false
- *         description: Period to group sales (default: month)
+ *         description: "Period to group sales (default: month)"
  *       - in: query
  *         name: startDate
  *         schema:
@@ -201,7 +201,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year, custom]
  *         required: false
- *         description: Period to group sales (default: month)
+ *         description: "Period to group sales (default: month)"
  *       - in: query
  *         name: startDate
  *         schema:
@@ -256,7 +256,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year, custom]
  *         required: false
- *         description: Period to aggregate sales (default: month)
+ *         description: "Period to aggregate sales (default: month)"
  *       - in: query
  *         name: startDate
  *         schema:
@@ -326,7 +326,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year, custom]
  *         required: false
- *         description: Period to aggregate sales (default: month)
+ *         description: "Period to aggregate sales (default: month)"
  *       - in: query
  *         name: startDate
  *         schema:
@@ -381,7 +381,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year, custom]
  *         required: false
- *         description: Period to aggregate sales (default: month)
+ *         description: "Period to aggregate sales (default: month)"
  *       - in: query
  *         name: startDate
  *         schema:
@@ -440,7 +440,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year, custom]
  *         required: false
- *         description: Period to check for stockouts (default: month)
+ *         description: "Period to check for stockouts (default: month)"
  *       - in: query
  *         name: startDate
  *         schema:
@@ -506,7 +506,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year, custom]
  *         required: false
- *         description: Period to check for slow-moving inventory (default: month)
+ *         description: "Period to check for slow-moving inventory (default: month)"
  *       - in: query
  *         name: startDate
  *         schema:
@@ -527,7 +527,7 @@ export const analyticsDocs = `
  *           type: integer
  *           default: 5
  *         required: false
- *         description: Sales threshold for slow-moving (default: 5)
+ *         description: "Sales threshold for slow-moving (default: 5)"
  *     responses:
  *       200:
  *         description: List of slow-moving products
@@ -574,7 +574,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year]
  *         required: false
- *         description: Period to forecast (default: month)
+ *         description: "Period to forecast (default: month)"
  *       - in: query
  *         name: horizon
  *         schema:
@@ -588,7 +588,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [auto, moving-average, linear]
  *         required: false
- *         description: Forecasting method (default: auto)
+ *         description: "Forecasting method (default: auto)"
  *     responses:
  *       200:
  *         description: Forecasted sales totals
@@ -629,7 +629,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year]
  *         required: false
- *         description: Period to forecast (default: month)
+ *         description: "Period to forecast (default: month)"
  *       - in: query
  *         name: horizon
  *         schema:
@@ -643,7 +643,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [auto, moving-average, linear]
  *         required: false
- *         description: Forecasting method (default: auto)
+ *         description: "Forecasting method (default: auto)"
  *       - in: query
  *         name: productId
  *         schema:
@@ -710,7 +710,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [day, week, month, year]
  *         required: false
- *         description: Period to forecast (default: month)
+ *         description: "Period to forecast (default: month)"
  *       - in: query
  *         name: horizon
  *         schema:
@@ -724,7 +724,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [auto, moving-average, linear]
  *         required: false
- *         description: Forecasting method (default: auto)
+ *         description: "Forecasting method (default: auto)"
  *     responses:
  *       200:
  *         description: Products at risk of stockout
@@ -777,7 +777,7 @@ export const analyticsDocs = `
  *           type: string
  *           enum: [week, month, year]
  *         required: false
- *         description: Period to analyze for seasonality (default: month)
+ *         description: "Period to analyze for seasonality (default: month)"
  *       - in: query
  *         name: productId
  *         schema:
@@ -816,4 +816,4 @@ export const analyticsDocs = `
  *       401:
  *         description: Unauthorized
  */
-`; 
+`;

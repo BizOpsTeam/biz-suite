@@ -7,4 +7,4 @@ export const adminDocs = `
  *   name: Admin
  *   description: Admin-only endpoints (currently none defined)
  */
-`; 
+`;

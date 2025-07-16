@@ -1,20 +1,25 @@
-import { Request, Response, NextFunction, ErrorRequestHandler } from "express"
-import AppError from "../errors/AppError"
-import dotenv from "dotenv"
-import { ZodError } from "zod"
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "../constants/http"
+import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
+import AppError from "../errors/AppError";
+import dotenv from "dotenv";
+import { ZodError } from "zod";
+import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "../constants/http";
 // import { Prisma } from "@prisma/client"
 import {
-  PrismaClientKnownRequestError,
-  PrismaClientValidationError,
-  PrismaClientUnknownRequestError,
-  PrismaClientInitializationError,
-  PrismaClientRustPanicError
-} from '@prisma/client/runtime/library';
+    PrismaClientKnownRequestError,
+    PrismaClientValidationError,
+    PrismaClientUnknownRequestError,
+    PrismaClientInitializationError,
+    PrismaClientRustPanicError,
+} from "@prisma/client/runtime/library";
 
-dotenv.config()
+dotenv.config();
 
-const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Response, next: NextFunction): void => {
+const errorHandler: ErrorRequestHandler = (
+    err: Error,
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): void => {
     // Check if headers have already been sent
     if (res.headersSent) {
         return next(err);
@@ -25,7 +30,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
         res.status(BAD_REQUEST).json({
             status: "error",
             message: "Validation failed",
-            errors: err.errors.map(e => ({
+            errors: err.errors.map((e) => ({
                 field: e.path.join("."),
                 message: e.message,
             })),
@@ -46,7 +51,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
 
     // Handle Prisma validation errors (bad queries)
     if (err instanceof PrismaClientValidationError) {
-         res.status(400).json({
+        res.status(400).json({
             status: "error",
             message: "Database validation error",
         });
@@ -64,7 +69,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
 
     // Handle Prisma client initialization errors
     if (err instanceof PrismaClientInitializationError) {
-         res.status(500).json({
+        res.status(500).json({
             status: "error",
             message: "Database initialization failed",
         });
@@ -73,7 +78,7 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
 
     // Handle Prisma client panic (Rust engine crash)
     if (err instanceof PrismaClientRustPanicError) {
-         res.status(500).json({
+        res.status(500).json({
             status: "error",
             message: "Database engine crashed",
         });
@@ -96,6 +101,6 @@ const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Respon
         status: "error",
         message: "Something went wrong",
     });
-}
+};
 
-export default errorHandler
+export default errorHandler;

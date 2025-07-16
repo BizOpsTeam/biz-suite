@@ -29,6 +29,17 @@ model UserModel {
   ownedSales               Sale[]
   ownedCategories          Category[]
   Invoice                  Invoice[]
+  logoUrl                  String?              // Company logo URL
+  companyAddress           String?              // Company address
+  companyPhone             String?              // Company phone number
+  defaultCurrencyCode      String?              // Default currency code (e.g., USD)
+  defaultCurrencySymbol    String?              // Default currency symbol (e.g., $)
+  defaultTaxRate           Float?               // Default tax rate (e.g., 0.075 for 7.5%)
+  invoicePrefix            String?              // Invoice number prefix
+  invoiceSuffix            String?              // Invoice number suffix
+  invoiceSequenceStart     Int?                 @default(1) // Invoice sequence start
+  invoiceSequenceNext      Int?                 @default(1) // Next invoice sequence number
+  auditLogs                InvoiceAudit[]        // Audit logs for user actions
 }
 
 
@@ -155,6 +166,28 @@ model Invoice {
   status        InvoiceStatus @default(UNPAID)
   paidAmount    Float     @default(0)
   paidAt        DateTime?
+  currencyCode  String    // e.g., "USD", "EUR", "NGN"
+  currencySymbol String   // e.g., "$", "₦"
+  taxRate       Float     @default(0) // e.g., 0.075 for 7.5%
+  taxAmount     Float     @default(0)
+  auditLogs     InvoiceAudit[]        // Audit logs for this invoice
+}
+
+enum InvoiceAuditEventType {
+  VIEWED
+  DOWNLOADED
+  EMAILED
+}
+
+model InvoiceAudit {
+  id          String                @id @default(uuid())
+  invoiceId   String
+  invoice     Invoice              @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        UserModel?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  eventType   InvoiceAuditEventType
+  eventDetails String?
+  createdAt   DateTime             @default(now())
 }
 
 model Customer {

@@ -8,30 +8,31 @@ configDotenv();
 
 // Define interface for the user property on Request
 declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-      };
+    namespace Express {
+        interface Request {
+            user?: {
+                id: string;
+            };
+        }
     }
-  }
 }
 
 export const authenticateUser: RequestHandler = (
-  req: Request, 
-  res: Response, 
-  next: NextFunction
+    req: Request,
+    res: Response,
+    next: NextFunction,
 ) => {
-    console.log(req.cookies)
+    console.log(req.cookies);
 
-  const accessToken = req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
-  appAssert(accessToken, UNAUTHORIZED, "No access token provided");
-  
-  const payload = verifyAccessToken(accessToken);
-  appAssert(payload, UNAUTHORIZED, "Invalid access token");
-  
-  // Attach the user ID to the request object
-  req.user = { id: payload.id };
-  
-  next();
+    const accessToken =
+        req.cookies.accessToken || req.headers.authorization?.split(" ")[1];
+    appAssert(accessToken, UNAUTHORIZED, "No access token provided");
+
+    const payload = verifyAccessToken(accessToken);
+    appAssert(payload, UNAUTHORIZED, "Invalid access token");
+
+    // Attach the user ID to the request object
+    req.user = { id: payload.id };
+
+    next();
 };

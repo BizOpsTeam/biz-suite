@@ -223,4 +223,4 @@ export const productsDocs = `
  *       401:
  *         description: Unauthorized
  */
-`; 
+`;

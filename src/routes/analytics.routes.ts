@@ -1,18 +1,18 @@
 import { Router } from "express";
 import {
-  getTopProductsHandler,
-  getSalesOverTimeHandler,
-  getSalesByChannelHandler,
-  getSalesByPaymentMethodHandler,
-  getTopCustomersHandler,
-  getAverageOrderValueHandler,
-  getDiscountImpactHandler,
-  getStockoutsHandler,
-  getSlowMovingInventoryHandler,
-  getSalesForecastHandler,
-  getProductSalesForecastHandler,
-  getStockoutForecastHandler,
-  getSeasonalityHandler
+    getTopProductsHandler,
+    getSalesOverTimeHandler,
+    getSalesByChannelHandler,
+    getSalesByPaymentMethodHandler,
+    getTopCustomersHandler,
+    getAverageOrderValueHandler,
+    getDiscountImpactHandler,
+    getStockoutsHandler,
+    getSlowMovingInventoryHandler,
+    getSalesForecastHandler,
+    getProductSalesForecastHandler,
+    getStockoutForecastHandler,
+    getSeasonalityHandler,
 } from "../controllers/analytics.controller";
 
 const analyticsRoutes = Router();
@@ -31,4 +31,4 @@ analyticsRoutes.get("/forecast/product-sales", getProductSalesForecastHandler);
 analyticsRoutes.get("/forecast/stockouts", getStockoutForecastHandler);
 analyticsRoutes.get("/forecast/seasonality", getSeasonalityHandler);
 
-export default analyticsRoutes; 
+export default analyticsRoutes;

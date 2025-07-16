@@ -205,4 +205,4 @@ export const authDocs = `
  *       404:
  *         description: Invalid or expired reset password token
  */
-`; 
+`;

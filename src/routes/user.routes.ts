@@ -1,10 +1,12 @@
 import { Router } from "express";
 import {
-  createCustomerHandler,
-  getCustomersHandler,
-  getCustomerByIdHandler,
-  updateCustomerHandler,
-  deleteCustomerHandler
+    createCustomerHandler,
+    getCustomersHandler,
+    getCustomerByIdHandler,
+    updateCustomerHandler,
+    deleteCustomerHandler,
+    updateUserProfileHandler,
+    uploadLogoHandler,
 } from "../controllers/user.controller";
 
 const router = Router();
@@ -15,5 +17,7 @@ router.get("/customers", getCustomersHandler);
 router.get("/customers/:id", getCustomerByIdHandler);
 router.patch("/customers/:id", updateCustomerHandler);
 router.delete("/customers/:id", deleteCustomerHandler);
+router.patch("/profile", updateUserProfileHandler);
+router.post("/profile/logo", uploadLogoHandler);
 
 export default router;
