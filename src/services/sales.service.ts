@@ -5,6 +5,7 @@ import { TSaleData } from "../constants/types";
 import AppError from "../errors/AppError";
 import { generateInvoiceNumber } from "../utils/prismaHelpers";
 import { Prisma } from "@prisma/client";
+import { createReceiptForInvoice } from './receipts.service';
 
 export const createSale = async (saleData: TSaleData, ownerId: string) => {
     const sale = await prisma.$transaction(
@@ -67,28 +68,29 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
 
             await tx.saleItem.createMany({ data: saleItemsData });
 
-            // Removed duplicate stock decrement here
+            // Always create an invoice for every sale
+            const invoiceNumber = await generateInvoiceNumber(ownerId);
+            const newInvoice = await tx.invoice.create({
+                data: {
+                    saleId: newSale.id,
+                    invoiceNumber: invoiceNumber,
+                    amountDue: newSale.totalAmount,
+                    ownerId: ownerId,
+                    dueDate: new Date(), //::Todo: will be updatad later
+                    currencyCode: saleData.currencyCode,
+                    currencySymbol: saleData.currencySymbol,
+                    taxRate: saleData.taxRate,
+                    taxAmount: saleData.totalTax,
+                },
+            });
 
-            //create an invoice if sale status is credit
-            if (newSale.status === "pending") {
-                const invoiceNumber = await generateInvoiceNumber(ownerId);
-                const newInvoice = await tx.invoice.create({
-                    data: {
-                        saleId: newSale.id,
-                        invoiceNumber: invoiceNumber,
-                        amountDue: newSale.totalAmount,
-                        ownerId: ownerId,
-                        dueDate: new Date(), //::Todo: will be updatad later
-                        currencyCode: saleData.currencyCode,
-                        currencySymbol: saleData.currencySymbol,
-                        taxRate: saleData.taxRate,
-                        taxAmount: saleData.totalTax,
-                    },
-                });
-                return { newSale, newInvoice };
+            // If payment method is not CREDIT, create a receipt
+            let newReceipt = null;
+            if (saleData.paymentMethod !== "CREDIT") {
+                newReceipt = await createReceiptForInvoice(newInvoice.id, ownerId);
             }
 
-            return newSale;
+            return { newSale, newInvoice, newReceipt };
         },
     );
 

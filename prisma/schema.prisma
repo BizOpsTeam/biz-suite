@@ -40,6 +40,7 @@ model UserModel {
   invoiceSequenceStart     Int?                 @default(1) // Invoice sequence start
   invoiceSequenceNext      Int?                 @default(1) // Next invoice sequence number
   auditLogs                InvoiceAudit[]        // Audit logs for user actions
+  receipts                 Receipt[]             // Receipts issued by this user
 }
 
 
@@ -171,6 +172,7 @@ model Invoice {
   taxRate       Float     @default(0) // e.g., 0.075 for 7.5%
   taxAmount     Float     @default(0)
   auditLogs     InvoiceAudit[]        // Audit logs for this invoice
+  receipt       Receipt?              // Receipt for this invoice
 }
 
 enum InvoiceAuditEventType {
@@ -188,6 +190,20 @@ model InvoiceAudit {
   eventType   InvoiceAuditEventType
   eventDetails String?
   createdAt   DateTime             @default(now())
+}
+
+model Receipt {
+  id             String   @id @default(uuid())
+  receiptNumber  String   @unique
+  issuedAt       DateTime @default(now())
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id])
+  invoiceId      String   @unique
+  issuedBy       UserModel? @relation(fields: [issuedById], references: [id])
+  issuedById     String?
+  emailed        Boolean  @default(false)
+  emailedAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Customer {

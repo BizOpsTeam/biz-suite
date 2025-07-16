@@ -129,8 +129,8 @@ export const updateCategoryHandler = catchErrors(async (req, res) => {
         categoryId,
         updateData,
     );
-    res.status(204).json({
-        data: updateCategory,
+    res.status(OK).json({
+        data: updatedCategory,
         message: "category updated successfully",
     });
 });
