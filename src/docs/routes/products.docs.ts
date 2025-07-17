@@ -163,85 +163,6 @@ export const productsDocs = `
 
 /**
  * @swagger
- * /products/category:
- *   get:
- *     summary: Get all product categories
- *     tags: [Products]
- *     responses:
- *       200:
- *         description: List of product categories
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/ProductCategory'
- *                 message:
- *                   type: string
- */
-
-/**
- * @swagger
- * /products/category/{id}:
- *   get:
- *     summary: Get a product category by ID
- *     tags: [Products]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: Category ID
- *     responses:
- *       200:
- *         description: Product category fetched successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   $ref: '#/components/schemas/ProductCategory'
- *                 message:
- *                   type: string
- *       400:
- *         description: Product category ID is required
- */
-
-/**
- * @swagger
- * /products/category/{id}:
- *   patch:
- *     summary: Update a product category by ID
- *     tags: [Products]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: Category ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ProductCategoryInput'
- *     responses:
- *       204:
- *         description: Category updated successfully
- *       401:
- *         description: Unauthorized
- */
-
-/**
- * @swagger
  * /products/search:
  *   get:
  *     summary: Search products
@@ -256,38 +177,6 @@ export const productsDocs = `
  *     responses:
  *       200:
  *         description: Search results
- */
-
-/**
- * @swagger
- * /products/category:
- *   post:
- *     summary: Add a new product category
- *     tags: [Products]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ProductCategoryInput'
- *     responses:
- *       201:
- *         description: Product category added successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   $ref: '#/components/schemas/ProductCategory'
- *                 message:
- *                   type: string
- *       400:
- *         description: Invalid input data
- *       401:
- *         description: Unauthorized
  */
 
 /**

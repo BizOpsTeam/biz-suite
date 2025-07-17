@@ -141,25 +141,8 @@ export const refreshTokenHandler = catchErrors(async (req, res) => {
     //get refreshToken from request cookies
     const refreshToken = req.cookies["refreshToken"];
 
-    // Add comprehensive debugging information
-    console.log("=== Refresh Token Debug Info ===");
-    console.log("Request method:", req.method);
-    console.log("Request URL:", req.url);
-    console.log("Request headers:", req.headers);
-    console.log("All cookies received:", req.cookies);
-    console.log("Refresh token found:", !!refreshToken);
-    console.log(
-        "Refresh token value:",
-        refreshToken ? `${refreshToken.substring(0, 20)}...` : "null",
-    );
-    console.log("NODE_ENV:", process.env.NODE_ENV);
-    console.log("================================");
 
-    if (!refreshToken) {
-        console.log(
-            "No refresh token in cookies. Available cookies:",
-            Object.keys(req.cookies),
-        );
+    if (!refreshToken) { 
         throw new AppError(
             UNAUTHORIZED,
             "No refresh token provided",

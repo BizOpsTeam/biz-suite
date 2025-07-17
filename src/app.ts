@@ -20,6 +20,7 @@ import cron from "node-cron";
 import { processRecurringExpenses } from "./services/expense.service";
 import stockAdjustmentRoutes from "./routes/stockAdjustment.routes";
 import customerGroupRoutes from "./routes/customerGroup.routes";
+import productCategoryRoutes from "./routes/productCategory.routes";
 
 const app = express();
 app.use(express.json());
@@ -64,6 +65,7 @@ app.use("/expense-categories", authenticateUser, expenseCategoryRoutes);
 app.use("/expenses", authenticateUser, expenseRoutes);
 app.use("/stock-adjustments", authenticateUser, stockAdjustmentRoutes);
 app.use("/customer-groups", authenticateUser, customerGroupRoutes);
+app.use("/product-categories", authenticateUser, productCategoryRoutes);
 
 //-------user routes---------//
 app.use("/users", authenticateUser, isAdmin, userRoutes);

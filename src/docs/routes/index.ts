@@ -5,4 +5,5 @@ export * from './sales.docs';
 export * from './invoices.docs';
 export * from './products.docs';
 export * from './analytics.docs';
-export * from './receipts.docs'; 
+export * from './receipts.docs';
+export * from './productCategory.docs'; 
