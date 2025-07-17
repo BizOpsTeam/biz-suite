@@ -6,13 +6,14 @@ import {
     updateProductHandler,
 } from "../controllers/products.controller";
 import { productSearchHandler } from "../controllers/invoices.controller";
+import { authenticateUser } from "../middlewares/authenticateUser";
 
 const productsRoutes = Router();
 
-productsRoutes.get("/", getProductsHandler);
-productsRoutes.get("/:id", getProductHandler);
-productsRoutes.post("/add", addProductHandler);
-productsRoutes.patch("/:id", updateProductHandler);
-productsRoutes.get("/search", productSearchHandler);
+productsRoutes.get("/", authenticateUser ,getProductsHandler);
+productsRoutes.get("/:id",authenticateUser, getProductHandler);
+productsRoutes.post("/add", authenticateUser ,addProductHandler);
+productsRoutes.patch("/:id", authenticateUser,updateProductHandler);
+productsRoutes.get("/search", authenticateUser, productSearchHandler);
 
 export default productsRoutes;
