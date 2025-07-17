@@ -14,15 +14,16 @@ export const createProductCategory = async (
     });
 };
 
-export const getProductCategories = async () => {
+export const getProductCategories = async (ownerId: string) => {
     return await prisma.category.findMany({
+        where: { ownerId },
         select: { id: true, name: true, description: true, createdAt: true },
     });
 };
 
-export const getProductCategoryById = async (id: string) => {
-    return await prisma.category.findUnique({
-        where: { id },
+export const getProductCategoryById = async (id: string, ownerId: string) => {
+    return await prisma.category.findFirst({
+        where: { id, ownerId },
         select: { id: true, name: true, description: true, createdAt: true },
     });
 };
@@ -39,6 +40,15 @@ export const updateCategory = async (
         },
         data: {
             ...updateData,
+        },
+    });
+};
+
+export const deleteCategory = async (ownerId: string, categoryId: string) => {
+    return await prisma.category.delete({
+        where: {
+            id: categoryId,
+            ownerId: ownerId,
         },
     });
 }; 

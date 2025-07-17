@@ -120,4 +120,35 @@ export const productCategoryDocs = `
  *       401:
  *         description: Unauthorized
  */
+
+/**
+ * @swagger
+ * /product-categories/{id}:
+ *   delete:
+ *     summary: Delete a product category by ID
+ *     tags: [ProductCategory]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Category ID
+ *     responses:
+ *       200:
+ *         description: Category deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Category not found or not owned by user
+ */
 `; 
