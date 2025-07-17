@@ -678,3 +678,64 @@ export async function getProfitAndLoss({ startDate, endDate, ownerId }: { startD
         },
     };
 }
+
+export async function getRevenueForecast({ period = "month", horizon = 3, startDate, endDate, method = "auto" }: { period?: string; horizon?: number; startDate?: Date; endDate?: Date; method?: string }) {
+    // Aggregate sales by period
+    const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
+    const sales = await prisma.sale.findMany({
+        where: {
+            createdAt: {
+                ...(rangeStart && { gte: rangeStart }),
+                ...(rangeEnd && { lte: rangeEnd }),
+            },
+        },
+        orderBy: { createdAt: "asc" },
+    });
+    // Group by period
+    const groupBy: Record<string, number> = {};
+    for (const sale of sales) {
+        let key = "";
+        const date = sale.createdAt;
+        if (period === "day") {
+            key = date.toISOString().slice(0, 10);
+        } else if (period === "week") {
+            const week = new Date(date);
+            week.setDate(date.getDate() - date.getDay());
+            key = week.toISOString().slice(0, 10);
+        } else if (period === "month") {
+            key = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0");
+        } else if (period === "year") {
+            key = String(date.getFullYear());
+        } else {
+            key = date.toISOString().slice(0, 10);
+        }
+        groupBy[key] = (groupBy[key] || 0) + sale.totalAmount;
+    }
+    const history = Object.entries(groupBy)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([period, revenue]) => ({ period, revenue }));
+    const revenueSeries = history.map(h => h.revenue);
+    // Forecast future revenue
+    const forecastValues = forecastNext(revenueSeries, horizon, method);
+    // Generate future period labels
+    const lastPeriod = history.length > 0 ? history[history.length - 1].period : undefined;
+    const futurePeriods: string[] = [];
+    if (lastPeriod) {
+        let [year, month] = lastPeriod.split("-").map(Number);
+        for (let i = 1; i <= horizon; i++) {
+            if (period === "month") {
+                month++;
+                if (month > 12) { month = 1; year++; }
+                futurePeriods.push(`${year}-${String(month).padStart(2, "0")}`);
+            } else if (period === "year") {
+                futurePeriods.push(String(year + i));
+            } else {
+                futurePeriods.push(`future+${i}`);
+            }
+        }
+    } else {
+        for (let i = 1; i <= horizon; i++) futurePeriods.push(`future+${i}`);
+    }
+    const forecast = futurePeriods.map((period, i) => ({ period, predictedRevenue: forecastValues[i] || 0 }));
+    return { history, forecast };
+}

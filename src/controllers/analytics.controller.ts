@@ -14,6 +14,7 @@ import {
     getStockoutForecast,
     getSeasonality,
     getProfitAndLoss,
+    getRevenueForecast,
 } from "../services/analytics.service";
 import catchErrors from "../utils/catchErrors";
 
@@ -252,3 +253,13 @@ export const getProfitAndLossHandler = catchErrors(
         res.json({ success: true, data });
     }
 );
+
+export const getRevenueForecastHandler = catchErrors(async (req, res) => {
+    const period = (req.query.period as string) || "month";
+    const horizon = req.query.horizon ? parseInt(req.query.horizon as string, 10) : 3;
+    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+    const method = (req.query.method as string) || "auto";
+    const data = await getRevenueForecast({ period, horizon, startDate, endDate, method });
+    res.json({ success: true, data });
+});
