@@ -11,6 +11,7 @@ import {
     updateCustomer,
     deleteCustomer,
     updateUserProfile,
+    getCustomerStatement,
 } from "../services/user.service";
 import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErrors";
@@ -104,3 +105,13 @@ export const updateUserProfileHandler = catchErrors(
         res.json({ success: true, data: updatedUser });
     },
 );
+
+export const getCustomerStatementHandler = catchErrors(async (req, res) => {
+    const userId = req.user?.id;
+    appAssert(userId, 401, "Unauthorized");
+    const { id } = req.params;
+    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+    const data = await getCustomerStatement(id, startDate, endDate);
+    res.status(200).json({ data, message: "Customer statement fetched" });
+});

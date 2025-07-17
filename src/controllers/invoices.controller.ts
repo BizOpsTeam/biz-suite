@@ -14,15 +14,38 @@ import catchErrors from "../utils/catchErrors";
 import { updateInvoicePaymentSchema } from "../zodSchema/invoice.zodSchema";
 import { Request, Response, NextFunction } from "express";
 
-export const getInvoicesHandler = catchErrors(async (req, res) => {
+export const getInvoicesHandler = catchErrors(async (req: Request, res: Response) => {
     const ownerId = req.user?.id;
     appAssert(ownerId, UNAUTHORIZED, "Unauthorized, login to fetch invoices");
 
-    const invoices = await getInvoices(ownerId);
-    // Optionally log a bulk view event here
-    return res
-        .status(OK)
-        .json({ data: invoices, message: "invoices returned successfully" });
+    const {
+      customerId,
+      status,
+      currencyCode,
+      search,
+      sort,
+      page = '1',
+      limit = '20',
+      startDate,
+      endDate,
+    } = req.query;
+
+    const result = await getInvoices({
+      ownerId,
+      customerId: customerId as string | undefined,
+      status: status as string | undefined,
+      currencyCode: currencyCode as string | undefined,
+      search: search as string | undefined,
+      sort: sort as string | undefined,
+      page: parseInt(page as string, 10) || 1,
+      limit: parseInt(limit as string, 10) || 20,
+      startDate: startDate as string | undefined,
+      endDate: endDate as string | undefined,
+    });
+    return res.status(OK).json({
+      ...result,
+      message: "invoices returned successfully",
+    });
 });
 
 export const productSearchHandler = catchErrors(async (req, res) => {

@@ -62,3 +62,45 @@ export async function getUserProfile(userId: string) {
     appAssert(user, NOT_FOUND, "User not found");
     return user;
 }
+
+export async function getCustomerStatement(customerId: string, startDate?: Date, endDate?: Date) {
+    // Fetch customer
+    const customer = await prisma.customer.findUnique({ where: { id: customerId } });
+    if (!customer) throw new Error("Customer not found");
+    // Fetch sales for customer in date range
+    const saleWhere: any = { customerId };
+    if (startDate && endDate) {
+        saleWhere.createdAt = { gte: startDate, lte: endDate };
+    } else if (startDate) {
+        saleWhere.createdAt = { gte: startDate };
+    } else if (endDate) {
+        saleWhere.createdAt = { lte: endDate };
+    }
+    const sales = await prisma.sale.findMany({
+        where: saleWhere,
+        orderBy: { createdAt: "asc" },
+    });
+    // Payments: if you have a payment model, fetch here. For now, assume only sales.
+    // Build statement
+    const statement = sales.map(sale => ({
+        date: sale.createdAt,
+        type: "sale",
+        amount: sale.totalAmount,
+        description: `Sale #${sale.id}`,
+    }));
+    const totalSales = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    // If you have payments, subtract them here
+    const totalPayments = 0;
+    const outstandingBalance = totalSales - totalPayments;
+    return {
+        customer: {
+            id: customer.id,
+            name: customer.name,
+            email: customer.email,
+        },
+        statement,
+        totalSales,
+        totalPayments,
+        outstandingBalance,
+    };
+}

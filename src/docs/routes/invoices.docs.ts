@@ -12,13 +12,74 @@ export const invoicesDocs = `
  * @swagger
  * /invoices:
  *   get:
- *     summary: Get all invoices for the authenticated user
+ *     summary: Get all invoices for the authenticated user (with filtering, search, sort, and pagination)
  *     tags: [Invoices]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: customerId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by customer ID
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [UNPAID, PARTIAL, PAID]
+ *         required: false
+ *         description: Filter by invoice status
+ *       - in: query
+ *         name: currencyCode
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by currency code (e.g., USD, EUR, NGN)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Search by invoice number, customer name, or notes (case-insensitive, partial match)
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           example: createdAt:desc
+ *         required: false
+ *         description: Sort by field and direction (e.g., createdAt:desc, amountDue:asc)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         required: false
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         required: false
+ *         description: Number of results per page
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: Filter invoices created after this date (inclusive)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: Filter invoices created before this date (inclusive)
  *     responses:
  *       200:
- *         description: List of invoices
+ *         description: Paginated invoices fetched successfully
  *         content:
  *           application/json:
  *             schema:
@@ -28,6 +89,18 @@ export const invoicesDocs = `
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Invoice'
+ *                 total:
+ *                   type: integer
+ *                   description: Total number of invoices matching the query
+ *                 page:
+ *                   type: integer
+ *                   description: Current page number
+ *                 limit:
+ *                   type: integer
+ *                   description: Number of results per page
+ *                 totalPages:
+ *                   type: integer
+ *                   description: Total number of pages
  *                 message:
  *                   type: string
  *       401:

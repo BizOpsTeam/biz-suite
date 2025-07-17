@@ -57,6 +57,14 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
                 },
             });
 
+            // Fetch product costs for all items
+            const productIds = saleData.items.map((item) => item.productId);
+            const products = await tx.product.findMany({
+                where: { id: { in: productIds } },
+                select: { id: true, cost: true },
+            });
+            const productCostMap = Object.fromEntries(products.map(p => [p.id, p.cost]));
+
             const saleItemsData = saleData.items.map((item) => ({
                 saleId: newSale.id,
                 productId: item.productId,
@@ -64,6 +72,7 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
                 price: item.price,
                 discount: item.discount,
                 tax: item.tax,
+                cost: productCostMap[item.productId] ?? null, // set cost at time of sale
             }));
 
             await tx.saleItem.createMany({ data: saleItemsData });
@@ -184,12 +193,84 @@ export const getMonthlySalesStats = async (year: number, ownerId: string) => {
     )) as { month: string; total: number }[];
 };
 
-export const getSales = async (ownerId: string) => {
-    return await prisma.sale.findMany({
-        where: {
-            ownerId: ownerId,
-        },
-    });
+export interface SalesQuery {
+  ownerId: string;
+  customerId?: string;
+  paymentMethod?: string;
+  channel?: string;
+  status?: string;
+  search?: string;
+  sort?: string; // e.g., 'createdAt:desc'
+  page?: number;
+  limit?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export const getSales = async (query: SalesQuery) => {
+  const {
+    ownerId,
+    customerId,
+    paymentMethod,
+    channel,
+    status,
+    search,
+    sort = 'createdAt:desc',
+    page = 1,
+    limit = 20,
+    startDate,
+    endDate,
+  } = query;
+
+  const where: any = { ownerId };
+  if (customerId) where.customerId = customerId;
+  if (paymentMethod) where.paymentMethod = paymentMethod;
+  if (channel) where.channel = channel;
+  if (status) where.status = status;
+  if (startDate || endDate) {
+    where.createdAt = {};
+    if (startDate) where.createdAt.gte = new Date(startDate);
+    if (endDate) where.createdAt.lte = new Date(endDate);
+  }
+  if (search) {
+    where.OR = [
+      { notes: { contains: search, mode: 'insensitive' } },
+      { customer: { name: { contains: search, mode: 'insensitive' } } },
+    ];
+  }
+
+  // Sorting
+  let orderBy: any = { createdAt: 'desc' };
+  if (sort) {
+    const [field, direction] = sort.split(':');
+    orderBy = { [field]: direction === 'asc' ? 'asc' : 'desc' };
+  }
+
+  // Pagination
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  // Query with count for pagination
+  const [sales, total] = await Promise.all([
+    prisma.sale.findMany({
+      where,
+      orderBy,
+      skip,
+      take,
+      include: {
+        customer: true,
+      },
+    }),
+    prisma.sale.count({ where }),
+  ]);
+
+  return {
+    data: sales,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
 };
 
 export const deleteSale = async (saleId: string, ownerId: string) => {

@@ -1,6 +1,7 @@
 import swaggerJsdocLib from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { Express } from "express";
+import { receiptsDocs } from './docs/routes/receipts.docs';
 
 const options: swaggerJsdocLib.Options = {
     swaggerDefinition: {
@@ -56,6 +57,11 @@ const options: swaggerJsdocLib.Options = {
                                 type: "string",
                                 description: "Image URL",
                             },
+                        },
+                        cost: {
+                            type: "number",
+                            description: "Cost per unit (COGS)",
+                            example: 10.5,
                         },
                     },
                 },
@@ -250,6 +256,105 @@ const options: swaggerJsdocLib.Options = {
                         dueDate: { type: "string", format: "date-time" },
                         createdAt: { type: "string", format: "date-time" },
                         // Add more fields as needed based on your actual invoice model
+                    },
+                },
+                ExpenseCategory: {
+                    type: "object",
+                    properties: {
+                        id: { type: "string" },
+                        name: { type: "string" },
+                        description: { type: "string" },
+                        ownerId: { type: "string" },
+                        createdAt: { type: "string", format: "date-time" },
+                        updatedAt: { type: "string", format: "date-time" },
+                    },
+                },
+                ExpenseCategoryInput: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                        name: { type: "string" },
+                        description: { type: "string" },
+                    },
+                },
+                Expense: {
+                    type: "object",
+                    properties: {
+                        id: { type: "string" },
+                        ownerId: { type: "string" },
+                        amount: { type: "number" },
+                        categoryId: { type: "string" },
+                        category: { $ref: "#/components/schemas/ExpenseCategory" },
+                        description: { type: "string" },
+                        date: { type: "string", format: "date" },
+                        isRecurring: { type: "boolean" },
+                        recurrenceType: { type: "string", enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"] },
+                        nextDueDate: { type: "string", format: "date" },
+                        createdAt: { type: "string", format: "date-time" },
+                        updatedAt: { type: "string", format: "date-time" },
+                    },
+                },
+                ExpenseInput: {
+                    type: "object",
+                    required: ["amount", "categoryId", "date"],
+                    properties: {
+                        amount: { type: "number" },
+                        categoryId: { type: "string" },
+                        description: { type: "string" },
+                        date: { type: "string", format: "date" },
+                        isRecurring: { type: "boolean" },
+                        recurrenceType: { type: "string", enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"] },
+                        nextDueDate: { type: "string", format: "date" },
+                    },
+                },
+                StockAdjustment: {
+                    type: "object",
+                    properties: {
+                        id: { type: "string" },
+                        productId: { type: "string" },
+                        product: { $ref: "#/components/schemas/Product" },
+                        userId: { type: "string" },
+                        user: { $ref: "#/components/schemas/User" },
+                        quantityChange: { type: "integer" },
+                        reason: { type: "string" },
+                        note: { type: "string" },
+                        createdAt: { type: "string", format: "date-time" },
+                    },
+                },
+                StockAdjustmentInput: {
+                    type: "object",
+                    required: ["productId", "quantityChange", "reason"],
+                    properties: {
+                        productId: { type: "string" },
+                        quantityChange: { type: "integer" },
+                        reason: { type: "string" },
+                        note: { type: "string" },
+                    },
+                },
+                CustomerGroup: {
+                    type: "object",
+                    properties: {
+                        id: { type: "string" },
+                        name: { type: "string" },
+                        description: { type: "string" },
+                        ownerId: { type: "string" },
+                        createdAt: { type: "string", format: "date-time" },
+                        updatedAt: { type: "string", format: "date-time" },
+                    },
+                },
+                CustomerGroupInput: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                        name: { type: "string" },
+                        description: { type: "string" },
+                    },
+                },
+                CustomerGroupAssignInput: {
+                    type: "object",
+                    required: ["groupIds"],
+                    properties: {
+                        groupIds: { type: "array", items: { type: "string" } },
                     },
                 },
             },

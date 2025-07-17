@@ -7,6 +7,7 @@ import {
     getProductHandler,
     getProductsHandler,
     updateCategoryHandler,
+    updateProductHandler,
 } from "../controllers/products.controller";
 import { productSearchHandler } from "../controllers/invoices.controller";
 
@@ -19,6 +20,7 @@ productsRoutes.post("/category", addProductCategoryHandler);
 productsRoutes.get("/category", getProductCategoriesHandler);
 productsRoutes.get("/category/:id", getProductCategoryHandler);
 productsRoutes.patch("/category/:id", updateCategoryHandler);
+productsRoutes.patch("/:id", updateProductHandler);
 productsRoutes.get("/search", productSearchHandler);
 
 export default productsRoutes;

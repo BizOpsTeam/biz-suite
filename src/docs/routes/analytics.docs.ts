@@ -816,4 +816,68 @@ export const analyticsDocs = `
  *       401:
  *         description: Unauthorized
  */
+
+/**
+ * @swagger
+ * /analytics/profit-loss:
+ *   get:
+ *     summary: Get profit and loss statement for a given period
+ *     tags: [Analytics]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: Start date (defaults to first day of current month)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: End date (defaults to last day of current month)
+ *     responses:
+ *       200:
+ *         description: Profit and loss statement
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     revenue:
+ *                       type: number
+ *                       description: Total sales revenue
+ *                     cogs:
+ *                       type: number
+ *                       description: Cost of goods sold
+ *                     grossProfit:
+ *                       type: number
+ *                       description: Gross profit (revenue - cogs)
+ *                     expenses:
+ *                       type: number
+ *                       description: Total expenses
+ *                     netProfit:
+ *                       type: number
+ *                       description: Net profit (gross profit - expenses)
+ *                     breakdown:
+ *                       type: object
+ *                       properties:
+ *                         salesCount:
+ *                           type: integer
+ *                         saleItemsCount:
+ *                           type: integer
+ *                         expenseCount:
+ *                           type: integer
+ *       401:
+ *         description: Unauthorized
+ */
 `;

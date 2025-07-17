@@ -41,6 +41,11 @@ model UserModel {
   invoiceSequenceNext      Int?                 @default(1) // Next invoice sequence number
   auditLogs                InvoiceAudit[]        // Audit logs for user actions
   receipts                 Receipt[]             // Receipts issued by this user
+  receiptsAudit            ReceiptAudit[]        // Audit logs for user actions on receipts
+  expenses                 Expense[]             // Expenses incurred by this user
+  expenseCategories        ExpenseCategory[]     // Categories owned by this user
+  stockAdjustments         StockAdjustment[]
+  customerGroups           CustomerGroup[]
 }
 
 
@@ -86,6 +91,8 @@ model Product {
   updatedAt   DateTime       @updatedAt
   ownerId     String
   owner       UserModel      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  cost        Float?    // Cost per unit (COGS)
+  stockAdjustments StockAdjustment[]
 }
 
 model TaxOnProduct {
@@ -144,6 +151,7 @@ model SaleItem {
   discount  Float
   tax       Float
   createdAt DateTime @default(now())
+  cost      Float?   // Cost per unit at time of sale
 }
 
 enum InvoiceStatus {
@@ -192,6 +200,23 @@ model InvoiceAudit {
   createdAt   DateTime             @default(now())
 }
 
+enum ReceiptAuditEventType {
+  VIEWED
+  DOWNLOADED
+  EMAILED
+}
+
+model ReceiptAudit {
+  id          String                @id @default(uuid())
+  receiptId   String
+  receipt     Receipt              @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        UserModel?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  eventType   ReceiptAuditEventType
+  eventDetails String?
+  createdAt   DateTime             @default(now())
+}
+
 model Receipt {
   id             String   @id @default(uuid())
   receiptNumber  String   @unique
@@ -204,6 +229,7 @@ model Receipt {
   emailedAt      DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  auditLogs      ReceiptAudit[]       // Audit logs for this receipt
 }
 
 model Customer {
@@ -213,6 +239,73 @@ model Customer {
   phone     String?
   address   String?
   sales     Sale[]
+  memberships CustomerGroupMembership[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+}
+
+model CustomerGroup {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  ownerId     String
+  owner       UserModel @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  memberships CustomerGroupMembership[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model CustomerGroupMembership {
+  id          String    @id @default(uuid())
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  groupId     String
+  group       CustomerGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+}
+
+model ExpenseCategory {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  ownerId     String
+  owner       UserModel @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  expenses    Expense[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Expense {
+  id              String          @id @default(uuid())
+  ownerId         String
+  owner           UserModel       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  amount          Float
+  categoryId      String
+  category        ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  description     String?
+  date            DateTime
+  isRecurring     Boolean         @default(false)
+  recurrenceType  RecurrenceType? // e.g., MONTHLY, YEARLY
+  nextDueDate     DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+enum RecurrenceType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model StockAdjustment {
+  id             String     @id @default(uuid())
+  productId      String
+  product        Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId         String
+  user           UserModel  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quantityChange Int
+  reason         String
+  note           String?
+  createdAt      DateTime   @default(now())
 }

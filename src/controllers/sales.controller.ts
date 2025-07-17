@@ -89,14 +89,39 @@ export const getSalesStatsHandler = catchErrors(async (req, res) => {
     });
 });
 
-export const getAllSalesHandler = catchErrors(async (req, res) => {
+export const getAllSalesHandler = catchErrors(async (req: Request, res: Response) => {
     const userId = req.user?.id;
     appAssert(userId, UNAUTHORIZED, "Unathorized, login to get sales data");
 
-    const allSales = await getSales(userId);
+    const {
+      customerId,
+      paymentMethod,
+      channel,
+      status,
+      search,
+      sort,
+      page = '1',
+      limit = '20',
+      startDate,
+      endDate,
+    } = req.query;
+
+    const result = await getSales({
+      ownerId: userId,
+      customerId: customerId as string | undefined,
+      paymentMethod: paymentMethod as string | undefined,
+      channel: channel as string | undefined,
+      status: status as string | undefined,
+      search: search as string | undefined,
+      sort: sort as string | undefined,
+      page: parseInt(page as string, 10) || 1,
+      limit: parseInt(limit as string, 10) || 20,
+      startDate: startDate as string | undefined,
+      endDate: endDate as string | undefined,
+    });
     res.status(OK).json({
-        data: allSales,
-        message: "Sales fetched successfully",
+      ...result,
+      message: "Sales fetched successfully",
     });
 });
 

@@ -7,6 +7,7 @@ import {
     deleteCustomerHandler,
     updateUserProfileHandler,
     uploadLogoHandler,
+    getCustomerStatementHandler,
 } from "../controllers/user.controller";
 
 const router = Router();
@@ -19,5 +20,6 @@ router.patch("/customers/:id", updateCustomerHandler);
 router.delete("/customers/:id", deleteCustomerHandler);
 router.patch("/profile", updateUserProfileHandler);
 router.post("/profile/logo", uploadLogoHandler);
+router.get("/customers/:id/statement", getCustomerStatementHandler);
 
 export default router;

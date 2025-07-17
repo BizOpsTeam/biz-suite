@@ -619,3 +619,62 @@ export async function getSeasonality({
         .sort((a, b) => Number(a.subPeriod) - Number(b.subPeriod));
     return seasonality;
 }
+
+export async function getProfitAndLoss({ startDate, endDate, ownerId }: { startDate?: Date, endDate?: Date, ownerId?: string }) {
+    // Build saleWhere object
+    const saleWhere: any = {};
+    if (startDate && endDate) {
+        saleWhere.createdAt = { gte: startDate, lte: endDate };
+    } else if (startDate) {
+        saleWhere.createdAt = { gte: startDate };
+    } else if (endDate) {
+        saleWhere.createdAt = { lte: endDate };
+    }
+    if (ownerId) saleWhere.ownerId = ownerId;
+
+    const sales = await prisma.sale.findMany({
+        where: saleWhere,
+        select: { id: true, totalAmount: true },
+    });
+    const saleIds = sales.map(s => s.id);
+    const revenue = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+
+    // Get all sale items for those sales
+    const saleItems = saleIds.length > 0 ? await prisma.saleItem.findMany({
+        where: { saleId: { in: saleIds } },
+        select: { quantity: true, cost: true },
+    }) : [];
+    const cogs = saleItems.reduce((sum, item) => sum + (item.cost || 0) * item.quantity, 0);
+    const grossProfit = revenue - cogs;
+
+    // Build expenseWhere object
+    const expenseWhere: any = {};
+    if (startDate && endDate) {
+        expenseWhere.date = { gte: startDate, lte: endDate };
+    } else if (startDate) {
+        expenseWhere.date = { gte: startDate };
+    } else if (endDate) {
+        expenseWhere.date = { lte: endDate };
+    }
+    if (ownerId) expenseWhere.ownerId = ownerId;
+
+    const expenses = await prisma.expense.findMany({
+        where: expenseWhere,
+        select: { amount: true },
+    });
+    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const netProfit = grossProfit - totalExpenses;
+
+    return {
+        revenue,
+        cogs,
+        grossProfit,
+        expenses: totalExpenses,
+        netProfit,
+        breakdown: {
+            salesCount: sales.length,
+            saleItemsCount: saleItems.length,
+            expenseCount: expenses.length,
+        },
+    };
+}

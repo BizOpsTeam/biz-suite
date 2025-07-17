@@ -30,6 +30,7 @@ export interface IProductData {
     categoryId: string;
     description?: string;
     images?: string[];
+    cost?: number; // Cost per unit (COGS)
 }
 
 export interface IProductCategoryData {

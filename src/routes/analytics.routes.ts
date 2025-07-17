@@ -13,6 +13,7 @@ import {
     getProductSalesForecastHandler,
     getStockoutForecastHandler,
     getSeasonalityHandler,
+    getProfitAndLossHandler,
 } from "../controllers/analytics.controller";
 
 const analyticsRoutes = Router();
@@ -30,5 +31,6 @@ analyticsRoutes.get("/forecast/sales", getSalesForecastHandler);
 analyticsRoutes.get("/forecast/product-sales", getProductSalesForecastHandler);
 analyticsRoutes.get("/forecast/stockouts", getStockoutForecastHandler);
 analyticsRoutes.get("/forecast/seasonality", getSeasonalityHandler);
+analyticsRoutes.get("/profit-loss", getProfitAndLossHandler);
 
 export default analyticsRoutes;

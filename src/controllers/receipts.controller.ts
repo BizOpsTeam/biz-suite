@@ -3,6 +3,11 @@ import prisma from '../config/db';
 import { generateReceiptPDF } from '../services/receiptPdf.service';
 import { ReceiptTemplateData } from '../templates/receipt.template';
 import { Resend } from 'resend';
+import { logReceiptAuditEvent } from '../services/receipts.service';
+import catchErrors from '../utils/catchErrors';
+import appAssert from '../utils/appAssert';
+import { UNAUTHORIZED } from '../constants/http';
+import { getReceipts } from '../services/receipts.service';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -75,6 +80,12 @@ export const downloadReceiptHandler = async (req: Request, res: Response) => {
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', `attachment; filename=receipt-${receipt.receiptNumber}.pdf`);
   res.send(pdfBuffer);
+
+  await logReceiptAuditEvent({
+    receiptId: receipt.id,
+    eventType: 'DOWNLOADED',
+    userId: req.user?.id,
+  });
 };
 
 // Email receipt PDF
@@ -177,5 +188,65 @@ export const emailReceiptHandler = async (req: Request, res: Response) => {
     data: { emailed: true, emailedAt: new Date() },
   });
 
+  await logReceiptAuditEvent({
+    receiptId: receipt.id,
+    eventType: 'EMAILED',
+    userId: req.user?.id,
+    eventDetails: `Emailed to ${customer.email}`,
+  });
+
   res.status(200).json({ message: 'Receipt emailed successfully' });
-}; 
+};
+
+export const getReceiptsHandler = catchErrors(async (req: Request, res: Response) => {
+  const ownerId = req.user?.id;
+  appAssert(ownerId, UNAUTHORIZED, "Unauthorized, login to fetch receipts");
+
+  const {
+    customerId,
+    status,
+    issuedById,
+    search,
+    sort,
+    page = '1',
+    limit = '20',
+    startDate,
+    endDate,
+  } = req.query;
+
+  const result = await getReceipts({
+    ownerId,
+    customerId: customerId as string | undefined,
+    status: status as string | undefined,
+    issuedById: issuedById as string | undefined,
+    search: search as string | undefined,
+    sort: sort as string | undefined,
+    page: parseInt(page as string, 10) || 1,
+    limit: parseInt(limit as string, 10) || 20,
+    startDate: startDate as string | undefined,
+    endDate: endDate as string | undefined,
+  });
+  res.status(200).json({
+    ...result,
+    message: "Receipts fetched successfully",
+  });
+});
+
+export const getReceiptAuditTrailHandler = catchErrors(async (req: Request, res: Response) => {
+  const { invoiceId } = req.params;
+  const ownerId = req.user?.id;
+  appAssert(ownerId, UNAUTHORIZED, "Unauthorized, login to view audit trail");
+
+  const { limit = 20, offset = 0, eventType } = req.query;
+  const where: any = { receiptId: invoiceId };
+  if (eventType) where.eventType = eventType;
+
+  const logs = await prisma.receiptAudit.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    take: Number(limit),
+    skip: Number(offset),
+    include: { user: { select: { id: true, name: true, email: true } } },
+  });
+  res.json({ success: true, data: logs });
+}); 

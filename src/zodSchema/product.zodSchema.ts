@@ -7,6 +7,7 @@ export const productSchema = z.object({
     categoryId: z.string().min(3).max(50),
     stock: z.number().int().nonnegative(),
     images: z.array(z.string()).optional(),
+    cost: z.number().nonnegative().optional(), // Cost per unit (COGS)
 });
 
 export const productCategorySchema = z.object({

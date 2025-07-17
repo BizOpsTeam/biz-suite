@@ -13,6 +13,7 @@ import {
     getProductSalesForecast,
     getStockoutForecast,
     getSeasonality,
+    getProfitAndLoss,
 } from "../services/analytics.service";
 import catchErrors from "../utils/catchErrors";
 
@@ -234,4 +235,20 @@ export const getSeasonalityHandler = catchErrors(
         const data = await getSeasonality({ period, productId });
         res.json({ success: true, data });
     },
+);
+
+export const getProfitAndLossHandler = catchErrors(
+    async (req: Request, res: Response) => {
+        const userId = req.user?.id;
+        // Default to current month if no dates provided
+        let startDate: Date | undefined = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+        let endDate: Date | undefined = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+        if (!startDate || !endDate) {
+            const now = new Date();
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        }
+        const data = await getProfitAndLoss({ startDate, endDate, ownerId: userId });
+        res.json({ success: true, data });
+    }
 );

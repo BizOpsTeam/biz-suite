@@ -13,6 +13,13 @@ import invoicesRoutes from "./routes/invoices.routes";
 import userRoutes from "./routes/user.routes";
 import { isAdmin, isWorker } from "./middlewares/verifyUserRole";
 import analyticsRoutes from "./routes/analytics.routes";
+import receiptsRoutes from "./routes/receipts.routes";
+import expenseCategoryRoutes from "./routes/expenseCategory.routes";
+import expenseRoutes from "./routes/expense.routes";
+import cron from "node-cron";
+import { processRecurringExpenses } from "./services/expense.service";
+import stockAdjustmentRoutes from "./routes/stockAdjustment.routes";
+import customerGroupRoutes from "./routes/customerGroup.routes";
 
 const app = express();
 app.use(express.json());
@@ -52,12 +59,24 @@ app.use("/sales", authenticateUser, salesRoutes);
 app.use("/invoices", authenticateUser, invoicesRoutes);
 //-------product routes---------//
 app.use("/products", authenticateUser, productsRoutes);
+app.use("/receipts", authenticateUser, receiptsRoutes);
+app.use("/expense-categories", authenticateUser, expenseCategoryRoutes);
+app.use("/expenses", authenticateUser, expenseRoutes);
+app.use("/stock-adjustments", authenticateUser, stockAdjustmentRoutes);
+app.use("/customer-groups", authenticateUser, customerGroupRoutes);
 
 //-------user routes---------//
 app.use("/users", authenticateUser, isAdmin, userRoutes);
 
 //-------analytics routes---------//
 app.use("/analytics", authenticateUser, isAdmin, analyticsRoutes);
+
+// Schedule recurring expense processing every day at midnight
+cron.schedule("0 0 * * *", async () => {
+    console.log("[CRON] Processing recurring expenses...");
+    await processRecurringExpenses();
+    console.log("[CRON] Recurring expenses processed.");
+});
 
 // Not found handler for unmatched routes
 app.use(notFoundHandler);
