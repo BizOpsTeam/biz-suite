@@ -16,7 +16,7 @@ dotenv.config();
 
 const errorHandler: ErrorRequestHandler = (
     err: Error,
-    req: Request,
+    _req: Request,
     res: Response,
     next: NextFunction,
 ): void => {

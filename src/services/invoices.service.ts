@@ -92,8 +92,8 @@ export const getInvoices = async (query: InvoicesQuery) => {
 export const searchProducts = async (
     ownerId: string,
     query?: string,
-    categoryId?: string,
-    inStock?: string,
+    _categoryId?: string,
+    _inStock?: string,
 ) => {
     return await prisma.product.findMany({
         where: {

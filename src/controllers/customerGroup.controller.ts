@@ -64,23 +64,28 @@ export const deleteCustomerGroupHandler = catchErrors(
     },
 );
 
+
 export const assignGroupsToCustomerHandler = catchErrors(
-    async (req: Request, res: Response) => {
+    async (req: Request, res: Response): Promise<any> => {
         const ownerId = req.user?.id;
         appAssert(ownerId, 401, "Unauthorized");
+
         const { id: customerId } = req.params;
         const { groupIds } = customerGroupAssignSchema.parse(req.body);
+
         const memberships = await assignGroupsToCustomer(
             customerId,
             groupIds,
             ownerId,
         );
-        res.status(OK).json({
+
+        return res.status(OK).json({
             data: memberships,
             message: "Groups assigned to customer",
         });
     },
 );
+
 
 export const getCustomersByGroupHandler = catchErrors(
     async (req: Request, res: Response) => {
@@ -88,6 +93,6 @@ export const getCustomersByGroupHandler = catchErrors(
         if (!groupId)
             return res.status(400).json({ message: "groupId is required" });
         const customers = await getCustomersByGroup(groupId as string);
-        res.status(OK).json({ data: customers, message: "Customers fetched" });
+        return res.status(OK).json({ data: customers, message: "Customers fetched" });
     },
 );

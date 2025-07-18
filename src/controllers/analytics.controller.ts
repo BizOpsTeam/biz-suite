@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import {
     getTopProducts,
     getSalesOverTime,
@@ -51,7 +51,7 @@ export const getTopProductsHandler = catchErrors(
             startDate,
             endDate,
         });
-        res.json({ success: true, data: products });
+        return res.json({ success: true, data: products });
     },
 );
 

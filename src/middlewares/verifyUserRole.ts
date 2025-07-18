@@ -5,7 +5,7 @@ import { FORBIDDEN } from "../constants/http";
 
 export const isAdmin = async (
     req: Request,
-    res: Response,
+    _res: Response,
     next: NextFunction,
 ) => {
     const userRole = await getUserRole(req.user?.id as string);
@@ -17,7 +17,7 @@ export const isAdmin = async (
 
 export const isWorker = async (
     req: Request,
-    res: Response,
+    _res: Response,
     next: NextFunction,
 ) => {
     const userRole = await getUserRole(req.user?.id as string);

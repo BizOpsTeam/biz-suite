@@ -1,7 +1,7 @@
 import prisma from "../config/db";
 import AppError from "../errors/AppError";
 import { UNAUTHORIZED, NOT_FOUND } from "../constants/http";
-import { add, isBefore, isEqual, startOfDay, isAfter } from "date-fns";
+import { add, isEqual, startOfDay, isAfter } from "date-fns";
 
 export const createExpense = async (data: any, ownerId: string) => {
     return prisma.expense.create({

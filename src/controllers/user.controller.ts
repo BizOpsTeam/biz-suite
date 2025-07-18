@@ -21,7 +21,7 @@ import cloudinary from "../config/cloudinary";
 
 const logoStorage = new CloudinaryStorage({
     cloudinary,
-    params: async (req, file) => ({
+    params: async (_req, file) => ({
         public_id: `company_logos/${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`,
         allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
         transformation: [{ width: 300, height: 150, crop: "limit" }],
@@ -45,31 +45,32 @@ export const uploadLogoHandler = [
                 });
         }
         const url = file.path;
-        res.json({ success: true, url });
+        return res.json({ success: true, url });
     }),
 ];
 
 export const createCustomerHandler = catchErrors(
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response): Promise<any> => {
         const userId = req.user?.id;
         appAssert(userId, 401, "Unauthorized");
         const validated = createCustomerSchema.parse(req.body);
         const customer = await createCustomer({ ...validated, ownerId: userId });
-        res.status(201).json({ success: true, data: customer });
+        return res.status(201).json({ success: true, data: customer });
+        return null;
     },
 );
 
 export const getCustomersHandler = catchErrors(
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
         const userId = req.user?.id;
         appAssert(userId, 401, "Unauthorized");
         const customers = await getCustomers(userId);
-        res.json({ success: true, data: customers });
+        return res.json({ success: true, data: customers });
     },
 );
 
 export const getCustomerByIdHandler = catchErrors(
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
         const userId = req.user?.id;
         appAssert(userId, 401, "Unauthorized");
         const { id } = req.params;
@@ -79,12 +80,12 @@ export const getCustomerByIdHandler = catchErrors(
                 .status(404)
                 .json({ success: false, message: "Customer not found" });
         }
-        res.json({ success: true, data: customer });
+        return res.json({ success: true, data: customer });
     },
 );
 
 export const updateCustomerHandler = catchErrors(
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
         const userId = req.user?.id;
         appAssert(userId, 401, "Unauthorized");
         const { id } = req.params;
@@ -95,12 +96,12 @@ export const updateCustomerHandler = catchErrors(
                 .status(404)
                 .json({ success: false, message: "Customer not found" });
         }
-        res.json({ success: true, data: customer });
+        return res.json({ success: true, data: customer });
     },
 );
 
 export const deleteCustomerHandler = catchErrors(
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
         const userId = req.user?.id;
         appAssert(userId, 401, "Unauthorized");
         const { id } = req.params;
@@ -110,17 +111,17 @@ export const deleteCustomerHandler = catchErrors(
                 .status(404)
                 .json({ success: false, message: "Customer not found" });
         }
-        res.json({ success: true, message: "Customer deleted" });
+        return res.json({ success: true, message: "Customer deleted" });
     },
 );
 
 export const updateUserProfileHandler = catchErrors(
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, _next: NextFunction) => {
         const userId = req.user?.id;
         appAssert(userId, 401, "Unauthorized");
         const validated = updateUserProfileSchema.parse(req.body);
         const updatedUser = await updateUserProfile(userId, validated);
-        res.json({ success: true, data: updatedUser });
+        return res.json({ success: true, data: updatedUser });
     },
 );
 
@@ -131,5 +132,5 @@ export const getCustomerStatementHandler = catchErrors(async (req, res) => {
     const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
     const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
     const data = await getCustomerStatement(id, userId, startDate, endDate);
-    res.status(200).json({ data, message: "Customer statement fetched" });
+    return res.status(200).json({ data, message: "Customer statement fetched" });
 });

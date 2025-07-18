@@ -1,6 +1,5 @@
 import prisma from "../config/db";
 import {
-    subDays,
     subWeeks,
     subMonths,
     subYears,
@@ -45,17 +44,6 @@ function getDateRange(period: string, startDate?: Date, endDate?: Date) {
             rangeEnd = now;
     }
     return { rangeStart, rangeEnd };
-}
-
-function movingAverage(data: number[], window: number): number[] {
-    if (data.length < window) return [];
-    const result: number[] = [];
-    for (let i = 0; i <= data.length - window; i++) {
-        const avg =
-            data.slice(i, i + window).reduce((a, b) => a + b, 0) / window;
-        result.push(avg);
-    }
-    return result;
 }
 
 function linearRegression(data: number[]): {
@@ -583,11 +571,7 @@ export async function getSeasonality({
             amount: si.price * si.quantity,
         }));
     } else {
-        const sales = await prisma.sale.findMany();
-        const salesMapped = sales.map((s) => ({
-            createdAt: s.createdAt,
-            amount: s.totalAmount,
-        }));
+        sales = await prisma.sale.findMany();
     }
 
     // Group by sub-period

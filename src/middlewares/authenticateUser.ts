@@ -19,7 +19,7 @@ declare global {
 
 export const authenticateUser: RequestHandler = (
     req: Request,
-    res: Response,
+    _res: Response,
     next: NextFunction,
 ) => {
     console.log(req.cookies);

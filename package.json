@@ -8,7 +8,8 @@
         "build": "tsc",
         "start": "tsc && node dist/index.js",
         "dev": "nodemon",
-        "format": "prettier --write \"src/**/*.{ts,js,tsx,jsx,json,md}\""
+        "format": "prettier --write \"src/**/*.{ts,js,tsx,jsx,json,md}\"",
+        "typecheck": "tsc --noEmit"
     },
     "repository": {
         "type": "git",
@@ -54,6 +55,7 @@
         "@types/swagger-jsdoc": "^6.0.4",
         "@types/swagger-ui-express": "^4.1.8",
         "eslint": "^9.22.0",
+        "husky": "^9.1.7",
         "nodemon": "^3.1.9",
         "prettier": "^3.5.3",
         "prisma": "^6.5.0",

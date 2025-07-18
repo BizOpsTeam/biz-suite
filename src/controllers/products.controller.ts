@@ -21,7 +21,7 @@ import { Request, Response, NextFunction } from "express";
 
 const productImageStorage = new CloudinaryStorage({
     cloudinary,
-    params: async (req, file) => ({
+    params: async (_req, file) => ({
         public_id: `product_images/${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`,
         allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
         transformation: [{ width: 600, height: 600, crop: "limit" }],
@@ -51,7 +51,7 @@ export const getProductHandler = catchErrors(async (req, res) => {
             .status(NOT_FOUND)
             .json({ data: null, message: `Product with id ${id} not found` });
     }
-    res.status(OK).json({
+    return res.status(OK).json({
         data: product,
         message: "Product successfully returned",
     });
@@ -69,7 +69,7 @@ function safeMulterArray(field: string, maxCount: number) {
                         : `Image upload failed: ${err.message}`,
                 });
             }
-            next();
+            return next();
         });
     };
 }

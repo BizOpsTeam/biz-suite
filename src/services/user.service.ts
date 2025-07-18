@@ -1,10 +1,10 @@
 // Customer Service Functions (stubs)
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient, Customer } from "@prisma/client";
 import appAssert from "../utils/appAssert";
-import { BAD_REQUEST, NOT_FOUND, CONFLICT } from "../constants/http";
+import { NOT_FOUND, CONFLICT } from "../constants/http";
 const prisma = new PrismaClient();
 
-export async function createCustomer(data: { name: string; email: string; ownerId: string }): Promise<Prisma.CustomerGetPayload<{}>> {
+export async function createCustomer(data: { name: string; email: string; ownerId: string }): Promise<Customer> {
     // Check for existing email for this owner
     const existing = await prisma.customer.findFirst({
         where: { email: data.email, ownerId: data.ownerId },
@@ -17,17 +17,17 @@ export async function createCustomer(data: { name: string; email: string; ownerI
     return prisma.customer.create({ data });
 }
 
-export async function getCustomers(ownerId: string): Promise<Prisma.CustomerGetPayload<{}>[]> {
+export async function getCustomers(ownerId: string): Promise<Customer[]> {
     return prisma.customer.findMany({ where: { ownerId }, orderBy: { createdAt: "desc" } });
 }
 
-export async function getCustomerById(id: string, ownerId: string): Promise<Prisma.CustomerGetPayload<{}>> {
+export async function getCustomerById(id: string, ownerId: string): Promise<Customer> {
     const customer = await prisma.customer.findFirst({ where: { id, ownerId } });
     appAssert(customer, NOT_FOUND, "Customer not found");
     return customer;
 }
 
-export async function updateCustomer(id: string, ownerId: string, data: { email?: string }): Promise<Prisma.CustomerGetPayload<{}>> {
+export async function updateCustomer(id: string, ownerId: string, data: { email?: string }): Promise<Customer> {
     // Ensure customer exists and belongs to owner
     const customer = await prisma.customer.findFirst({ where: { id, ownerId } });
     appAssert(customer, NOT_FOUND, "Customer not found");
@@ -45,7 +45,7 @@ export async function updateCustomer(id: string, ownerId: string, data: { email?
     return prisma.customer.update({ where: { id }, data });
 }
 
-export async function deleteCustomer(id: string, ownerId: string): Promise<Prisma.CustomerGetPayload<{}>> {
+export async function deleteCustomer(id: string, ownerId: string): Promise<Customer> {
     const customer = await prisma.customer.findFirst({ where: { id, ownerId } });
     appAssert(customer, NOT_FOUND, "Customer not found");
     return prisma.customer.delete({ where: { id } });

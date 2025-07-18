@@ -11,7 +11,7 @@ import productsRoutes from "./routes/products.routes";
 import { authenticateUser } from "./middlewares/authenticateUser";
 import invoicesRoutes from "./routes/invoices.routes";
 import userRoutes from "./routes/user.routes";
-import { isAdmin, isWorker } from "./middlewares/verifyUserRole";
+import { isAdmin } from "./middlewares/verifyUserRole";
 import analyticsRoutes from "./routes/analytics.routes";
 import receiptsRoutes from "./routes/receipts.routes";
 import expenseCategoryRoutes from "./routes/expenseCategory.routes";
@@ -41,11 +41,11 @@ app.use(
 
 //-------------routes-------------------------//
 
-app.get("/", (req: Request, res: Response) => {
+app.get("/", (_req: Request, res: Response) => {
     res.status(200).json({ message: "Hello World" });
 });
 
-app.get("/healthz", (req: Request, res: Response) => {
+app.get("/healthz", (_req: Request, res: Response) => {
     res.status(200).json({ message: "OK" });
 });
 
@@ -81,7 +81,7 @@ cron.schedule("0 0 * * *", async () => {
 });
 
 // Global error handler for invalid JSON
-app.use((err: any, req: any, res: any, next: any) => {
+app.use((err: any, _req: any, res: any, next: any) => {
     if (
         err instanceof SyntaxError &&
         typeof (err as any).status === "number" &&

@@ -8,8 +8,8 @@ import catchErrors from "../utils/catchErrors";
 import appAssert from "../utils/appAssert";
 import { UNAUTHORIZED } from "../constants/http";
 import { getReceipts } from "../services/receipts.service";
-import { Prisma } from "@prisma/client";
-type SaleItemWithProduct = Prisma.SaleItemGetPayload<{ include: { product: true } }>;
+import { SaleItem, Product } from "@prisma/client";
+type SaleItemWithProduct = SaleItem & { product: Product };
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -93,10 +93,10 @@ export const downloadReceiptHandler = async (req: Request, res: Response) => {
         "Content-Disposition",
         `attachment; filename=receipt-${receipt.receiptNumber}.pdf`,
     );
-    res.send(pdfBuffer);
+    return res.send(pdfBuffer);
 
     await logReceiptAuditEvent({
-        receiptId: receipt.id,
+        receiptId: receipt!.id,
         eventType: "DOWNLOADED",
         userId: req.user?.id,
     });
@@ -220,7 +220,7 @@ export const emailReceiptHandler = async (req: Request, res: Response) => {
         eventDetails: `Emailed to ${customer.email}`,
     });
 
-    res.status(200).json({ message: "Receipt emailed successfully" });
+    return res.status(200).json({ message: "Receipt emailed successfully" });
 };
 
 export const getReceiptsHandler = catchErrors(

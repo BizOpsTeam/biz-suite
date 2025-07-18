@@ -1,7 +1,6 @@
 import swaggerJsdocLib from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { Express } from "express";
-import { receiptsDocs } from "./docs/routes/receipts.docs";
 
 const options: swaggerJsdocLib.Options = {
     swaggerDefinition: {

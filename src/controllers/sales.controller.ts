@@ -10,7 +10,7 @@ import {
 import { saleSchema } from "../zodSchema/sale.zondSchema";
 import appAssert from "../utils/appAssert";
 import { getUserProfile } from "../services/user.service";
-import { Prisma } from "@prisma/client";
+import { UserModel } from "@prisma/client";
 
 export const addSaleHandler = catchErrors(
     async (req: Request, res: Response) => {
@@ -43,7 +43,7 @@ export const addSaleHandler = catchErrors(
         );
 
         // Fetch user profile for defaults
-        const userProfile = (await getUserProfile(userId)) as Prisma.UserModelGetPayload<{}>;
+        const userProfile = (await getUserProfile(userId)) as UserModel;
         const finalCurrencyCode =
             currencyCode || userProfile.defaultCurrencyCode || "USD";
         const finalCurrencySymbol =

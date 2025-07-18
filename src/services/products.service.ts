@@ -1,7 +1,7 @@
-import { IProductCategoryData, IProductData } from "../constants/types";
+import { IProductData } from "../constants/types";
 import prisma from "../config/db";
 import AppError from "../errors/AppError";
-import { CONFLICT, UNAUTHORIZED } from "../constants/http";
+import { UNAUTHORIZED } from "../constants/http";
 
 export const createProduct = async (
     productData: IProductData,

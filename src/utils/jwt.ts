@@ -10,7 +10,6 @@ import {
 // Load environment variables from .env file
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET;
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 
@@ -31,6 +30,7 @@ export const verifyAccessToken = (id: string) => {
     } catch (error) {
         handleJwtError(error);
     }
+    throw new Error("Unreachable");
 };
 
 export const verifyRefreshToken = (id: string) => {
@@ -44,6 +44,7 @@ export const verifyRefreshToken = (id: string) => {
     } catch (error) {
         handleJwtError(error);
     }
+    throw new Error("Unreachable");
 };
 
 const handleJwtError = (error: any) => {

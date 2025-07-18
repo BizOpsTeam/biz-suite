@@ -1,4 +1,4 @@
-import { startOfToday, subDays, subMonths, subWeeks, subYears } from "date-fns";
+import { startOfToday, subDays, subWeeks, subYears } from "date-fns";
 import prisma from "../config/db";
 import { BAD_REQUEST } from "../constants/http";
 import { TSaleData } from "../constants/types";

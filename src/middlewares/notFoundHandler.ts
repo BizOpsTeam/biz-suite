@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import AppError from "../errors/AppError";
 import { NOT_FOUND } from "../constants/http";
 
-const notFoundHandler = (req: Request, res: Response, next: NextFunction) => {
+const notFoundHandler = (req: Request, _res: Response, next: NextFunction) => {
     next(
         new AppError(
             NOT_FOUND,

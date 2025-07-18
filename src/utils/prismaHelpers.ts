@@ -1,4 +1,3 @@
-import { format } from "date-fns";
 import prisma from "../config/db";
 
 export const generateInvoiceNumber = async (ownerId: string) => {

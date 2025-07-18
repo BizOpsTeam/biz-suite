@@ -46,7 +46,7 @@ export const deleteCustomerGroup = async (id: string, ownerId: string) => {
 export const assignGroupsToCustomer = async (
     customerId: string,
     groupIds: string[],
-    ownerId: string,
+    _ownerId: string,
 ) => {
     // Remove all existing memberships for this customer
     await prisma.customerGroupMembership.deleteMany({
