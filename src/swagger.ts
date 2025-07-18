@@ -15,6 +15,10 @@ const options: swaggerJsdocLib.Options = {
                 url: "http://localhost:4000",
                 description: "Development server",
             },
+            {
+                url: "https://biz-suite-voarww.fly.dev",
+                description: "Deployed Server"
+            }
         ],
         components: {
             schemas: {
