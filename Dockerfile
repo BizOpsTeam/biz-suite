@@ -16,11 +16,11 @@ RUN pnpm install
 # Copy the rest of the application code
 COPY . .
 
+# Generate Prisma client (MUST be before build)
+RUN pnpm exec prisma generate
+
 # Build TypeScript
 RUN pnpm run build
-
-# Run Prisma migrations (for production)
-RUN pnpm exec prisma generate
 
 # Expose the port the app runs on
 EXPOSE 4000
