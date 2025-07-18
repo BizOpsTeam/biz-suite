@@ -1,6 +1,7 @@
 import prisma from "../config/db";
 import { Receipt } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
+import { Prisma } from "@prisma/client";
 
 /**
  * Creates a receipt for a given invoice and user.
@@ -11,12 +12,16 @@ import { v4 as uuidv4 } from "uuid";
 export async function createReceiptForInvoice(
     invoiceId: string,
     issuedById: string,
+    tx?: Prisma.TransactionClient,
 ): Promise<Receipt> {
     // Generate a unique receipt number (could be improved for custom logic)
     const receiptNumber = `RCPT-${Date.now()}-${uuidv4().slice(0, 8)}`;
 
+    // Use tx if provided, otherwise default prisma
+    const client = tx || prisma;
+
     // Ensure invoice exists and is not already receipted
-    const invoice = await prisma.invoice.findUnique({
+    const invoice = await client.invoice.findUnique({
         where: { id: invoiceId },
         include: { receipt: true },
     });
@@ -24,7 +29,7 @@ export async function createReceiptForInvoice(
     if (invoice.receipt)
         throw new Error("Receipt already exists for this invoice");
 
-    const receipt = await prisma.receipt.create({
+    const receipt = await client.receipt.create({
         data: {
             receiptNumber,
             invoiceId,

@@ -8,38 +8,36 @@ import { Prisma } from "@prisma/client";
 import { createReceiptForInvoice } from "./receipts.service";
 
 export const createSale = async (saleData: TSaleData, ownerId: string) => {
-    const sale = await prisma.$transaction(
+    return await prisma.$transaction(
         async (tx: Prisma.TransactionClient) => {
-            //make sure there are enough products in inventory to
+            // 1. Fetch all products needed for the sale in one go
+            const productIds = saleData.items.map(item => item.productId);
+            const products = await tx.product.findMany({
+                where: { id: { in: productIds } },
+                select: { id: true, stock: true, cost: true }
+            });
+            const productMap: Record<string, { id: string; stock: number; cost: number | null }> = Object.fromEntries(products.map(p => [p.id, { ...p }]));
+
+            // 2. Check stock and prepare updates in memory
             for (const item of saleData.items) {
-                const product = await tx.product.findUnique({
-                    where: { id: item.productId },
-                });
-
+                const product = productMap[item.productId];
                 if (!product || product.stock < item.quantity) {
-                    throw new AppError(
-                        BAD_REQUEST,
-                        `INSUFFICIENT_STOCK for product ${product?.id}`,
-                    );
+                    throw new AppError(BAD_REQUEST, `INSUFFICIENT_STOCK for product ${item.productId}`);
                 }
-
-                await tx.product.update({
-                    where: { id: item.productId },
-                    data: { stock: { decrement: item.quantity } },
-                });
-
-                // Low stock alert (threshold: 5)
-                const updatedProduct = await tx.product.findUnique({
-                    where: { id: item.productId },
-                });
-                if (updatedProduct && updatedProduct.stock < 5) {
-                    console.warn(
-                        `LOW STOCK ALERT: Product ${updatedProduct.id} has only ${updatedProduct.stock} left.`,
-                    );
-                    // Optionally, trigger notification/email here
-                }
+                product.stock -= item.quantity; // decrement in memory
             }
 
+            // 3. Update all product stocks in parallel
+            await Promise.all(
+                saleData.items.map(item =>
+                    tx.product.update({
+                        where: { id: item.productId },
+                        data: { stock: { decrement: item.quantity } }
+                    })
+                )
+            );
+
+            // 4. Create the sale
             const newSale = await tx.sale.create({
                 data: {
                     channel: saleData.channel,
@@ -48,38 +46,25 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
                     paymentMethod: saleData.paymentMethod,
                     taxAmount: saleData.totalAmount,
                     totalAmount: saleData.totalAmount,
-                    status:
-                        saleData.paymentMethod === "CREDIT"
-                            ? "pending"
-                            : "completed",
+                    status: saleData.paymentMethod === "CREDIT" ? "pending" : "completed",
                     notes: saleData.notes,
                     ownerId: ownerId,
                 },
             });
 
-            // Fetch product costs for all items
-            const productIds = saleData.items.map((item) => item.productId);
-            const products = await tx.product.findMany({
-                where: { id: { in: productIds } },
-                select: { id: true, cost: true },
-            });
-            const productCostMap = Object.fromEntries(
-                products.map((p) => [p.id, p.cost]),
-            );
-
-            const saleItemsData = saleData.items.map((item) => ({
+            // 5. Prepare sale items with cost
+            const saleItemsData = saleData.items.map(item => ({
                 saleId: newSale.id,
                 productId: item.productId,
                 quantity: item.quantity,
                 price: item.price,
                 discount: item.discount,
                 tax: item.tax,
-                cost: productCostMap[item.productId] ?? null, // set cost at time of sale
+                cost: productMap[item.productId]?.cost ?? null,
             }));
-
             await tx.saleItem.createMany({ data: saleItemsData });
 
-            // Always create an invoice for every sale
+            // 6. Create invoice
             const invoiceNumber = await generateInvoiceNumber(ownerId);
             const newInvoice = await tx.invoice.create({
                 data: {
@@ -95,20 +80,24 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
                 },
             });
 
-            // If payment method is not CREDIT, create a receipt
+            // 7. Create receipt if not CREDIT
             let newReceipt = null;
             if (saleData.paymentMethod !== "CREDIT") {
-                newReceipt = await createReceiptForInvoice(
-                    newInvoice.id,
-                    ownerId,
-                );
+                newReceipt = await createReceiptForInvoice(newInvoice.id, ownerId, tx);
+            }
+
+            // 8. Low stock alert (after all updates)
+            for (const product of Object.values(productMap)) {
+                if (product.stock < 5) {
+                    console.warn(`LOW STOCK ALERT: Product ${product.id} has only ${product.stock} left.`);
+                    // Optionally, trigger notification/email here
+                }
             }
 
             return { newSale, newInvoice, newReceipt };
         },
+        { timeout: 15000 } // 15 seconds
     );
-
-    return sale;
 };
 
 export const getSalesStats = async (period: string, ownerId: string) => {
