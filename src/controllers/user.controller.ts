@@ -51,24 +51,30 @@ export const uploadLogoHandler = [
 
 export const createCustomerHandler = catchErrors(
     async (req: Request, res: Response, next: NextFunction) => {
+        const userId = req.user?.id;
+        appAssert(userId, 401, "Unauthorized");
         const validated = createCustomerSchema.parse(req.body);
-        const customer = await createCustomer(validated);
+        const customer = await createCustomer({ ...validated, ownerId: userId });
         res.status(201).json({ success: true, data: customer });
     },
 );
 
 export const getCustomersHandler = catchErrors(
     async (req: Request, res: Response, next: NextFunction) => {
-        const customers = await getCustomers();
+        const userId = req.user?.id;
+        appAssert(userId, 401, "Unauthorized");
+        const customers = await getCustomers(userId);
         res.json({ success: true, data: customers });
     },
 );
 
 export const getCustomerByIdHandler = catchErrors(
     async (req: Request, res: Response, next: NextFunction) => {
+        const userId = req.user?.id;
+        appAssert(userId, 401, "Unauthorized");
         const { id } = req.params;
-        const customer = await getCustomerById(id);
-        if (customer == null) {
+        const customer = await getCustomerById(id, userId);
+        if (!customer) {
             return res
                 .status(404)
                 .json({ success: false, message: "Customer not found" });
@@ -79,9 +85,11 @@ export const getCustomerByIdHandler = catchErrors(
 
 export const updateCustomerHandler = catchErrors(
     async (req: Request, res: Response, next: NextFunction) => {
+        const userId = req.user?.id;
+        appAssert(userId, 401, "Unauthorized");
         const { id } = req.params;
         const validated = updateCustomerSchema.parse(req.body);
-        const customer = await updateCustomer(id, validated);
+        const customer = await updateCustomer(id, userId, validated);
         if (customer == null) {
             return res
                 .status(404)
@@ -93,9 +101,11 @@ export const updateCustomerHandler = catchErrors(
 
 export const deleteCustomerHandler = catchErrors(
     async (req: Request, res: Response, next: NextFunction) => {
+        const userId = req.user?.id;
+        appAssert(userId, 401, "Unauthorized");
         const { id } = req.params;
-        const customer = await deleteCustomer(id);
-        if (customer == null) {
+        const customer = await deleteCustomer(id, userId);
+        if (!customer) {
             return res
                 .status(404)
                 .json({ success: false, message: "Customer not found" });
@@ -118,12 +128,8 @@ export const getCustomerStatementHandler = catchErrors(async (req, res) => {
     const userId = req.user?.id;
     appAssert(userId, 401, "Unauthorized");
     const { id } = req.params;
-    const startDate = req.query.startDate
-        ? new Date(req.query.startDate as string)
-        : undefined;
-    const endDate = req.query.endDate
-        ? new Date(req.query.endDate as string)
-        : undefined;
-    const data = await getCustomerStatement(id, startDate, endDate);
+    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+    const data = await getCustomerStatement(id, userId, startDate, endDate);
     res.status(200).json({ data, message: "Customer statement fetched" });
 });

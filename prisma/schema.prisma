@@ -46,6 +46,7 @@ model UserModel {
   expenseCategories        ExpenseCategory[]     // Categories owned by this user
   stockAdjustments         StockAdjustment[]
   customerGroups           CustomerGroup[]
+  customers                Customer[]
 }
 
 
@@ -240,6 +241,8 @@ model Customer {
   address   String?
   sales     Sale[]
   memberships CustomerGroupMembership[]
+  ownerId   String
+  owner     UserModel @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
