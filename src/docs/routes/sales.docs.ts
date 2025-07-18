@@ -10,12 +10,43 @@ export const salesDocs = `
 
 /**
  * @swagger
- * /sales/add:
+ * /sales:
  *   post:
- *     summary: Add a new sale
+ *     summary: Add a new sale (your business only)
  *     tags: [Sales]
  *     security:
  *       - bearerAuth: []
+ *     description: |
+ *       Creates a new sale tied to the authenticated user. You can only reference products and customers you own (your business only).
+ *
+ *       Sample Request Body:
+ *
+ *           {
+ *             "customerId": "c1234567-89ab-4def-0123-456789abcdef",
+ *             "paymentMethod": "CASH",
+ *             "channel": "in-store",
+ *             "notes": "Customer bought 2 items.",
+ *             "items": [
+ *               {
+ *                 "productId": "p1234567-89ab-4def-0123-456789abcdef",
+ *                 "quantity": 2,
+ *                 "price": 12.99,
+ *                 "discount": 1.00,
+ *                 "tax": 0.50
+ *               },
+ *               {
+ *                 "productId": "p9876543-21ba-4fed-0987-654321fedcba",
+ *                 "quantity": 1,
+ *                 "price": 20.00,
+ *                 "discount": 0.00,
+ *                 "tax": 1.00
+ *               }
+ *             ],
+ *             "currencyCode": "USD",
+ *             "currencySymbol": "$",
+ *             "taxRate": 0.075,
+ *             "dueDate": "2024-07-01T00:00:00.000Z" // optional, required for CREDIT sales
+ *           }
  *     requestBody:
  *       required: true
  *       content:

@@ -8,7 +8,7 @@ import {
 
 const salesRoutes = Router();
 
-salesRoutes.post("/add", addSaleHandler);
+salesRoutes.post("/", addSaleHandler);
 salesRoutes.get("/stats", getSalesStatsHandler);
 salesRoutes.get("/", getAllSalesHandler);
 salesRoutes.delete("/:saleId", deleteSaleHandler);

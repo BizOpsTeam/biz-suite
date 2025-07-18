@@ -33,10 +33,11 @@ export const userDocs = `
  * @swagger
  * /users/customers:
  *   post:
- *     summary: Create a new customer
+ *     summary: Create a new customer (your business only)
  *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
+ *     description: Creates a new customer tied to the authenticated user. You can only access customers you have created (your business only).
  *     requestBody:
  *       required: true
  *       content:
@@ -72,10 +73,11 @@ export const userDocs = `
  * @swagger
  * /users/customers:
  *   get:
- *     summary: Get all customers
+ *     summary: Get all customers (your business only)
  *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
+ *     description: Returns all customers created by the authenticated user. You can only access customers you have created (your business only).
  *     responses:
  *       200:
  *         description: List of customers
@@ -98,10 +100,11 @@ export const userDocs = `
  * @swagger
  * /users/customers/{id}:
  *   get:
- *     summary: Get a customer by ID
+ *     summary: Get a customer by ID (your business only)
  *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
+ *     description: Returns a customer by ID, but only if you created them. You can only access customers you have created (your business only).
  *     parameters:
  *       - in: path
  *         name: id
@@ -131,10 +134,11 @@ export const userDocs = `
  * @swagger
  * /users/customers/{id}:
  *   patch:
- *     summary: Update a customer
+ *     summary: Update a customer (your business only)
  *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
+ *     description: Updates a customer, but only if you created them. You can only update customers you have created (your business only).
  *     parameters:
  *       - in: path
  *         name: id
@@ -188,10 +192,11 @@ export const userDocs = `
  * @swagger
  * /users/customers/{id}:
  *   delete:
- *     summary: Delete a customer
+ *     summary: Delete a customer (your business only)
  *     tags: [Customers]
  *     security:
  *       - bearerAuth: []
+ *     description: Deletes a customer, but only if you created them. You can only delete customers you have created (your business only).
  *     parameters:
  *       - in: path
  *         name: id
@@ -201,16 +206,7 @@ export const userDocs = `
  *         description: The customer ID
  *     responses:
  *       200:
- *         description: Customer deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
+ *         description: Customer deleted
  *       404:
  *         description: Customer not found
  *       401:
