@@ -82,15 +82,15 @@ export const verifyEmail = async (email: string) => {
 };
 
 export async function sendInvoiceEmail(
-  to: string,
-  pdfBuffer: Buffer,
-  pdfData: InvoicePdfData
+    to: string,
+    pdfBuffer: Buffer,
+    pdfData: InvoicePdfData,
 ) {
-  await resend.emails.send({
-    from: `${pdfData.companyName} <invoices@resend.dev>`,
-    to,
-    subject: `Your Invoice #${pdfData.invoiceNumber}`,
-    html: `
+    await resend.emails.send({
+        from: `${pdfData.companyName} <invoices@resend.dev>`,
+        to,
+        subject: `Your Invoice #${pdfData.invoiceNumber}`,
+        html: `
       <p>Dear ${pdfData.customerName || "Customer"},</p>
       <p>Thank you for your business. Please find your invoice attached.</p>
       <ul>
@@ -102,11 +102,11 @@ export async function sendInvoiceEmail(
       <p>If you have any questions, reply to this email.</p>
       <p>Best regards,<br/>${pdfData.companyName}</p>
     `,
-    attachments: [
-      {
-        filename: `invoice-${pdfData.invoiceNumber}.pdf`,
-        content: pdfBuffer,
-      },
-    ],
-  });
+        attachments: [
+            {
+                filename: `invoice-${pdfData.invoiceNumber}.pdf`,
+                content: pdfBuffer,
+            },
+        ],
+    });
 }

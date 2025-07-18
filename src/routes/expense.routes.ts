@@ -15,4 +15,4 @@ router.get("/:id", getExpenseHandler);
 router.patch("/:id", updateExpenseHandler);
 router.delete("/:id", deleteExpenseHandler);
 
-export default router; 
+export default router;

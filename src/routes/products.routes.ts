@@ -10,10 +10,10 @@ import { authenticateUser } from "../middlewares/authenticateUser";
 
 const productsRoutes = Router();
 
-productsRoutes.get("/", authenticateUser ,getProductsHandler);
-productsRoutes.get("/:id",authenticateUser, getProductHandler);
-productsRoutes.post("/add", authenticateUser ,addProductHandler);
-productsRoutes.patch("/:id", authenticateUser,updateProductHandler);
+productsRoutes.get("/", authenticateUser, getProductsHandler);
+productsRoutes.get("/:id", authenticateUser, getProductHandler);
 productsRoutes.get("/search", authenticateUser, productSearchHandler);
+productsRoutes.post("/", authenticateUser, addProductHandler);
+productsRoutes.patch("/:id", authenticateUser, updateProductHandler);
 
 export default productsRoutes;

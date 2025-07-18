@@ -2,42 +2,42 @@
 // Usage: import and call generateReceiptHTML({ ... })
 
 export interface ReceiptTemplateData {
-  company: {
-    logoUrl?: string;
-    name: string;
-    address?: string;
-    phone?: string;
-    email?: string;
-  };
-  customer: {
-    name: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-  };
-  receipt: {
-    number: string;
-    issuedAt: string; // formatted date
-    invoiceNumber: string;
-    paymentMethod: string;
-  };
-  items: Array<{
-    description: string;
-    quantity: number;
-    unitPrice: number;
-    total: number;
-  }>;
-  summary: {
-    subtotal: number;
-    tax: number;
-    total: number;
-    currencySymbol: string;
-  };
-  paidAt: string; // formatted date
+    company: {
+        logoUrl?: string;
+        name: string;
+        address?: string;
+        phone?: string;
+        email?: string;
+    };
+    customer: {
+        name: string;
+        email?: string;
+        phone?: string;
+        address?: string;
+    };
+    receipt: {
+        number: string;
+        issuedAt: string; // formatted date
+        invoiceNumber: string;
+        paymentMethod: string;
+    };
+    items: Array<{
+        description: string;
+        quantity: number;
+        unitPrice: number;
+        total: number;
+    }>;
+    summary: {
+        subtotal: number;
+        tax: number;
+        total: number;
+        currencySymbol: string;
+    };
+    paidAt: string; // formatted date
 }
 
 export function generateReceiptHTML(data: ReceiptTemplateData): string {
-  return `
+    return `
   <!DOCTYPE html>
   <html lang="en">
   <head>
@@ -166,12 +166,12 @@ export function generateReceiptHTML(data: ReceiptTemplateData): string {
     <div class="container">
       <div class="header">
         <div class="company-info">
-          ${data.company.logoUrl ? `<img src="${data.company.logoUrl}" class="company-logo" alt="Logo" />` : ''}
+          ${data.company.logoUrl ? `<img src="${data.company.logoUrl}" class="company-logo" alt="Logo" />` : ""}
           <div class="company-details">
             <div><strong>${data.company.name}</strong></div>
-            ${data.company.address ? `<div>${data.company.address}</div>` : ''}
-            ${data.company.phone ? `<div>Phone: ${data.company.phone}</div>` : ''}
-            ${data.company.email ? `<div>Email: ${data.company.email}</div>` : ''}
+            ${data.company.address ? `<div>${data.company.address}</div>` : ""}
+            ${data.company.phone ? `<div>Phone: ${data.company.phone}</div>` : ""}
+            ${data.company.email ? `<div>Email: ${data.company.email}</div>` : ""}
           </div>
         </div>
         <div class="receipt-title">RECEIPT</div>
@@ -207,13 +207,13 @@ export function generateReceiptHTML(data: ReceiptTemplateData): string {
             <td><strong>Billed To:</strong></td>
             <td>${data.customer.name}</td>
             <td><strong>Email:</strong></td>
-            <td>${data.customer.email || ''}</td>
+            <td>${data.customer.email || ""}</td>
           </tr>
           <tr>
             <td><strong>Phone:</strong></td>
-            <td>${data.customer.phone || ''}</td>
+            <td>${data.customer.phone || ""}</td>
             <td><strong>Address:</strong></td>
-            <td>${data.customer.address || ''}</td>
+            <td>${data.customer.address || ""}</td>
           </tr>
         </table>
       </div>
@@ -229,14 +229,18 @@ export function generateReceiptHTML(data: ReceiptTemplateData): string {
             </tr>
           </thead>
           <tbody>
-            ${data.items.map(item => `
+            ${data.items
+                .map(
+                    (item) => `
               <tr>
                 <td>${item.description}</td>
                 <td>${item.quantity}</td>
                 <td>${data.summary.currencySymbol}${item.unitPrice.toFixed(2)}</td>
                 <td>${data.summary.currencySymbol}${item.total.toFixed(2)}</td>
               </tr>
-            `).join('')}
+            `,
+                )
+                .join("")}
           </tbody>
         </table>
         <table class="summary-table">
@@ -257,11 +261,11 @@ export function generateReceiptHTML(data: ReceiptTemplateData): string {
 
       <div class="footer">
         <div>Thank you for your business!</div>
-        <div>If you have any questions, contact us at ${data.company.email || 'our support email'}.</div>
+        <div>If you have any questions, contact us at ${data.company.email || "our support email"}.</div>
         <div style="margin-top: 8px; font-size: 0.95em; color: #bbb;">This receipt is generated electronically and is valid without a signature.</div>
       </div>
     </div>
   </body>
   </html>
   `;
-} 
+}

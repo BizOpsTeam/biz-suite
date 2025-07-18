@@ -64,4 +64,4 @@ export const customerDocs = `
  *       404:
  *         description: Not found
  */
-`; 
+`;

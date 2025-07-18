@@ -63,9 +63,15 @@ export async function getUserProfile(userId: string) {
     return user;
 }
 
-export async function getCustomerStatement(customerId: string, startDate?: Date, endDate?: Date) {
+export async function getCustomerStatement(
+    customerId: string,
+    startDate?: Date,
+    endDate?: Date,
+) {
     // Fetch customer
-    const customer = await prisma.customer.findUnique({ where: { id: customerId } });
+    const customer = await prisma.customer.findUnique({
+        where: { id: customerId },
+    });
     if (!customer) throw new Error("Customer not found");
     // Fetch sales for customer in date range
     const saleWhere: any = { customerId };
@@ -82,7 +88,7 @@ export async function getCustomerStatement(customerId: string, startDate?: Date,
     });
     // Payments: if you have a payment model, fetch here. For now, assume only sales.
     // Build statement
-    const statement = sales.map(sale => ({
+    const statement = sales.map((sale) => ({
         date: sale.createdAt,
         type: "sale",
         amount: sale.totalAmount,

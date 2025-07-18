@@ -212,4 +212,4 @@ export const customerGroupDocs = `
  *       404:
  *         description: Not found
  */
-`; 
+`;

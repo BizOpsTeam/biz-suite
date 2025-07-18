@@ -134,4 +134,4 @@ export const stockAdjustmentDocs = `
  *       404:
  *         description: Not found
  */
-`; 
+`;

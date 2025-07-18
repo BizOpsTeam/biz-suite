@@ -151,4 +151,4 @@ export const productCategoryDocs = `
  *       404:
  *         description: Category not found or not owned by user
  */
-`; 
+`;

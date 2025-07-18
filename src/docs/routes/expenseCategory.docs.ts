@@ -142,4 +142,4 @@ export const expenseCategoryDocs = `
  *       404:
  *         description: Not found
  */
-`; 
+`;

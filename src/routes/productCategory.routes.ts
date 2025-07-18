@@ -4,7 +4,7 @@ import {
     getProductCategoriesHandler,
     getProductCategoryHandler,
     updateCategoryHandler,
-    deleteCategoryHandler
+    deleteCategoryHandler,
 } from "../controllers/productCategory.controller";
 
 const productCategoryRoutes = Router();
@@ -15,4 +15,4 @@ productCategoryRoutes.get("/:id", getProductCategoryHandler);
 productCategoryRoutes.patch("/:id", updateCategoryHandler);
 productCategoryRoutes.delete("/:id", deleteCategoryHandler);
 
-export default productCategoryRoutes; 
+export default productCategoryRoutes;

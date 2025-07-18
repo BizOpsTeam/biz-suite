@@ -8,4 +8,4 @@ export const expenseSchema = z.object({
     isRecurring: z.boolean().optional(),
     recurrenceType: z.enum(["DAILY", "WEEKLY", "MONTHLY", "YEARLY"]).optional(),
     nextDueDate: z.coerce.date().optional(),
-}); 
+});

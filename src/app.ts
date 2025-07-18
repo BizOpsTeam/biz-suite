@@ -80,6 +80,23 @@ cron.schedule("0 0 * * *", async () => {
     console.log("[CRON] Recurring expenses processed.");
 });
 
+// Global error handler for invalid JSON
+app.use((err: any, req: any, res: any, next: any) => {
+    if (
+        err instanceof SyntaxError &&
+        typeof (err as any).status === "number" &&
+        (err as any).status === 400 &&
+        "body" in err
+    ) {
+        return res
+            .status(400)
+            .json({
+                message: "Invalid JSON: Please check your request body syntax.",
+            });
+    }
+    next(err);
+});
+
 // Not found handler for unmatched routes
 app.use(notFoundHandler);
 

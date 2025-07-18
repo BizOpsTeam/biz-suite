@@ -135,18 +135,43 @@ export const productsDocs = `
 
 /**
  * @swagger
- * /products/add:
+ * /products:
  *   post:
- *     summary: Add a new product
+ *     summary: Add a new product (with optional image upload)
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/ProductInput'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "white underwear"
+ *               price:
+ *                 type: number
+ *                 example: 12.99
+ *               stock:
+ *                 type: integer
+ *                 example: 23
+ *               categoryId:
+ *                 type: string
+ *                 example: "5db2f312-c593-4363-971c-28034795f7cb"
+ *               description:
+ *                 type: string
+ *                 example: "a very beautiful underwear"
+ *               cost:
+ *                 type: number
+ *                 example: 10.5
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: "One or more image files (optional). If omitted, a placeholder image will be used."
  *     responses:
  *       201:
  *         description: Product added successfully
@@ -159,6 +184,8 @@ export const productsDocs = `
  *                   $ref: '#/components/schemas/Product'
  *                 message:
  *                   type: string
+ *       401:
+ *         description: Unauthorized
  */
 
 /**

@@ -13,4 +13,4 @@ router.post("/", addStockAdjustmentHandler);
 router.get("/:id", getStockAdjustmentHandler);
 router.delete("/:id", deleteStockAdjustmentHandler);
 
-export default router; 
+export default router;

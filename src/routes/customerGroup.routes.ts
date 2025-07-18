@@ -19,4 +19,4 @@ router.delete("/:id", deleteCustomerGroupHandler);
 router.post("/assign/:id", assignGroupsToCustomerHandler); // id = customerId
 router.get("/customers/by-group", getCustomersByGroupHandler);
 
-export default router; 
+export default router;

@@ -5,82 +5,88 @@ import { NOT_FOUND, BAD_REQUEST } from "../constants/http";
 // Use the existing prisma import from config/db
 
 export interface InvoicesQuery {
-  ownerId: string;
-  customerId?: string;
-  status?: string;
-  currencyCode?: string;
-  search?: string;
-  sort?: string; // e.g., 'createdAt:desc'
-  page?: number;
-  limit?: number;
-  startDate?: string;
-  endDate?: string;
+    ownerId: string;
+    customerId?: string;
+    status?: string;
+    currencyCode?: string;
+    search?: string;
+    sort?: string; // e.g., 'createdAt:desc'
+    page?: number;
+    limit?: number;
+    startDate?: string;
+    endDate?: string;
 }
 
 export const getInvoices = async (query: InvoicesQuery) => {
-  const {
-    ownerId,
-    customerId,
-    status,
-    currencyCode,
-    search,
-    sort = 'createdAt:desc',
-    page = 1,
-    limit = 20,
-    startDate,
-    endDate,
-  } = query;
+    const {
+        ownerId,
+        customerId,
+        status,
+        currencyCode,
+        search,
+        sort = "createdAt:desc",
+        page = 1,
+        limit = 20,
+        startDate,
+        endDate,
+    } = query;
 
-  const where: any = { ownerId };
-  if (customerId) where["sale"] = { customerId };
-  if (status) where.status = status;
-  if (currencyCode) where.currencyCode = currencyCode;
-  if (startDate || endDate) {
-    where.createdAt = {};
-    if (startDate) where.createdAt.gte = new Date(startDate);
-    if (endDate) where.createdAt.lte = new Date(endDate);
-  }
-  if (search) {
-    where.OR = [
-      { invoiceNumber: { contains: search, mode: 'insensitive' } },
-      { sale: { customer: { name: { contains: search, mode: 'insensitive' } } } },
-      { sale: { notes: { contains: search, mode: 'insensitive' } } },
-    ];
-  }
+    const where: any = { ownerId };
+    if (customerId) where["sale"] = { customerId };
+    if (status) where.status = status;
+    if (currencyCode) where.currencyCode = currencyCode;
+    if (startDate || endDate) {
+        where.createdAt = {};
+        if (startDate) where.createdAt.gte = new Date(startDate);
+        if (endDate) where.createdAt.lte = new Date(endDate);
+    }
+    if (search) {
+        where.OR = [
+            { invoiceNumber: { contains: search, mode: "insensitive" } },
+            {
+                sale: {
+                    customer: {
+                        name: { contains: search, mode: "insensitive" },
+                    },
+                },
+            },
+            { sale: { notes: { contains: search, mode: "insensitive" } } },
+        ];
+    }
 
-  // Sorting
-  let orderBy: any = { createdAt: 'desc' };
-  if (sort) {
-    const [field, direction] = sort.split(':');
-    orderBy = { [field]: direction === 'asc' ? 'asc' : 'desc' };
-  }
+    // Sorting
+    let orderBy: any = { createdAt: "desc" };
+    if (sort) {
+        const [field, direction] = sort.split(":");
+        orderBy = { [field]: direction === "asc" ? "asc" : "desc" };
+    }
 
-  // Pagination
-  const skip = (page - 1) * limit;
-  const take = limit;
+    // Pagination
+    const skip = (page - 1) * limit;
+    const take = limit;
 
-  // Query with count for pagination
-  const [invoices, total] = await Promise.all([
-    prisma.invoice.findMany({
-      where,
-      orderBy,
-      skip,
-      take,
-      include: {
-        sale: { include: { customer: true } },
-        owner: true,
-      },
-    }),
-    prisma.invoice.count({ where }),
-  ]);
+    // Query with count for pagination
+    const [invoices, total] = await Promise.all([
+        prisma.invoice.findMany({
+            where,
+            orderBy,
+            skip,
+            take,
+            include: {
+                sale: { include: { customer: true } },
+                owner: true,
+            },
+        }),
+        prisma.invoice.count({ where }),
+    ]);
 
-  return {
-    data: invoices,
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
-  };
+    return {
+        data: invoices,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+    };
 };
 
 export const searchProducts = async (
@@ -183,7 +189,7 @@ export async function getInvoiceWithDetails(invoiceId: string) {
             owner: true,
         },
     });
-    appAssert(invoice, NOT_FOUND, 'Invoice not found');
+    appAssert(invoice, NOT_FOUND, "Invoice not found");
     return invoice;
 }
 
@@ -194,7 +200,7 @@ export async function logInvoiceAuditEvent({
     eventDetails,
 }: {
     invoiceId: string;
-    eventType: 'VIEWED' | 'DOWNLOADED' | 'EMAILED';
+    eventType: "VIEWED" | "DOWNLOADED" | "EMAILED";
     userId?: string;
     eventDetails?: string;
 }) {

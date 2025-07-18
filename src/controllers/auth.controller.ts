@@ -141,8 +141,7 @@ export const refreshTokenHandler = catchErrors(async (req, res) => {
     //get refreshToken from request cookies
     const refreshToken = req.cookies["refreshToken"];
 
-
-    if (!refreshToken) { 
+    if (!refreshToken) {
         throw new AppError(
             UNAUTHORIZED,
             "No refresh token provided",

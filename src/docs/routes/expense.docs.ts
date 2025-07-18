@@ -182,4 +182,4 @@ export const expenseDocs = `
  *       404:
  *         description: Not found
  */
-`; 
+`;

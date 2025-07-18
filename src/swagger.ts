@@ -1,7 +1,7 @@
 import swaggerJsdocLib from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { Express } from "express";
-import { receiptsDocs } from './docs/routes/receipts.docs';
+import { receiptsDocs } from "./docs/routes/receipts.docs";
 
 const options: swaggerJsdocLib.Options = {
     swaggerDefinition: {
@@ -284,11 +284,16 @@ const options: swaggerJsdocLib.Options = {
                         ownerId: { type: "string" },
                         amount: { type: "number" },
                         categoryId: { type: "string" },
-                        category: { $ref: "#/components/schemas/ExpenseCategory" },
+                        category: {
+                            $ref: "#/components/schemas/ExpenseCategory",
+                        },
                         description: { type: "string" },
                         date: { type: "string", format: "date" },
                         isRecurring: { type: "boolean" },
-                        recurrenceType: { type: "string", enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"] },
+                        recurrenceType: {
+                            type: "string",
+                            enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
+                        },
                         nextDueDate: { type: "string", format: "date" },
                         createdAt: { type: "string", format: "date-time" },
                         updatedAt: { type: "string", format: "date-time" },
@@ -303,7 +308,10 @@ const options: swaggerJsdocLib.Options = {
                         description: { type: "string" },
                         date: { type: "string", format: "date" },
                         isRecurring: { type: "boolean" },
-                        recurrenceType: { type: "string", enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"] },
+                        recurrenceType: {
+                            type: "string",
+                            enum: ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
+                        },
                         nextDueDate: { type: "string", format: "date" },
                     },
                 },

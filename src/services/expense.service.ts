@@ -19,9 +19,11 @@ export const getExpenses = async (ownerId: string, filters: any = {}) => {
         where.date = { lte: filters.endDate };
     }
     if (filters.categoryId) where.categoryId = filters.categoryId;
-    if (filters.isRecurring !== undefined) where.isRecurring = filters.isRecurring;
+    if (filters.isRecurring !== undefined)
+        where.isRecurring = filters.isRecurring;
     if (filters.recurrenceType) where.recurrenceType = filters.recurrenceType;
-    if (filters.search) where.description = { contains: filters.search, mode: "insensitive" };
+    if (filters.search)
+        where.description = { contains: filters.search, mode: "insensitive" };
     return prisma.expense.findMany({
         where,
         orderBy: { date: "desc" },
@@ -30,20 +32,26 @@ export const getExpenses = async (ownerId: string, filters: any = {}) => {
 };
 
 export const getExpenseById = async (id: string, ownerId: string) => {
-    const expense = await prisma.expense.findUnique({ where: { id }, include: { category: true } });
-    if (!expense || expense.ownerId !== ownerId) throw new AppError(NOT_FOUND, "Expense not found");
+    const expense = await prisma.expense.findUnique({
+        where: { id },
+        include: { category: true },
+    });
+    if (!expense || expense.ownerId !== ownerId)
+        throw new AppError(NOT_FOUND, "Expense not found");
     return expense;
 };
 
 export const updateExpense = async (id: string, ownerId: string, data: any) => {
     const expense = await prisma.expense.findUnique({ where: { id } });
-    if (!expense || expense.ownerId !== ownerId) throw new AppError(UNAUTHORIZED, "Unauthorized");
+    if (!expense || expense.ownerId !== ownerId)
+        throw new AppError(UNAUTHORIZED, "Unauthorized");
     return prisma.expense.update({ where: { id }, data });
 };
 
 export const deleteExpense = async (id: string, ownerId: string) => {
     const expense = await prisma.expense.findUnique({ where: { id } });
-    if (!expense || expense.ownerId !== ownerId) throw new AppError(UNAUTHORIZED, "Unauthorized");
+    if (!expense || expense.ownerId !== ownerId)
+        throw new AppError(UNAUTHORIZED, "Unauthorized");
     return prisma.expense.delete({ where: { id } });
 };
 
@@ -73,10 +81,14 @@ export const processRecurringExpenses = async () => {
         });
         // Calculate next due date
         let nextDue: Date | undefined = undefined;
-        if (exp.recurrenceType === "DAILY") nextDue = add(exp.nextDueDate, { days: 1 });
-        if (exp.recurrenceType === "WEEKLY") nextDue = add(exp.nextDueDate, { weeks: 1 });
-        if (exp.recurrenceType === "MONTHLY") nextDue = add(exp.nextDueDate, { months: 1 });
-        if (exp.recurrenceType === "YEARLY") nextDue = add(exp.nextDueDate, { years: 1 });
+        if (exp.recurrenceType === "DAILY")
+            nextDue = add(exp.nextDueDate, { days: 1 });
+        if (exp.recurrenceType === "WEEKLY")
+            nextDue = add(exp.nextDueDate, { weeks: 1 });
+        if (exp.recurrenceType === "MONTHLY")
+            nextDue = add(exp.nextDueDate, { months: 1 });
+        if (exp.recurrenceType === "YEARLY")
+            nextDue = add(exp.nextDueDate, { years: 1 });
         // Only update if nextDue is a valid Date in the future
         if (nextDue) {
             if (isAfter(nextDue, today) || isEqual(nextDue, today)) {
@@ -87,4 +99,4 @@ export const processRecurringExpenses = async () => {
             }
         }
     }
-}; 
+};

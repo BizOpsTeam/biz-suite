@@ -5,7 +5,7 @@ import { TSaleData } from "../constants/types";
 import AppError from "../errors/AppError";
 import { generateInvoiceNumber } from "../utils/prismaHelpers";
 import { Prisma } from "@prisma/client";
-import { createReceiptForInvoice } from './receipts.service';
+import { createReceiptForInvoice } from "./receipts.service";
 
 export const createSale = async (saleData: TSaleData, ownerId: string) => {
     const sale = await prisma.$transaction(
@@ -63,7 +63,9 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
                 where: { id: { in: productIds } },
                 select: { id: true, cost: true },
             });
-            const productCostMap = Object.fromEntries(products.map(p => [p.id, p.cost]));
+            const productCostMap = Object.fromEntries(
+                products.map((p) => [p.id, p.cost]),
+            );
 
             const saleItemsData = saleData.items.map((item) => ({
                 saleId: newSale.id,
@@ -96,7 +98,10 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
             // If payment method is not CREDIT, create a receipt
             let newReceipt = null;
             if (saleData.paymentMethod !== "CREDIT") {
-                newReceipt = await createReceiptForInvoice(newInvoice.id, ownerId);
+                newReceipt = await createReceiptForInvoice(
+                    newInvoice.id,
+                    ownerId,
+                );
             }
 
             return { newSale, newInvoice, newReceipt };
@@ -194,83 +199,83 @@ export const getMonthlySalesStats = async (year: number, ownerId: string) => {
 };
 
 export interface SalesQuery {
-  ownerId: string;
-  customerId?: string;
-  paymentMethod?: string;
-  channel?: string;
-  status?: string;
-  search?: string;
-  sort?: string; // e.g., 'createdAt:desc'
-  page?: number;
-  limit?: number;
-  startDate?: string;
-  endDate?: string;
+    ownerId: string;
+    customerId?: string;
+    paymentMethod?: string;
+    channel?: string;
+    status?: string;
+    search?: string;
+    sort?: string; // e.g., 'createdAt:desc'
+    page?: number;
+    limit?: number;
+    startDate?: string;
+    endDate?: string;
 }
 
 export const getSales = async (query: SalesQuery) => {
-  const {
-    ownerId,
-    customerId,
-    paymentMethod,
-    channel,
-    status,
-    search,
-    sort = 'createdAt:desc',
-    page = 1,
-    limit = 20,
-    startDate,
-    endDate,
-  } = query;
+    const {
+        ownerId,
+        customerId,
+        paymentMethod,
+        channel,
+        status,
+        search,
+        sort = "createdAt:desc",
+        page = 1,
+        limit = 20,
+        startDate,
+        endDate,
+    } = query;
 
-  const where: any = { ownerId };
-  if (customerId) where.customerId = customerId;
-  if (paymentMethod) where.paymentMethod = paymentMethod;
-  if (channel) where.channel = channel;
-  if (status) where.status = status;
-  if (startDate || endDate) {
-    where.createdAt = {};
-    if (startDate) where.createdAt.gte = new Date(startDate);
-    if (endDate) where.createdAt.lte = new Date(endDate);
-  }
-  if (search) {
-    where.OR = [
-      { notes: { contains: search, mode: 'insensitive' } },
-      { customer: { name: { contains: search, mode: 'insensitive' } } },
-    ];
-  }
+    const where: any = { ownerId };
+    if (customerId) where.customerId = customerId;
+    if (paymentMethod) where.paymentMethod = paymentMethod;
+    if (channel) where.channel = channel;
+    if (status) where.status = status;
+    if (startDate || endDate) {
+        where.createdAt = {};
+        if (startDate) where.createdAt.gte = new Date(startDate);
+        if (endDate) where.createdAt.lte = new Date(endDate);
+    }
+    if (search) {
+        where.OR = [
+            { notes: { contains: search, mode: "insensitive" } },
+            { customer: { name: { contains: search, mode: "insensitive" } } },
+        ];
+    }
 
-  // Sorting
-  let orderBy: any = { createdAt: 'desc' };
-  if (sort) {
-    const [field, direction] = sort.split(':');
-    orderBy = { [field]: direction === 'asc' ? 'asc' : 'desc' };
-  }
+    // Sorting
+    let orderBy: any = { createdAt: "desc" };
+    if (sort) {
+        const [field, direction] = sort.split(":");
+        orderBy = { [field]: direction === "asc" ? "asc" : "desc" };
+    }
 
-  // Pagination
-  const skip = (page - 1) * limit;
-  const take = limit;
+    // Pagination
+    const skip = (page - 1) * limit;
+    const take = limit;
 
-  // Query with count for pagination
-  const [sales, total] = await Promise.all([
-    prisma.sale.findMany({
-      where,
-      orderBy,
-      skip,
-      take,
-      include: {
-        customer: true,
-      },
-    }),
-    prisma.sale.count({ where }),
-  ]);
+    // Query with count for pagination
+    const [sales, total] = await Promise.all([
+        prisma.sale.findMany({
+            where,
+            orderBy,
+            skip,
+            take,
+            include: {
+                customer: true,
+            },
+        }),
+        prisma.sale.count({ where }),
+    ]);
 
-  return {
-    data: sales,
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
-  };
+    return {
+        data: sales,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+    };
 };
 
 export const deleteSale = async (saleId: string, ownerId: string) => {

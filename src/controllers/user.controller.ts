@@ -22,19 +22,27 @@ import cloudinary from "../config/cloudinary";
 const logoStorage = new CloudinaryStorage({
     cloudinary,
     params: async (req, file) => ({
-        public_id: `company_logos/${Date.now()}-${file.originalname.replace(/\s+/g, '-')}`,
+        public_id: `company_logos/${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`,
         allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
         transformation: [{ width: 300, height: 150, crop: "limit" }],
     }),
 });
-const upload = multer({ storage: logoStorage, limits: { fileSize: 2 * 1024 * 1024 } }); // 2MB limit
+const upload = multer({
+    storage: logoStorage,
+    limits: { fileSize: 2 * 1024 * 1024 },
+}); // 2MB limit
 
 export const uploadLogoHandler = [
     upload.single("logo"),
     catchErrors(async (req: Request, res: Response) => {
         const file = req.file as Express.Multer.File & { path?: string };
         if (!file || !file.path) {
-            return res.status(400).json({ success: false, message: "No file uploaded or upload failed." });
+            return res
+                .status(400)
+                .json({
+                    success: false,
+                    message: "No file uploaded or upload failed.",
+                });
         }
         const url = file.path;
         res.json({ success: true, url });
@@ -110,8 +118,12 @@ export const getCustomerStatementHandler = catchErrors(async (req, res) => {
     const userId = req.user?.id;
     appAssert(userId, 401, "Unauthorized");
     const { id } = req.params;
-    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
-    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+    const startDate = req.query.startDate
+        ? new Date(req.query.startDate as string)
+        : undefined;
+    const endDate = req.query.endDate
+        ? new Date(req.query.endDate as string)
+        : undefined;
     const data = await getCustomerStatement(id, startDate, endDate);
     res.status(200).json({ data, message: "Customer statement fetched" });
 });

@@ -14,39 +14,45 @@ import catchErrors from "../utils/catchErrors";
 import { updateInvoicePaymentSchema } from "../zodSchema/invoice.zodSchema";
 import { Request, Response, NextFunction } from "express";
 
-export const getInvoicesHandler = catchErrors(async (req: Request, res: Response) => {
-    const ownerId = req.user?.id;
-    appAssert(ownerId, UNAUTHORIZED, "Unauthorized, login to fetch invoices");
+export const getInvoicesHandler = catchErrors(
+    async (req: Request, res: Response) => {
+        const ownerId = req.user?.id;
+        appAssert(
+            ownerId,
+            UNAUTHORIZED,
+            "Unauthorized, login to fetch invoices",
+        );
 
-    const {
-      customerId,
-      status,
-      currencyCode,
-      search,
-      sort,
-      page = '1',
-      limit = '20',
-      startDate,
-      endDate,
-    } = req.query;
+        const {
+            customerId,
+            status,
+            currencyCode,
+            search,
+            sort,
+            page = "1",
+            limit = "20",
+            startDate,
+            endDate,
+        } = req.query;
 
-    const result = await getInvoices({
-      ownerId,
-      customerId: customerId as string | undefined,
-      status: status as string | undefined,
-      currencyCode: currencyCode as string | undefined,
-      search: search as string | undefined,
-      sort: sort as string | undefined,
-      page: parseInt(page as string, 10) || 1,
-      limit: parseInt(limit as string, 10) || 20,
-      startDate: startDate as string | undefined,
-      endDate: endDate as string | undefined,
-    });
-    return res.status(OK).json({
-      ...result,
-      message: "invoices returned successfully",
-    });
-});
+        const result = await getInvoices({
+            ownerId,
+            customerId: customerId as string | undefined,
+            status: status as string | undefined,
+            currencyCode: currencyCode as string | undefined,
+            search: search as string | undefined,
+            sort: sort as string | undefined,
+            page: parseInt(page as string, 10) || 1,
+            limit: parseInt(limit as string, 10) || 20,
+            startDate: startDate as string | undefined,
+            endDate: endDate as string | undefined,
+        });
+        return res.status(OK).json({
+            ...result,
+            message: "invoices returned successfully",
+        });
+    },
+);
 
 export const productSearchHandler = catchErrors(async (req, res) => {
     const ownerId = req.user?.id;
@@ -91,7 +97,11 @@ export const downloadInvoicePdfHandler = catchErrors(async (req, res) => {
     appAssert(ownerId, UNAUTHORIZED, "Unauthorized, login to download invoice");
 
     const invoice = await getInvoiceWithDetails(id);
-    appAssert(invoice.ownerId === ownerId, UNAUTHORIZED, "You do not have access to this invoice");
+    appAssert(
+        invoice.ownerId === ownerId,
+        UNAUTHORIZED,
+        "You do not have access to this invoice",
+    );
 
     // Log audit event
     await logInvoiceAuditEvent({
@@ -102,7 +112,9 @@ export const downloadInvoicePdfHandler = catchErrors(async (req, res) => {
 
     // Map invoice to InvoicePdfData
     const pdfData: InvoicePdfData = {
-        companyLogoUrl: invoice.owner.logoUrl || "https://dummyimage.com/120x60/2b6cb0/fff&text=LOGO",
+        companyLogoUrl:
+            invoice.owner.logoUrl ||
+            "https://dummyimage.com/120x60/2b6cb0/fff&text=LOGO",
         companyName: invoice.owner.name,
         companyAddress: invoice.owner.companyAddress || "",
         companyEmail: invoice.owner.email,
@@ -123,7 +135,12 @@ export const downloadInvoicePdfHandler = catchErrors(async (req, res) => {
             unitPrice: item.price,
             total: (item.price * item.quantity).toFixed(2),
         })),
-        subtotal: invoice.sale.saleItems.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0).toFixed(2),
+        subtotal: invoice.sale.saleItems
+            .reduce(
+                (sum: number, item: any) => sum + item.price * item.quantity,
+                0,
+            )
+            .toFixed(2),
         discount: invoice.sale.discount?.toFixed(2) || "0.00",
         tax: invoice.taxAmount?.toFixed(2) || "0.00",
         total: invoice.amountDue?.toFixed(2) || "0.00",
@@ -131,14 +148,15 @@ export const downloadInvoicePdfHandler = catchErrors(async (req, res) => {
         balanceDue: (invoice.amountDue - invoice.paidAmount).toFixed(2),
         currencyCode: invoice.currencyCode,
         currencySymbol: invoice.currencySymbol,
-        footerNote: "Payment is due by the due date. Thank you for your business!",
+        footerNote:
+            "Payment is due by the due date. Thank you for your business!",
         supportEmail: invoice.owner.email,
     };
 
     const pdfBuffer = await generateInvoicePdf(pdfData);
     res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=invoice-${invoice.invoiceNumber}.pdf`,
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename=invoice-${invoice.invoiceNumber}.pdf`,
     });
     res.send(pdfBuffer);
 });
@@ -149,7 +167,11 @@ export const emailInvoicePdfHandler = catchErrors(async (req, res) => {
     appAssert(ownerId, UNAUTHORIZED, "Unauthorized, login to email invoice");
 
     const invoice = await getInvoiceWithDetails(id);
-    appAssert(invoice.ownerId === ownerId, UNAUTHORIZED, "You do not have access to this invoice");
+    appAssert(
+        invoice.ownerId === ownerId,
+        UNAUTHORIZED,
+        "You do not have access to this invoice",
+    );
     appAssert(invoice.sale.customer?.email, 400, "Customer email not found");
 
     // Log audit event
@@ -162,7 +184,9 @@ export const emailInvoicePdfHandler = catchErrors(async (req, res) => {
 
     // Map invoice to InvoicePdfData (reuse logic above)
     const pdfData: InvoicePdfData = {
-        companyLogoUrl: invoice.owner.logoUrl || "https://dummyimage.com/120x60/2b6cb0/fff&text=LOGO",
+        companyLogoUrl:
+            invoice.owner.logoUrl ||
+            "https://dummyimage.com/120x60/2b6cb0/fff&text=LOGO",
         companyName: invoice.owner.name,
         companyAddress: invoice.owner.companyAddress || "",
         companyEmail: invoice.owner.email,
@@ -183,7 +207,12 @@ export const emailInvoicePdfHandler = catchErrors(async (req, res) => {
             unitPrice: item.price,
             total: (item.price * item.quantity).toFixed(2),
         })),
-        subtotal: invoice.sale.saleItems.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0).toFixed(2),
+        subtotal: invoice.sale.saleItems
+            .reduce(
+                (sum: number, item: any) => sum + item.price * item.quantity,
+                0,
+            )
+            .toFixed(2),
         discount: invoice.sale.discount?.toFixed(2) || "0.00",
         tax: invoice.taxAmount?.toFixed(2) || "0.00",
         total: invoice.amountDue?.toFixed(2) || "0.00",
@@ -191,7 +220,8 @@ export const emailInvoicePdfHandler = catchErrors(async (req, res) => {
         balanceDue: (invoice.amountDue - invoice.paidAmount).toFixed(2),
         currencyCode: invoice.currencyCode,
         currencySymbol: invoice.currencySymbol,
-        footerNote: "Payment is due by the due date. Thank you for your business!",
+        footerNote:
+            "Payment is due by the due date. Thank you for your business!",
         supportEmail: invoice.owner.email,
     };
 

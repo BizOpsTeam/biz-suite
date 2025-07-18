@@ -284,4 +284,4 @@ export const receiptsDocs = `
  *           type: string
  *           format: date-time
  */
-`; 
+`;

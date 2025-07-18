@@ -18,8 +18,16 @@ export const addSaleHandler = catchErrors(
         appAssert(userId, UNAUTHORIZED, "unauthorized, login to create a sale");
 
         const { body } = req;
-        const { customerId, items, paymentMethod, channel, notes, currencyCode, currencySymbol, taxRate } =
-            saleSchema.parse(body);
+        const {
+            customerId,
+            items,
+            paymentMethod,
+            channel,
+            notes,
+            currencyCode,
+            currencySymbol,
+            taxRate,
+        } = saleSchema.parse(body);
 
         const totalAmount = items.reduce(
             (sum, item) => sum + item.price * item.quantity,
@@ -35,16 +43,35 @@ export const addSaleHandler = catchErrors(
         );
 
         // Fetch user profile for defaults
-        const userProfile = await getUserProfile(userId) as UserModel;
-        const finalCurrencyCode = currencyCode || userProfile.defaultCurrencyCode || "USD";
-        const finalCurrencySymbol = currencySymbol || userProfile.defaultCurrencySymbol || "$";
-        const finalTaxRate = typeof taxRate === "number" ? taxRate : (typeof userProfile.defaultTaxRate === "number" ? userProfile.defaultTaxRate : 0);
+        const userProfile = (await getUserProfile(userId)) as UserModel;
+        const finalCurrencyCode =
+            currencyCode || userProfile.defaultCurrencyCode || "USD";
+        const finalCurrencySymbol =
+            currencySymbol || userProfile.defaultCurrencySymbol || "$";
+        const finalTaxRate =
+            typeof taxRate === "number"
+                ? taxRate
+                : typeof userProfile.defaultTaxRate === "number"
+                  ? userProfile.defaultTaxRate
+                  : 0;
 
         // Validate currency/tax for credit sales (invoices)
         if (paymentMethod === "CREDIT") {
-            appAssert(finalCurrencyCode, 400, "currencyCode is required for invoices");
-            appAssert(finalCurrencySymbol, 400, "currencySymbol is required for invoices");
-            appAssert(typeof finalTaxRate === "number", 400, "taxRate is required for invoices");
+            appAssert(
+                finalCurrencyCode,
+                400,
+                "currencyCode is required for invoices",
+            );
+            appAssert(
+                finalCurrencySymbol,
+                400,
+                "currencySymbol is required for invoices",
+            );
+            appAssert(
+                typeof finalTaxRate === "number",
+                400,
+                "taxRate is required for invoices",
+            );
         }
 
         // Create sale
@@ -89,41 +116,43 @@ export const getSalesStatsHandler = catchErrors(async (req, res) => {
     });
 });
 
-export const getAllSalesHandler = catchErrors(async (req: Request, res: Response) => {
-    const userId = req.user?.id;
-    appAssert(userId, UNAUTHORIZED, "Unathorized, login to get sales data");
+export const getAllSalesHandler = catchErrors(
+    async (req: Request, res: Response) => {
+        const userId = req.user?.id;
+        appAssert(userId, UNAUTHORIZED, "Unathorized, login to get sales data");
 
-    const {
-      customerId,
-      paymentMethod,
-      channel,
-      status,
-      search,
-      sort,
-      page = '1',
-      limit = '20',
-      startDate,
-      endDate,
-    } = req.query;
+        const {
+            customerId,
+            paymentMethod,
+            channel,
+            status,
+            search,
+            sort,
+            page = "1",
+            limit = "20",
+            startDate,
+            endDate,
+        } = req.query;
 
-    const result = await getSales({
-      ownerId: userId,
-      customerId: customerId as string | undefined,
-      paymentMethod: paymentMethod as string | undefined,
-      channel: channel as string | undefined,
-      status: status as string | undefined,
-      search: search as string | undefined,
-      sort: sort as string | undefined,
-      page: parseInt(page as string, 10) || 1,
-      limit: parseInt(limit as string, 10) || 20,
-      startDate: startDate as string | undefined,
-      endDate: endDate as string | undefined,
-    });
-    res.status(OK).json({
-      ...result,
-      message: "Sales fetched successfully",
-    });
-});
+        const result = await getSales({
+            ownerId: userId,
+            customerId: customerId as string | undefined,
+            paymentMethod: paymentMethod as string | undefined,
+            channel: channel as string | undefined,
+            status: status as string | undefined,
+            search: search as string | undefined,
+            sort: sort as string | undefined,
+            page: parseInt(page as string, 10) || 1,
+            limit: parseInt(limit as string, 10) || 20,
+            startDate: startDate as string | undefined,
+            endDate: endDate as string | undefined,
+        });
+        res.status(OK).json({
+            ...result,
+            message: "Sales fetched successfully",
+        });
+    },
+);
 
 export const deleteSaleHandler = catchErrors(async (req, res) => {
     const userId = req.user?.id;

@@ -51,4 +51,4 @@ export const deleteCategory = async (ownerId: string, categoryId: string) => {
             ownerId: ownerId,
         },
     });
-}; 
+};
