@@ -17,6 +17,7 @@ import { productSchema } from "../zodSchema/product.zodSchema";
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinary";
+import { Request, Response, NextFunction } from "express";
 
 const productImageStorage = new CloudinaryStorage({
     cloudinary,
@@ -56,8 +57,25 @@ export const getProductHandler = catchErrors(async (req, res) => {
     });
 });
 
+// Helper to wrap multer and forward errors
+function safeMulterArray(field: string, maxCount: number) {
+    return function (req: Request, res: Response, next: NextFunction) {
+        uploadProductImages.array(field, maxCount)(req, res, function (err) {
+            if (err) {
+                // Cloudinary or multer error
+                return res.status(500).json({
+                    message: err.message.includes('Invalid cloud_name')
+                        ? 'Image upload failed: Cloudinary configuration is invalid. Please contact support.'
+                        : `Image upload failed: ${err.message}`,
+                });
+            }
+            next();
+        });
+    };
+}
+
 export const addProductHandler = [
-    uploadProductImages.array("images", 5), // up to 5 images
+    safeMulterArray("images", 5), // up to 5 images, with error handling
     catchErrors(async (req, res) => {
         const userId = req.user?.id;
         appAssert(userId, UNAUTHORIZED, "User ID is required");
@@ -130,7 +148,7 @@ export const getProductsHandler = catchErrors(async (req, res) => {
 });
 
 export const updateProductHandler = [
-    uploadProductImages.array("images", 5), // up to 5 images
+    safeMulterArray("images", 5), // up to 5 images, with error handling
     catchErrors(async (req, res) => {
         const { id } = req.params;
         const userId = req.user?.id;
