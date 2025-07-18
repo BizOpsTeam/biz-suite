@@ -8,6 +8,9 @@ import catchErrors from "../utils/catchErrors";
 import appAssert from "../utils/appAssert";
 import { UNAUTHORIZED } from "../constants/http";
 import { getReceipts } from "../services/receipts.service";
+import { SaleItem, Product } from "@prisma/client";
+
+type SaleItemWithProduct = SaleItem & { product: Product };
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -64,8 +67,8 @@ export const downloadReceiptHandler = async (req: Request, res: Response) => {
                 where: { saleId: sale.id },
                 include: { product: true },
             })
-            .then((items) =>
-                items.map((item) => ({
+            .then((items: SaleItemWithProduct[]) =>
+                items.map((item: SaleItemWithProduct) => ({
                     description: item.product.name,
                     quantity: item.quantity,
                     unitPrice: item.price,
@@ -158,8 +161,8 @@ export const emailReceiptHandler = async (req: Request, res: Response) => {
                 where: { saleId: sale.id },
                 include: { product: true },
             })
-            .then((items) =>
-                items.map((item) => ({
+            .then((items: SaleItemWithProduct[]) =>
+                items.map((item: SaleItemWithProduct) => ({
                     description: item.product.name,
                     quantity: item.quantity,
                     unitPrice: item.price,

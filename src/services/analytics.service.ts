@@ -291,7 +291,7 @@ export async function getAverageOrderValue(options: AnalyticsOptions = {}) {
             },
         },
     });
-    const totalAmount = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+    const totalAmount = sales.reduce((sum: number, sale: any) => sum + sale.totalAmount, 0);
     const count = sales.length;
     return {
         averageOrderValue: count ? totalAmount / count : 0,
@@ -311,8 +311,8 @@ export async function getDiscountImpact(options: AnalyticsOptions = {}) {
             },
         },
     });
-    const totalDiscount = sales.reduce((sum, sale) => sum + sale.discount, 0);
-    const totalAmount = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+    const totalDiscount = sales.reduce((sum: number, sale: any) => sum + sale.discount, 0);
+    const totalAmount = sales.reduce((sum: number, sale: any) => sum + sale.totalAmount, 0);
     const count = sales.length;
     return {
         totalDiscount,
@@ -358,7 +358,7 @@ export async function getStockouts(options: AnalyticsOptions = {}) {
     // Estimate lost sales as average sales per period for this product
     const stockouts = products.map((product) => {
         const totalSold = product.saleItems.reduce(
-            (sum, si) => sum + si.quantity,
+            (sum: number, si: any) => sum + si.quantity,
             0,
         );
         return {
@@ -401,7 +401,7 @@ export async function getSlowMovingInventory(
     const slowMoving = products
         .map((product) => {
             const totalSold = product.saleItems.reduce(
-                (sum, si) => sum + si.quantity,
+                (sum: number, si: any) => sum + si.quantity,
                 0,
             );
             return {
@@ -583,8 +583,8 @@ export async function getSeasonality({
             amount: si.price * si.quantity,
         }));
     } else {
-        sales = await prisma.sale.findMany();
-        sales = sales.map((s) => ({
+        const sales = await prisma.sale.findMany();
+        const salesMapped = sales.map((s) => ({
             createdAt: s.createdAt,
             amount: s.totalAmount,
         }));
@@ -645,7 +645,7 @@ export async function getProfitAndLoss({
         select: { id: true, totalAmount: true },
     });
     const saleIds = sales.map((s) => s.id);
-    const revenue = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+    const revenue = sales.reduce((sum: number, s: any) => sum + s.totalAmount, 0);
 
     // Get all sale items for those sales
     const saleItems =
@@ -656,7 +656,7 @@ export async function getProfitAndLoss({
               })
             : [];
     const cogs = saleItems.reduce(
-        (sum, item) => sum + (item.cost || 0) * item.quantity,
+        (sum: number, item: any) => sum + (item.cost || 0) * item.quantity,
         0,
     );
     const grossProfit = revenue - cogs;
@@ -676,7 +676,7 @@ export async function getProfitAndLoss({
         where: expenseWhere,
         select: { amount: true },
     });
-    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalExpenses = expenses.reduce((sum: number, e: any) => sum + e.amount, 0);
     const netProfit = grossProfit - totalExpenses;
 
     return {

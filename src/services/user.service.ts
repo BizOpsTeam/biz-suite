@@ -4,7 +4,7 @@ import appAssert from "../utils/appAssert";
 import { BAD_REQUEST, NOT_FOUND, CONFLICT } from "../constants/http";
 const prisma = new PrismaClient();
 
-export async function createCustomer(data: any): Promise<Customer> {
+export async function createCustomer(data: { name: string; email: string; ownerId: string }): Promise<Customer> {
     // Check for existing email for this owner
     const existing = await prisma.customer.findFirst({
         where: { email: data.email, ownerId: data.ownerId },
@@ -27,7 +27,7 @@ export async function getCustomerById(id: string, ownerId: string): Promise<Cust
     return customer;
 }
 
-export async function updateCustomer(id: string, ownerId: string, data: any): Promise<Customer> {
+export async function updateCustomer(id: string, ownerId: string, data: { email?: string }): Promise<Customer> {
     // Ensure customer exists and belongs to owner
     const customer = await prisma.customer.findFirst({ where: { id, ownerId } });
     appAssert(customer, NOT_FOUND, "Customer not found");
@@ -51,13 +51,13 @@ export async function deleteCustomer(id: string, ownerId: string): Promise<Custo
     return prisma.customer.delete({ where: { id } });
 }
 
-export async function updateUserProfile(userId: string, data: any) {
+export async function updateUserProfile(userId: string, data: { email?: string; name?: string }): Promise<any> {
     const user = await prisma.userModel.findUnique({ where: { id: userId } });
     appAssert(user, NOT_FOUND, "User not found");
     return prisma.userModel.update({ where: { id: userId }, data });
 }
 
-export async function getUserProfile(userId: string) {
+export async function getUserProfile(userId: string): Promise<any> {
     const user = await prisma.userModel.findUnique({ where: { id: userId } });
     appAssert(user, NOT_FOUND, "User not found");
     return user;
@@ -68,7 +68,13 @@ export async function getCustomerStatement(
     ownerId: string,
     startDate?: Date,
     endDate?: Date,
-) {
+): Promise<{
+    customer: { id: string; name: string; email: string };
+    statement: { date: Date; type: string; amount: number; description: string }[];
+    totalSales: number;
+    totalPayments: number;
+    outstandingBalance: number;
+}> {
     // Fetch customer
     const customer = await prisma.customer.findFirst({
         where: { id: customerId, ownerId },
