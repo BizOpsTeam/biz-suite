@@ -210,7 +210,7 @@ export const productsDocs = `
  * @swagger
  * /products/{id}:
  *   patch:
- *     summary: Update a product by ID
+ *     summary: Update a product by ID (with optional image upload)
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
@@ -224,9 +224,34 @@ export const productsDocs = `
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/ProductInput'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "white underwear"
+ *               price:
+ *                 type: number
+ *                 example: 12.99
+ *               stock:
+ *                 type: integer
+ *                 example: 23
+ *               categoryId:
+ *                 type: string
+ *                 example: "5db2f312-c593-4363-971c-28034795f7cb"
+ *               description:
+ *                 type: string
+ *                 example: "a very beautiful underwear"
+ *               cost:
+ *                 type: number
+ *                 example: 10.5
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: "One or more image files (optional). If provided, will replace all existing images. If omitted, existing images are retained. Max 5 files."
  *     responses:
  *       200:
  *         description: Product updated successfully

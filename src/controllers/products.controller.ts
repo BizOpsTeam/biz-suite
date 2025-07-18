@@ -129,20 +129,29 @@ export const getProductsHandler = catchErrors(async (req, res) => {
     });
 });
 
-export const updateProductHandler = catchErrors(async (req, res) => {
-    const { id } = req.params;
-    const userId = req.user?.id;
-    appAssert(
-        userId,
-        UNAUTHORIZED,
-        "Unauthorized, login to perform this action",
-    );
-    appAssert(id, BAD_REQUEST, "Product Id required");
-    // Validate and parse update data (partial allowed)
-    const updateData = productSchema.partial().parse(req.body);
-    const updatedProduct = await updateProduct(id, userId, updateData);
-    res.status(OK).json({
-        data: updatedProduct,
-        message: "Product updated successfully",
-    });
-});
+export const updateProductHandler = [
+    uploadProductImages.array("images", 5), // up to 5 images
+    catchErrors(async (req, res) => {
+        const { id } = req.params;
+        const userId = req.user?.id;
+        appAssert(
+            userId,
+            UNAUTHORIZED,
+            "Unauthorized, login to perform this action",
+        );
+        appAssert(id, BAD_REQUEST, "Product Id required");
+        // Validate and parse update data (partial allowed)
+        const updateData = productSchema.partial().parse(req.body);
+        // Handle images
+        let imageUrls: string[] | undefined = undefined;
+        if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+            imageUrls = req.files.map((file: any) => file.path);
+        }
+        // Pass imageUrls to service if provided
+        const updatedProduct = await updateProduct(id, userId, updateData, imageUrls);
+        res.status(OK).json({
+            data: updatedProduct,
+            message: "Product updated successfully",
+        });
+    }),
+];

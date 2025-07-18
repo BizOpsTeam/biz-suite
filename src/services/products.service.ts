@@ -135,10 +135,12 @@ export const updateProduct = async (
     productId: string,
     userId: string,
     updateData: Partial<IProductData>,
+    imageUrls?: string[],
 ) => {
     // Ensure the product exists and belongs to the user
     const product = await prisma.product.findUnique({
         where: { id: productId },
+        include: { images: true },
     });
     if (!product || product.ownerId !== userId) {
         throw new AppError(UNAUTHORIZED, "Unauthorized to update this product");
@@ -153,8 +155,16 @@ export const updateProduct = async (
     if (updateData.description !== undefined)
         data.description = updateData.description;
     if (updateData.cost !== undefined) data.cost = updateData.cost;
-    // Images update logic can be added here if needed
-    return await prisma.product.update({
+    // Images update logic
+    if (imageUrls && imageUrls.length > 0) {
+        // Delete old images
+        await prisma.image.deleteMany({ where: { productId } });
+        // Add new images
+        data.images = {
+            create: imageUrls.map((url) => ({ url })),
+        };
+    }
+    const updated = await prisma.product.update({
         where: { id: productId },
         data,
         select: {
@@ -169,4 +179,5 @@ export const updateProduct = async (
             cost: true,
         },
     });
+    return updated;
 };
