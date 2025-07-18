@@ -1,6 +1,7 @@
 import prisma from "../config/db";
 import AppError from "../errors/AppError";
 import { BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } from "../constants/http";
+import { Prisma } from "@prisma/client";
 
 export const createStockAdjustment = async (
     data: {
@@ -21,7 +22,7 @@ export const createStockAdjustment = async (
     if (newStock < 0)
         throw new AppError(BAD_REQUEST, "Stock cannot go negative");
     // Update product stock and log adjustment in a transaction
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         await tx.product.update({
             where: { id: data.productId },
             data: { stock: newStock },

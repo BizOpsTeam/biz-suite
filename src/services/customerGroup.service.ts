@@ -69,5 +69,5 @@ export const getCustomersByGroup = async (groupId: string) => {
         where: { groupId },
         include: { customer: true },
     });
-    return memberships.map((m) => m.customer);
+    return memberships.map((m: Record<string, any>) => m.customer);
 };

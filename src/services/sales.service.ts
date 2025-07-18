@@ -276,7 +276,7 @@ export const deleteSale = async (saleId: string, ownerId: string) => {
 
     // Restore stock for each product in the sale
     const saleItems = await prisma.saleItem.findMany({ where: { saleId } });
-    for (const item of saleItems) {
+    for (const item of saleItems as Record<string, any>[]) {
         await prisma.product.update({
             where: { id: item.productId },
             data: { stock: { increment: item.quantity } },

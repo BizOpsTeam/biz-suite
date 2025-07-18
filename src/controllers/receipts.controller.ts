@@ -8,9 +8,8 @@ import catchErrors from "../utils/catchErrors";
 import appAssert from "../utils/appAssert";
 import { UNAUTHORIZED } from "../constants/http";
 import { getReceipts } from "../services/receipts.service";
-import { SaleItem, Product } from "@prisma/client";
-
-type SaleItemWithProduct = SaleItem & { product: Product };
+import { Prisma } from "@prisma/client";
+type SaleItemWithProduct = Prisma.SaleItemGetPayload<{ include: { product: true } }>;
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
