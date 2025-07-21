@@ -94,27 +94,49 @@ export const searchProducts = async (
     query?: string,
     _categoryId?: string,
     _inStock?: string,
+    page: number = 1,
+    limit: number = 20,
 ) => {
-    return await prisma.product.findMany({
-        where: {
-            ownerId: ownerId,
-            ...(query && {
-                name: {
-                    contains: query,
-                    mode: "insensitive",
-                },
-            }),
-            // ...(categoryId && {
-            //     categoryId: categoryId
-            // }),
-            // ...(inStock !== undefined && {
-            //     stock: inStock === "true" ? {gt: 0} : 0
-            // })
-        },
-        orderBy: {
-            createdAt: "desc",
-        },
-    });
+    // Validate and sanitize pagination params
+    page = Number(page);
+    limit = Number(limit);
+    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(limit) || limit < 1 || limit > 100) limit = 20;
+
+    const where: any = {
+        ownerId: ownerId,
+        ...(query && {
+            name: {
+                contains: query,
+                mode: "insensitive",
+            },
+        }),
+        ...( _categoryId && { categoryId: _categoryId }),
+        ...( _inStock !== undefined && { stock: _inStock === "true" ? { gt: 0 } : 0 }),
+    };
+
+    const skip = (page - 1) * limit;
+    const take = limit;
+
+    const [products, total] = await Promise.all([
+        prisma.product.findMany({
+            where,
+            orderBy: {
+                createdAt: "desc",
+            },
+            skip,
+            take,
+        }),
+        prisma.product.count({ where }),
+    ]);
+
+    return {
+        data: products,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+    };
 };
 
 export async function updateInvoicePayment(
