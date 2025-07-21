@@ -32,9 +32,9 @@ setupSwagger(app);
 //----------------cors config-----------------------//
 app.use(
     cors({
-        origin: ["http://localhost:5173"],
+        origin: (_, callback) => callback(null, true), // Allow all origins for dev
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization", "*"],
+        allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
     }),
 ); //::todo update the cors to match expected fronted endpoints
