@@ -23,21 +23,33 @@ import customerGroupRoutes from "./routes/customerGroup.routes";
 import productCategoryRoutes from "./routes/productCategory.routes";
 
 const app = express();
+//----------------cors config-----------------------//
+const allowedOrigins = [
+    "http://localhost:5173"
+];
+
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true,
+    }),
+);
+//::todo update the cors to match expected fronted endpoints
+
 app.use(express.json());
 app.use(cookieParser());
 
 //setup Swagger docs
 setupSwagger(app);
 
-//----------------cors config-----------------------//
-app.use(
-    cors({
-        origin: (_, callback) => callback(null, true), // Allow all origins for dev
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true,
-    }),
-); //::todo update the cors to match expected fronted endpoints
 
 //-------------routes-------------------------//
 
