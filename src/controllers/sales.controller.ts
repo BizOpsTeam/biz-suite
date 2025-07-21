@@ -29,18 +29,10 @@ export const addSaleHandler = catchErrors(
             taxRate,
         } = saleSchema.parse(body);
 
-        const totalAmount = items.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0,
-        );
-        const totalTax = items.reduce(
-            (sum, item) => sum + item.tax * item.quantity,
-            0,
-        );
-        const totalDiscount = items.reduce(
-            (sum, item) => sum + item.discount,
-            0,
-        );
+        // No price from client; let backend compute totals
+        const totalAmount = 0;
+        const totalTax = 0;
+        const totalDiscount = 0;
 
         // Fetch user profile for defaults
         const userProfile = (await getUserProfile(userId)) as UserModel;

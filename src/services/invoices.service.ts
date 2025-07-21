@@ -96,12 +96,25 @@ export const searchProducts = async (
     _inStock?: string,
     page: number = 1,
     limit: number = 20,
+    minPrice?: number,
+    maxPrice?: number,
+    sort: string = "createdAt:desc"
 ) => {
     // Validate and sanitize pagination params
     page = Number(page);
     limit = Number(limit);
     if (isNaN(page) || page < 1) page = 1;
     if (isNaN(limit) || limit < 1 || limit > 100) limit = 20;
+
+    // Build price filter first
+    let priceFilter: any = undefined;
+    if (minPrice !== undefined && maxPrice !== undefined) {
+        priceFilter = { gte: minPrice, lte: maxPrice };
+    } else if (minPrice !== undefined) {
+        priceFilter = { gte: minPrice };
+    } else if (maxPrice !== undefined) {
+        priceFilter = { lte: maxPrice };
+    }
 
     const where: any = {
         ownerId: ownerId,
@@ -113,7 +126,15 @@ export const searchProducts = async (
         }),
         ...( _categoryId && { categoryId: _categoryId }),
         ...( _inStock !== undefined && { stock: _inStock === "true" ? { gt: 0 } : 0 }),
+        ...(priceFilter && { price: priceFilter }),
     };
+
+    // Sorting
+    let orderBy: any = { createdAt: "desc" };
+    if (sort) {
+        const [field, direction] = sort.split(":");
+        orderBy = { [field]: direction === "asc" ? "asc" : "desc" };
+    }
 
     const skip = (page - 1) * limit;
     const take = limit;
@@ -121,9 +142,7 @@ export const searchProducts = async (
     const [products, total] = await Promise.all([
         prisma.product.findMany({
             where,
-            orderBy: {
-                createdAt: "desc",
-            },
+            orderBy,
             skip,
             take,
         }),
@@ -235,3 +254,13 @@ export async function logInvoiceAuditEvent({
         },
     });
 }
+
+export const deleteInvoice = async (invoiceId: string, ownerId: string) => {
+    // Ensure the invoice exists and belongs to the user
+    const invoice = await prisma.invoice.findUnique({ where: { id: invoiceId } });
+    if (!invoice || invoice.ownerId !== ownerId) {
+        throw new Error("Unauthorized to delete this invoice or invoice not found");
+    }
+    await prisma.invoice.delete({ where: { id: invoiceId } });
+    return true;
+};

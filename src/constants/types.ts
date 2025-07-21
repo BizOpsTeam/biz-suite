@@ -15,10 +15,8 @@ export type TCustomerData = {
 };
 
 export interface ISaleItemData {
-    // saleId: string
     productId: string;
     quantity: number;
-    price: number;
     discount: number;
     tax: number;
 }

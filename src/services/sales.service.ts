@@ -14,9 +14,9 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
             const productIds = saleData.items.map(item => item.productId);
             const products = await tx.product.findMany({
                 where: { id: { in: productIds } },
-                select: { id: true, stock: true, cost: true }
+                select: { id: true, stock: true, cost: true, price: true }
             });
-            const productMap: Record<string, { id: string; stock: number; cost: number | null }> = Object.fromEntries(products.map(p => [p.id, { ...p }]));
+            const productMap: Record<string, { id: string; stock: number; cost: number | null; price: number }> = Object.fromEntries(products.map(p => [p.id, { ...p }]));
 
             // 2. Check stock and prepare updates in memory
             for (const item of saleData.items) {
@@ -57,7 +57,7 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
                 saleId: newSale.id,
                 productId: item.productId,
                 quantity: item.quantity,
-                price: item.price,
+                price: productMap[item.productId]?.price,
                 discount: item.discount,
                 tax: item.tax,
                 cost: productMap[item.productId]?.cost ?? null,

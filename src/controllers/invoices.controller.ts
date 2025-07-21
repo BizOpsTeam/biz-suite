@@ -1,11 +1,11 @@
 import prisma from "../config/db";
-import { OK, UNAUTHORIZED } from "../constants/http";
+import { OK, UNAUTHORIZED, BAD_REQUEST } from "../constants/http";
 import {
     getInvoices,
-    searchProducts,
     updateInvoicePayment,
     getInvoiceWithDetails,
     logInvoiceAuditEvent,
+    deleteInvoice,
 } from "../services/invoices.service";
 import { generateInvoicePdf, InvoicePdfData } from "../services/pdf.service";
 import { sendInvoiceEmail } from "../services/email.service";
@@ -54,25 +54,42 @@ export const getInvoicesHandler = catchErrors(
     },
 );
 
-export const productSearchHandler = catchErrors(async (req, res) => {
+export const invoiceSearchHandler = catchErrors(async (req, res) => {
     const ownerId = req.user?.id;
     appAssert(ownerId, UNAUTHORIZED, "Login in to perform this action");
 
-    const { query, categoryId, inStock } = req.query;
-    console.log("Querry: ", query);
-    console.log("CategoryId: ", categoryId);
-    console.log("inStock: ", inStock);
+    const {
+        customerId,
+        status,
+        currencyCode,
+        search,
+        sort,
+        page = 1,
+        limit = 20,
+        startDate,
+        endDate,
+    } = req.query;
 
-    const searchResults = await searchProducts(
+    // Parse and validate numeric params
+    const parsedPage = Number(page);
+    const parsedLimit = Number(limit);
+
+    const result = await getInvoices({
         ownerId,
-        String(query),
-        String(categoryId),
-        String(inStock),
-    );
+        customerId: customerId as string | undefined,
+        status: status as string | undefined,
+        currencyCode: currencyCode as string | undefined,
+        search: search as string | undefined,
+        sort: sort as string | undefined,
+        page: parsedPage,
+        limit: parsedLimit,
+        startDate: startDate as string | undefined,
+        endDate: endDate as string | undefined,
+    });
 
     return res.status(OK).json({
-        data: searchResults,
-        message: "search results returned sucessfully",
+        ...result,
+        message: "Invoices search results returned successfully",
     });
 });
 
@@ -90,6 +107,16 @@ export async function updateInvoicePaymentHandler(
         next(err);
     }
 }
+
+export const deleteInvoiceHandler = catchErrors(async (req, res) => {
+    const { id } = req.params;
+    const ownerId = req.user?.id;
+    appAssert(ownerId, UNAUTHORIZED, "Unauthorized, login to perform this action");
+    appAssert(id, BAD_REQUEST, "Invoice Id required");
+
+    await deleteInvoice(id, ownerId);
+    res.status(OK).json({ message: "Invoice deleted successfully" });
+});
 
 export const downloadInvoicePdfHandler = catchErrors(async (req, res) => {
     const { id } = req.params;

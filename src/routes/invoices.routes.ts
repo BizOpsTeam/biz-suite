@@ -5,7 +5,9 @@ import {
     downloadInvoicePdfHandler,
     emailInvoicePdfHandler,
     getInvoiceAuditTrailHandler,
+    deleteInvoiceHandler,
 } from "../controllers/invoices.controller";
+import { authenticateUser } from "../middlewares/authenticateUser";
 
 const invoicesRoutes = Router();
 
@@ -14,5 +16,6 @@ invoicesRoutes.patch("/:id/payment", updateInvoicePaymentHandler);
 invoicesRoutes.get("/:id/pdf", downloadInvoicePdfHandler);
 invoicesRoutes.post("/:id/email-pdf", emailInvoicePdfHandler);
 invoicesRoutes.get("/:id/audit-trail", getInvoiceAuditTrailHandler);
+invoicesRoutes.delete("/:id", authenticateUser, deleteInvoiceHandler);
 
 export default invoicesRoutes;

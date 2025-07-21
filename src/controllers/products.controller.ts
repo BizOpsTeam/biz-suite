@@ -10,7 +10,9 @@ import {
     getMyProducts,
     getProductById,
     updateProduct,
+    deleteProduct,
 } from "../services/products.service";
+import { searchProducts } from "../services/invoices.service";
 import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErrors";
 import { productSchema } from "../zodSchema/product.zodSchema";
@@ -173,3 +175,53 @@ export const updateProductHandler = [
         });
     }),
 ];
+
+export const productsSearchHandler = catchErrors(async (req, res) => {
+    const userId = req.user?.id;
+    appAssert(userId, UNAUTHORIZED, "Login to perform this action");
+
+    const {
+        query,
+        categoryId,
+        inStock,
+        minPrice,
+        maxPrice,
+        sort,
+        page = 1,
+        limit = 20,
+    } = req.query;
+
+    // Parse and validate numeric params
+    const parsedPage = Number(page);
+    const parsedLimit = Number(limit);
+    const parsedMinPrice = minPrice !== undefined ? Number(minPrice) : undefined;
+    const parsedMaxPrice = maxPrice !== undefined ? Number(maxPrice) : undefined;
+
+    // You can customize the service call for products-specific logic if needed
+    const searchResults = await searchProducts(
+        userId,
+        query as string,
+        categoryId as string,
+        inStock as string,
+        parsedPage,
+        parsedLimit,
+        parsedMinPrice,
+        parsedMaxPrice,
+        sort as string
+    );
+
+    return res.status(OK).json({
+        data: searchResults,
+        message: "Products search results returned successfully",
+    });
+});
+
+export const deleteProductHandler = catchErrors(async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user?.id;
+    appAssert(userId, UNAUTHORIZED, "Unauthorized, login to perform this action");
+    appAssert(id, BAD_REQUEST, "Product Id required");
+
+    await deleteProduct(id, userId);
+    res.status(OK).json({ message: "Product deleted successfully" });
+});

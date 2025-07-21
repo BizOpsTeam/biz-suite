@@ -30,14 +30,12 @@ export const salesDocs = `
  *               {
  *                 "productId": "p1234567-89ab-4def-0123-456789abcdef",
  *                 "quantity": 2,
- *                 "price": 12.99,
  *                 "discount": 1.00,
  *                 "tax": 0.50
  *               },
  *               {
  *                 "productId": "p9876543-21ba-4fed-0987-654321fedcba",
  *                 "quantity": 1,
- *                 "price": 20.00,
  *                 "discount": 0.00,
  *                 "tax": 1.00
  *               }

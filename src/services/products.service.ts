@@ -181,3 +181,13 @@ export const updateProduct = async (
     });
     return updated;
 };
+
+export const deleteProduct = async (productId: string, userId: string) => {
+    // Ensure the product exists and belongs to the user
+    const product = await prisma.product.findUnique({ where: { id: productId } });
+    if (!product || product.ownerId !== userId) {
+        throw new AppError(UNAUTHORIZED, "Unauthorized to delete this product");
+    }
+    await prisma.product.delete({ where: { id: productId } });
+    return true;
+};

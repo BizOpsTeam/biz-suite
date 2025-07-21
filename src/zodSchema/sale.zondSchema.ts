@@ -10,7 +10,6 @@ export const PaymentMethodEnum = z.enum([
 export const saleItemSchema = z.object({
     productId: z.string().min(10),
     quantity: z.number().int().positive(),
-    price: z.number().positive(),
     discount: z.number().nonnegative().default(0),
     tax: z.number().nonnegative().default(0),
 });

@@ -192,18 +192,94 @@ export const productsDocs = `
  * @swagger
  * /products/search:
  *   get:
- *     summary: Search products
+ *     summary: Search products with advanced filtering, sorting, and pagination
  *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: q
+ *         name: query
  *         schema:
  *           type: string
  *         required: false
- *         description: Search query
+ *         description: Search by product name (case-insensitive, partial match)
+ *       - in: query
+ *         name: categoryId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by product category ID
+ *       - in: query
+ *         name: inStock
+ *         schema:
+ *           type: string
+ *           enum: ["true", "false"]
+ *         required: false
+ *         description: Filter by stock status ("true" for in-stock, "false" for out-of-stock)
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *         required: false
+ *         description: Minimum product price
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *         required: false
+ *         description: Maximum product price
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           example: createdAt:desc
+ *         required: false
+ *         description: Sort by field and direction (e.g., createdAt:desc, price:asc)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         required: false
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         required: false
+ *         description: Number of results per page
  *     responses:
  *       200:
- *         description: Search results
+ *         description: Paginated products fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Product'
+ *                     total:
+ *                       type: integer
+ *                       description: Total number of products matching the query
+ *                     page:
+ *                       type: integer
+ *                       description: Current page number
+ *                     limit:
+ *                       type: integer
+ *                       description: Number of results per page
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
  */
 
 /**
@@ -268,6 +344,39 @@ export const productsDocs = `
  *         description: Product ID is required
  *       401:
  *         description: Unauthorized
+ *       404:
+ *         description: Product not found
+ */
+
+/**
+ * @swagger
+ * /products/{id}:
+ *   delete:
+ *     summary: Delete a product by ID (must be owned by the authenticated user)
+ *     tags: [Products]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Product ID
+ *     responses:
+ *       200:
+ *         description: Product deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Product ID is required
+ *       401:
+ *         description: Unauthorized or not owner
  *       404:
  *         description: Product not found
  */

@@ -362,4 +362,136 @@ export const invoicesDocs = `
  *       404:
  *         description: Invoice not found
  */
+
+/**
+ * @swagger
+ * /invoices/search:
+ *   get:
+ *     summary: Search invoices with advanced filtering, sorting, and pagination
+ *     tags: [Invoices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: customerId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by customer ID
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [UNPAID, PARTIAL, PAID]
+ *         required: false
+ *         description: Filter by invoice status
+ *       - in: query
+ *         name: currencyCode
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by currency code (e.g., USD, EUR, NGN)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Search by invoice number, customer name, or notes (case-insensitive, partial match)
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           example: createdAt:desc
+ *         required: false
+ *         description: Sort by field and direction (e.g., createdAt:desc, amountDue:asc)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         required: false
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         required: false
+ *         description: Number of results per page
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: Filter invoices created after this date (inclusive)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: Filter invoices created before this date (inclusive)
+ *     responses:
+ *       200:
+ *         description: Paginated invoices fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Invoice'
+ *                 total:
+ *                   type: integer
+ *                   description: Total number of invoices matching the query
+ *                 page:
+ *                   type: integer
+ *                   description: Current page number
+ *                 limit:
+ *                   type: integer
+ *                   description: Number of results per page
+ *                 totalPages:
+ *                   type: integer
+ *                   description: Total number of pages
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @swagger
+ * /invoices/{id}:
+ *   delete:
+ *     summary: Delete an invoice by ID (must be owned by the authenticated user)
+ *     tags: [Invoices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Invoice ID
+ *     responses:
+ *       200:
+ *         description: Invoice deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Invoice ID is required
+ *       401:
+ *         description: Unauthorized or not owner
+ *       404:
+ *         description: Invoice not found
+ */
 `;
