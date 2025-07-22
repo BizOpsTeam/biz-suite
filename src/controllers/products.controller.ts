@@ -64,6 +64,10 @@ function safeMulterArray(field: string, maxCount: number) {
     return function (req: Request, res: Response, next: NextFunction) {
         uploadProductImages.array(field, maxCount)(req, res, function (err) {
             if (err) {
+                if (err instanceof multer.MulterError) {
+                    // Handle Multer-specific errors (e.g. file limit)
+                    return res.status(400).json({ message: `Multer error: ${err.message}` });
+                }
                 // Cloudinary or multer error
                 return res.status(500).json({
                     message: err.message.includes('Invalid cloud_name')
@@ -84,7 +88,7 @@ export const addProductHandler = [
         // Parse form fields
         const { name, price, stock, categoryId, description, cost } = req.body;
         // Validate required fields
-        productSchema.parse({
+        const parsedProduct = productSchema.parse({
             name,
             price: Number(price),
             stock: Number(stock),
@@ -102,13 +106,8 @@ export const addProductHandler = [
         // Create product
         const product = await createProduct(
             {
-                name,
-                price: Number(price),
-                stock: Number(stock),
-                categoryId,
-                description,
+                ...parsedProduct,
                 images: imageUrls,
-                cost: cost ? Number(cost) : undefined,
             },
             userId,
         );
