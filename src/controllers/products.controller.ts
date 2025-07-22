@@ -68,11 +68,12 @@ function safeMulterArray(field: string, maxCount: number) {
                     // Handle Multer-specific errors (e.g. file limit)
                     return res.status(400).json({ message: `Multer error: ${err.message}` });
                 }
+                if (err.message)
                 // Cloudinary or multer error
                 return res.status(500).json({
-                    message: err.message.includes('Invalid cloud_name')
+                    message: err?.message && err.message.includes('Invalid cloud_name')
                         ? 'Image upload failed: Cloudinary configuration is invalid. Please contact support.'
-                        : `Image upload failed: ${err.message}`,
+                        : `Image upload failed: ${err}`,
                 });
             }
             return next();
