@@ -1,11 +1,5 @@
 import prisma from "../config/db";
-import {
-    subWeeks,
-    subMonths,
-    subYears,
-    startOfDay,
-    endOfDay,
-} from "date-fns";
+import { subWeeks, subMonths, subYears, startOfDay, endOfDay } from "date-fns";
 
 interface AnalyticsOptions {
     limit?: number;
@@ -279,7 +273,10 @@ export async function getAverageOrderValue(options: AnalyticsOptions = {}) {
             },
         },
     });
-    const totalAmount = sales.reduce((sum: number, sale: any) => sum + sale.totalAmount, 0);
+    const totalAmount = sales.reduce(
+        (sum: number, sale: any) => sum + sale.totalAmount,
+        0,
+    );
     const count = sales.length;
     return {
         averageOrderValue: count ? totalAmount / count : 0,
@@ -299,8 +296,14 @@ export async function getDiscountImpact(options: AnalyticsOptions = {}) {
             },
         },
     });
-    const totalDiscount = sales.reduce((sum: number, sale: any) => sum + sale.discount, 0);
-    const totalAmount = sales.reduce((sum: number, sale: any) => sum + sale.totalAmount, 0);
+    const totalDiscount = sales.reduce(
+        (sum: number, sale: any) => sum + sale.discount,
+        0,
+    );
+    const totalAmount = sales.reduce(
+        (sum: number, sale: any) => sum + sale.totalAmount,
+        0,
+    );
     const count = sales.length;
     return {
         totalDiscount,
@@ -629,7 +632,10 @@ export async function getProfitAndLoss({
         select: { id: true, totalAmount: true },
     });
     const saleIds = sales.map((s) => s.id);
-    const revenue = sales.reduce((sum: number, s: any) => sum + s.totalAmount, 0);
+    const revenue = sales.reduce(
+        (sum: number, s: any) => sum + s.totalAmount,
+        0,
+    );
 
     // Get all sale items for those sales
     const saleItems =
@@ -660,7 +666,10 @@ export async function getProfitAndLoss({
         where: expenseWhere,
         select: { amount: true },
     });
-    const totalExpenses = expenses.reduce((sum: number, e: any) => sum + e.amount, 0);
+    const totalExpenses = expenses.reduce(
+        (sum: number, e: any) => sum + e.amount,
+        0,
+    );
     const netProfit = grossProfit - totalExpenses;
 
     return {

@@ -98,7 +98,7 @@ export const searchProducts = async (
     limit: number = 20,
     minPrice?: number,
     maxPrice?: number,
-    sort: string = "createdAt:desc"
+    sort: string = "createdAt:desc",
 ) => {
     // Validate and sanitize pagination params
     page = Number(page);
@@ -124,8 +124,10 @@ export const searchProducts = async (
                 mode: "insensitive",
             },
         }),
-        ...( _categoryId && { categoryId: _categoryId }),
-        ...( _inStock !== undefined && { stock: _inStock === "true" ? { gt: 0 } : 0 }),
+        ...(_categoryId && { categoryId: _categoryId }),
+        ...(_inStock !== undefined && {
+            stock: _inStock === "true" ? { gt: 0 } : 0,
+        }),
         ...(priceFilter && { price: priceFilter }),
     };
 
@@ -257,9 +259,13 @@ export async function logInvoiceAuditEvent({
 
 export const deleteInvoice = async (invoiceId: string, ownerId: string) => {
     // Ensure the invoice exists and belongs to the user
-    const invoice = await prisma.invoice.findUnique({ where: { id: invoiceId } });
+    const invoice = await prisma.invoice.findUnique({
+        where: { id: invoiceId },
+    });
     if (!invoice || invoice.ownerId !== ownerId) {
-        throw new Error("Unauthorized to delete this invoice or invoice not found");
+        throw new Error(
+            "Unauthorized to delete this invoice or invoice not found",
+        );
     }
     await prisma.invoice.delete({ where: { id: invoiceId } });
     return true;

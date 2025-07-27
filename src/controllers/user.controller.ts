@@ -38,12 +38,10 @@ export const uploadLogoHandler = [
     catchErrors(async (req: Request, res: Response) => {
         const file = req.file as Express.Multer.File & { path?: string };
         if (!file || !file.path) {
-            return res
-                .status(400)
-                .json({
-                    success: false,
-                    message: "No file uploaded or upload failed.",
-                });
+            return res.status(400).json({
+                success: false,
+                message: "No file uploaded or upload failed.",
+            });
         }
         const url = file.path;
         return res.json({ success: true, url });
@@ -55,7 +53,10 @@ export const createCustomerHandler = catchErrors(
         const userId = req.user?.id;
         appAssert(userId, 401, "Unauthorized");
         const validated = createCustomerSchema.parse(req.body);
-        const customer = await createCustomer({ ...validated, ownerId: userId });
+        const customer = await createCustomer({
+            ...validated,
+            ownerId: userId,
+        });
         return res.status(201).json({ success: true, data: customer });
         return null;
     },
@@ -139,8 +140,14 @@ export const getCustomerStatementHandler = catchErrors(async (req, res) => {
     const userId = req.user?.id;
     appAssert(userId, 401, "Unauthorized");
     const { id } = req.params;
-    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
-    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+    const startDate = req.query.startDate
+        ? new Date(req.query.startDate as string)
+        : undefined;
+    const endDate = req.query.endDate
+        ? new Date(req.query.endDate as string)
+        : undefined;
     const data = await getCustomerStatement(id, userId, startDate, endDate);
-    return res.status(200).json({ data, message: "Customer statement fetched" });
+    return res
+        .status(200)
+        .json({ data, message: "Customer statement fetched" });
 });

@@ -25,9 +25,7 @@ import productCategoryRoutes from "./routes/productCategory.routes";
 
 const app = express();
 //----------------cors config-----------------------//
-const allowedOrigins = [
-    "http://localhost:5173"
-];
+const allowedOrigins = ["http://localhost:5173"];
 
 app.use(
     cors({
@@ -51,9 +49,7 @@ app.use(cookieParser());
 //setup Swagger docs
 setupSwagger(app);
 
-
 //-------------routes-------------------------//
-
 
 app.get("/", (_req: Request, res: Response) => {
     res.status(200).json({ message: "Hello World" });
@@ -104,11 +100,9 @@ app.use((err: any, _req: any, res: any, next: any) => {
         (err as any).status === 400 &&
         "body" in err
     ) {
-        return res
-            .status(400)
-            .json({
-                message: "Invalid JSON: Please check your request body syntax.",
-            });
+        return res.status(400).json({
+            message: "Invalid JSON: Please check your request body syntax.",
+        });
     }
     next(err);
 });

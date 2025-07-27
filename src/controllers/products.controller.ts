@@ -66,15 +66,19 @@ function safeMulterArray(field: string, maxCount: number) {
             if (err) {
                 if (err instanceof multer.MulterError) {
                     // Handle Multer-specific errors (e.g. file limit)
-                    return res.status(400).json({ message: `Multer error: ${err.message}` });
+                    return res
+                        .status(400)
+                        .json({ message: `Multer error: ${err.message}` });
                 }
                 if (err.message)
-                // Cloudinary or multer error
-                return res.status(500).json({
-                    message: err?.message && err.message.includes('Invalid cloud_name')
-                        ? 'Image upload failed: Cloudinary configuration is invalid. Please contact support.'
-                        : `Image upload failed: ${err}`,
-                });
+                    // Cloudinary or multer error
+                    return res.status(500).json({
+                        message:
+                            err?.message &&
+                            err.message.includes("Invalid cloud_name")
+                                ? "Image upload failed: Cloudinary configuration is invalid. Please contact support."
+                                : `Image upload failed: ${err}`,
+                    });
             }
             return next();
         });
@@ -168,7 +172,12 @@ export const updateProductHandler = [
             imageUrls = req.files.map((file: any) => file.path);
         }
         // Pass imageUrls to service if provided
-        const updatedProduct = await updateProduct(id, userId, updateData, imageUrls);
+        const updatedProduct = await updateProduct(
+            id,
+            userId,
+            updateData,
+            imageUrls,
+        );
         res.status(OK).json({
             data: updatedProduct,
             message: "Product updated successfully",
@@ -194,8 +203,10 @@ export const productsSearchHandler = catchErrors(async (req, res) => {
     // Parse and validate numeric params
     const parsedPage = Number(page);
     const parsedLimit = Number(limit);
-    const parsedMinPrice = minPrice !== undefined ? Number(minPrice) : undefined;
-    const parsedMaxPrice = maxPrice !== undefined ? Number(maxPrice) : undefined;
+    const parsedMinPrice =
+        minPrice !== undefined ? Number(minPrice) : undefined;
+    const parsedMaxPrice =
+        maxPrice !== undefined ? Number(maxPrice) : undefined;
 
     // You can customize the service call for products-specific logic if needed
     const searchResults = await searchProducts(
@@ -207,7 +218,7 @@ export const productsSearchHandler = catchErrors(async (req, res) => {
         parsedLimit,
         parsedMinPrice,
         parsedMaxPrice,
-        sort as string
+        sort as string,
     );
 
     return res.status(OK).json({
@@ -219,7 +230,11 @@ export const productsSearchHandler = catchErrors(async (req, res) => {
 export const deleteProductHandler = catchErrors(async (req, res) => {
     const { id } = req.params;
     const userId = req.user?.id;
-    appAssert(userId, UNAUTHORIZED, "Unauthorized, login to perform this action");
+    appAssert(
+        userId,
+        UNAUTHORIZED,
+        "Unauthorized, login to perform this action",
+    );
     appAssert(id, BAD_REQUEST, "Product Id required");
 
     await deleteProduct(id, userId);

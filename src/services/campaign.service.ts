@@ -1,5 +1,5 @@
-import prisma from '../config/db';
-import { CampaignInput } from '../zodSchema/campaign.zodSchema';
+import prisma from "../config/db";
+import { CampaignInput } from "../zodSchema/campaign.zodSchema";
 
 export class CampaignService {
     static async createCampaign(data: CampaignInput, ownerId: string) {
@@ -10,7 +10,7 @@ export class CampaignService {
                 where: { ownerId },
                 select: { id: true },
             });
-            recipientIds = customers.map(c => c.id);
+            recipientIds = customers.map((c) => c.id);
         }
 
         // Create campaign and link recipients
@@ -21,7 +21,7 @@ export class CampaignService {
                 broadcastToAll: data.broadcastToAll,
                 schedule: data.schedule ? new Date(data.schedule) : undefined,
                 recipients: {
-                    create: recipientIds.map(customerId => ({ customerId })),
+                    create: recipientIds.map((customerId) => ({ customerId })),
                 },
                 ownerId,
             },

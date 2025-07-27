@@ -111,7 +111,11 @@ export async function updateInvoicePaymentHandler(
 export const deleteInvoiceHandler = catchErrors(async (req, res) => {
     const { id } = req.params;
     const ownerId = req.user?.id;
-    appAssert(ownerId, UNAUTHORIZED, "Unauthorized, login to perform this action");
+    appAssert(
+        ownerId,
+        UNAUTHORIZED,
+        "Unauthorized, login to perform this action",
+    );
     appAssert(id, BAD_REQUEST, "Invoice Id required");
 
     await deleteInvoice(id, ownerId);

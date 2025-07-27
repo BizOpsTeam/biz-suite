@@ -18,7 +18,7 @@ dotenv.config();
 const port = process.env.PORT || 3000;
 console.log("port Number: ", port);
 
-app.listen(Number(port), '0.0.0.0', () => {
+app.listen(Number(port), "0.0.0.0", () => {
     console.log(`🚀Server running on http://localhost:${port}`);
     console.log(`📚 API Docs running on http://localhost:${port}/api-docs/`);
 });

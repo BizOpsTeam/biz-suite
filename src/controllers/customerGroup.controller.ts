@@ -64,7 +64,6 @@ export const deleteCustomerGroupHandler = catchErrors(
     },
 );
 
-
 export const assignGroupsToCustomerHandler = catchErrors(
     async (req: Request, res: Response): Promise<any> => {
         const ownerId = req.user?.id;
@@ -86,13 +85,14 @@ export const assignGroupsToCustomerHandler = catchErrors(
     },
 );
 
-
 export const getCustomersByGroupHandler = catchErrors(
     async (req: Request, res: Response) => {
         const { groupId } = req.query;
         if (!groupId)
             return res.status(400).json({ message: "groupId is required" });
         const customers = await getCustomersByGroup(groupId as string);
-        return res.status(OK).json({ data: customers, message: "Customers fetched" });
+        return res
+            .status(OK)
+            .json({ data: customers, message: "Customers fetched" });
     },
 );

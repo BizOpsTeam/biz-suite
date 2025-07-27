@@ -11,30 +11,41 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
     return await prisma.$transaction(
         async (tx: Prisma.TransactionClient) => {
             // 1. Fetch all products needed for the sale in one go
-            const productIds = saleData.items.map(item => item.productId);
+            const productIds = saleData.items.map((item) => item.productId);
             const products = await tx.product.findMany({
                 where: { id: { in: productIds } },
-                select: { id: true, stock: true, cost: true, price: true }
+                select: { id: true, stock: true, cost: true, price: true },
             });
-            const productMap: Record<string, { id: string; stock: number; cost: number | null; price: number }> = Object.fromEntries(products.map(p => [p.id, { ...p }]));
+            const productMap: Record<
+                string,
+                {
+                    id: string;
+                    stock: number;
+                    cost: number | null;
+                    price: number;
+                }
+            > = Object.fromEntries(products.map((p) => [p.id, { ...p }]));
 
             // 2. Check stock and prepare updates in memory
             for (const item of saleData.items) {
                 const product = productMap[item.productId];
                 if (!product || product.stock < item.quantity) {
-                    throw new AppError(BAD_REQUEST, `INSUFFICIENT_STOCK for product ${item.productId}`);
+                    throw new AppError(
+                        BAD_REQUEST,
+                        `INSUFFICIENT_STOCK for product ${item.productId}`,
+                    );
                 }
                 product.stock -= item.quantity; // decrement in memory
             }
 
             // 3. Update all product stocks in parallel
             await Promise.all(
-                saleData.items.map(item =>
+                saleData.items.map((item) =>
                     tx.product.update({
                         where: { id: item.productId },
-                        data: { stock: { decrement: item.quantity } }
-                    })
-                )
+                        data: { stock: { decrement: item.quantity } },
+                    }),
+                ),
             );
 
             // 4. Create the sale
@@ -46,14 +57,17 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
                     paymentMethod: saleData.paymentMethod,
                     taxAmount: saleData.totalAmount,
                     totalAmount: saleData.totalAmount,
-                    status: saleData.paymentMethod === "CREDIT" ? "pending" : "completed",
+                    status:
+                        saleData.paymentMethod === "CREDIT"
+                            ? "pending"
+                            : "completed",
                     notes: saleData.notes,
                     ownerId: ownerId,
                 },
             });
 
             // 5. Prepare sale items with cost
-            const saleItemsData = saleData.items.map(item => ({
+            const saleItemsData = saleData.items.map((item) => ({
                 saleId: newSale.id,
                 productId: item.productId,
                 quantity: item.quantity,
@@ -83,20 +97,26 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
             // 7. Create receipt if not CREDIT
             let newReceipt = null;
             if (saleData.paymentMethod !== "CREDIT") {
-                newReceipt = await createReceiptForInvoice(newInvoice.id, ownerId, tx);
+                newReceipt = await createReceiptForInvoice(
+                    newInvoice.id,
+                    ownerId,
+                    tx,
+                );
             }
 
             // 8. Low stock alert (after all updates)
             for (const product of Object.values(productMap)) {
                 if (product.stock < 5) {
-                    console.warn(`LOW STOCK ALERT: Product ${product.id} has only ${product.stock} left.`);
+                    console.warn(
+                        `LOW STOCK ALERT: Product ${product.id} has only ${product.stock} left.`,
+                    );
                     // Optionally, trigger notification/email here
                 }
             }
 
             return { newSale, newInvoice, newReceipt };
         },
-        { timeout: 15000 } // 15 seconds
+        { timeout: 15000 }, // 15 seconds
     );
 };
 
