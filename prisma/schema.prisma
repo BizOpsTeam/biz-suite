@@ -47,6 +47,7 @@ model UserModel {
   stockAdjustments         StockAdjustment[]
   customerGroups           CustomerGroup[]
   customers                Customer[]
+  campaigns                Campaign[]
 }
 
 
@@ -243,6 +244,7 @@ model Customer {
   memberships CustomerGroupMembership[]
   ownerId   String
   owner     UserModel @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  campaignRecipients CampaignRecipient[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -311,4 +313,27 @@ model StockAdjustment {
   reason         String
   note           String?
   createdAt      DateTime   @default(now())
+}
+
+model Campaign {
+  id             String                @id @default(uuid())
+  name           String
+  message        String
+  broadcastToAll Boolean
+  schedule       DateTime?
+  recipients     CampaignRecipient[]
+  ownerId String
+  owner   UserModel @relation(fields: [ownerId], references: [id] , onDelete: Cascade)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+}
+
+model CampaignRecipient {
+  id         String    @id @default(uuid())
+  campaign   Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId String
+  customer   Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String
+
+  @@unique([campaignId, customerId]) // Prevent duplicate recipients for a campaign
 }

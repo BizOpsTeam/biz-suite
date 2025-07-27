@@ -16,6 +16,7 @@ import analyticsRoutes from "./routes/analytics.routes";
 import receiptsRoutes from "./routes/receipts.routes";
 import expenseCategoryRoutes from "./routes/expenseCategory.routes";
 import expenseRoutes from "./routes/expense.routes";
+import campaignRoutes from "./routes/campaign.routes";
 import cron from "node-cron";
 import { processRecurringExpenses } from "./services/expense.service";
 import stockAdjustmentRoutes from "./routes/stockAdjustment.routes";
@@ -53,6 +54,7 @@ setupSwagger(app);
 
 //-------------routes-------------------------//
 
+
 app.get("/", (_req: Request, res: Response) => {
     res.status(200).json({ message: "Hello World" });
 });
@@ -85,6 +87,8 @@ app.use("/users", authenticateUser, isAdmin, userRoutes);
 //-------analytics routes---------//
 app.use("/analytics", authenticateUser, isAdmin, analyticsRoutes);
 
+//-------campaign routes---------//
+app.use("/campaigns", authenticateUser, campaignRoutes);
 // Schedule recurring expense processing every day at midnight
 cron.schedule("0 0 * * *", async () => {
     console.log("[CRON] Processing recurring expenses...");

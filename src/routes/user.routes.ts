@@ -8,6 +8,7 @@ import {
     updateUserProfileHandler,
     uploadLogoHandler,
     getCustomerStatementHandler,
+    getTotalCustomersHandler,
 } from "../controllers/user.controller";
 
 const router = Router();
@@ -15,6 +16,7 @@ const router = Router();
 // Customer routes
 router.post("/customers", createCustomerHandler);
 router.get("/customers", getCustomersHandler);
+router.get("/customers/total", getTotalCustomersHandler);
 router.get("/customers/:id", getCustomerByIdHandler);
 router.patch("/customers/:id", updateCustomerHandler);
 router.delete("/customers/:id", deleteCustomerHandler);

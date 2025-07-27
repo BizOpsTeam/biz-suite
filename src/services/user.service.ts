@@ -21,6 +21,11 @@ export async function getCustomers(ownerId: string): Promise<Customer[]> {
     return prisma.customer.findMany({ where: { ownerId }, orderBy: { createdAt: "desc" } });
 }
 
+export async function getTotalCustomers(ownerId: string): Promise<number> {
+    const count = await prisma.customer.count({ where: { ownerId } });
+    return count;
+}
+
 export async function getCustomerById(id: string, ownerId: string): Promise<Customer> {
     const customer = await prisma.customer.findFirst({ where: { id, ownerId } });
     appAssert(customer, NOT_FOUND, "Customer not found");

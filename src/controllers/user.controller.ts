@@ -7,6 +7,7 @@ import {
 import {
     createCustomer,
     getCustomers,
+    getTotalCustomers,
     getCustomerById,
     updateCustomer,
     deleteCustomer,
@@ -66,6 +67,15 @@ export const getCustomersHandler = catchErrors(
         appAssert(userId, 401, "Unauthorized");
         const customers = await getCustomers(userId);
         return res.json({ success: true, data: customers });
+    },
+);
+
+export const getTotalCustomersHandler = catchErrors(
+    async (req: Request, res: Response, _next: NextFunction) => {
+        const userId = req.user?.id;
+        appAssert(userId, 401, "Unauthorized");
+        const total = await getTotalCustomers(userId);
+        return res.json({ success: true, total });
     },
 );
 
