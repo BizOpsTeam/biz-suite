@@ -22,6 +22,7 @@ import { processRecurringExpenses } from "./services/expense.service";
 import stockAdjustmentRoutes from "./routes/stockAdjustment.routes";
 import customerGroupRoutes from "./routes/customerGroup.routes";
 import productCategoryRoutes from "./routes/productCategory.routes";
+import reminderRoutes from "./routes/reminder.routes";
 
 const app = express();
 //----------------cors config-----------------------//
@@ -85,6 +86,10 @@ app.use("/analytics", authenticateUser, isAdmin, analyticsRoutes);
 
 //-------campaign routes---------//
 app.use("/campaigns", authenticateUser, campaignRoutes);
+
+//-------reminder routes---------//
+app.use("/reminders", authenticateUser, reminderRoutes);
+
 // Schedule recurring expense processing every day at midnight
 cron.schedule("0 0 * * *", async () => {
     console.log("[CRON] Processing recurring expenses...");

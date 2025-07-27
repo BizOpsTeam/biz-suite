@@ -48,6 +48,7 @@ model UserModel {
   customerGroups           CustomerGroup[]
   customers                Customer[]
   campaigns                Campaign[]
+  reminders                Reminder[]
 }
 
 
@@ -245,6 +246,7 @@ model Customer {
   ownerId   String
   owner     UserModel @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   campaignRecipients CampaignRecipient[]
+  reminders Reminder[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -336,4 +338,33 @@ model CampaignRecipient {
   customerId String
 
   @@unique([campaignId, customerId]) // Prevent duplicate recipients for a campaign
+}
+
+model Reminder {
+  id          String    @id @default(uuid())
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id])
+  creatorId   String
+  creator     UserModel @relation(fields: [creatorId], references: [id])
+  due         DateTime
+  amount      Float?
+  message     String?
+  status      ReminderStatus @default(PENDING)
+  type        ReminderType @default(CUSTOM)
+  sentAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum ReminderStatus {
+  PENDING
+  SENT
+  OVERDUE
+}
+
+enum ReminderType {
+  PAYMENT
+  MEETING
+  FOLLOW_UP
+  CUSTOM
 }

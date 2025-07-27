@@ -52,3 +52,7 @@ export type TSaleData = {
 };
 
 export type PaymentMethod = "CASH" | "CREDIT_CARD" | "CREDIT" | "MOBILE_MONEY";
+
+export type TReminderType = "PAYMENT" | "MEETING" | "FOLLOW_UP" | "CUSTOM";
+
+export type TReminderStatus = "PENDING" | "SENT" | "OVERDUE";
