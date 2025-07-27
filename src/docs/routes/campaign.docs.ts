@@ -100,4 +100,109 @@
  *         customerId:
  *           type: string
  *           format: uuid
+ *
+ * /api/campaigns:
+ *   get:
+ *     summary: Get all campaigns for an owner
+ *     tags:
+ *       - Campaigns
+ *     parameters:
+ *       - in: query
+ *         name: ownerId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         required: true
+ *         description: The ID of the campaign owner (User)
+ *     responses:
+ *       200:
+ *         description: List of campaigns
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Campaign'
+ *                 message:
+ *                   type: string
+ *                   example: Campaigns retrieved successfully
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: object
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Unauthorized
+ *
+ * components:
+ *   schemas:
+ *     Campaign:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         message:
+ *           type: string
+ *         broadcastToAll:
+ *           type: boolean
+ *         schedule:
+ *           type: string
+ *           format: date-time
+ *         ownerId:
+ *           type: string
+ *           format: uuid
+ *         owner:
+ *           $ref: '#/components/schemas/UserModel'
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *         recipients:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/CampaignRecipient'
+ *     CampaignRecipient:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         customerId:
+ *           type: string
+ *           format: uuid
+ *     UserModel:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         email:
+ *           type: string
+ *           format: email
+ *         role:
+ *           type: string
+ *           example: admin
+ *         // ...other user fields as needed
  */
