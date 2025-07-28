@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { CREATED, NOT_FOUND, OK, UNAUTHORIZED } from "../constants/http";
 import {
     createUserAccount,
+    getUserProfile,
     loginUser,
     revokeAllRefreshTokensForAUser,
     saveRefreshToken,
@@ -189,6 +190,15 @@ export const verifyEmailHandler = catchErrors(async (req, res) => {
     //update the user's emailVerified field in the database
     await updateEmailVerified(user.id);
     res.status(OK).json({ message: "Email verified successfully" });
+});
+
+export const getMeHandler = catchErrors(async (req, res) => {
+    const userId = req.user?.id;
+    appAssert(userId, UNAUTHORIZED, "Unauthorized");
+    const user = await getUserProfile(userId);
+    // Exclude sensitive fields
+    const { password, emailVerificationToken, emailVerificationExpires, ...safeUser } = user;
+    res.status(200).json({ success: true, data: safeUser });
 });
 
 export const forgotPasswordHandler = catchErrors(async (req, res) => {

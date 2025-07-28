@@ -3,6 +3,7 @@ import prisma from "../config/db";
 import appAssert from "../utils/appAssert";
 import { CONFLICT, UNAUTHORIZED } from "../constants/http";
 import { comparePasswords, hashPassword } from "../utils/bcrypt";
+import { sevenDaysFromNow } from "../utils/dates";
 
 export const createUserAccount = async (user: TUser) => {
     //check if user already exists in database
@@ -26,18 +27,20 @@ export const createUserAccount = async (user: TUser) => {
     return newUser;
 };
 
-export const saveRefreshToken = async (
-    refreshToken: string,
-    userId: string,
-) => {
-    //save refresh token in your database using userId as a reference
+export const saveRefreshToken = async (token: string, userId: string) => {
     await prisma.refreshToken.create({
         data: {
-            token: refreshToken,
+            token,
             userId,
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            expiresAt: sevenDaysFromNow(),
         },
     });
+};
+
+export const getUserProfile = async (userId: string) => {
+    const user = await prisma.userModel.findUnique({ where: { id: userId } });
+    appAssert(user, UNAUTHORIZED, "User not found");
+    return user;
 };
 
 export const verifyRefreshTokenInDB = async (token: string) => {

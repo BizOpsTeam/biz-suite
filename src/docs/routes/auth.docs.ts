@@ -205,4 +205,68 @@ export const authDocs = `
  *       404:
  *         description: Invalid or expired reset password token
  */
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get authenticated user's profile
+ *     tags: [Auth]
+ *     description: Returns the profile of the currently authenticated user. Requires a valid access token.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "12345"
+ *                     name:
+ *                       type: string
+ *                       example: John Doe
+ *                     email:
+ *                       type: string
+ *                       example: johndoe@example.com
+ *                     role:
+ *                       type: string
+ *                       example: admin
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2023-01-01T00:00:00.000Z"
+ *                     isEmailVerified:
+ *                       type: boolean
+ *                       example: true
+ *                     logoUrl:
+ *                       type: string
+ *                       example: "https://example.com/logo.png"
+ *                     companyAddress:
+ *                       type: string
+ *                       example: "123 Main St, City"
+ *                     companyPhone:
+ *                       type: string
+ *                       example: "+1234567890"
+ *                     defaultCurrencyCode:
+ *                       type: string
+ *                       example: "USD"
+ *                     defaultCurrencySymbol:
+ *                       type: string
+ *                       example: "$"
+ *                     defaultTaxRate:
+ *                       type: number
+ *                       example: 0.075
+ *       401:
+ *         description: Unauthorized, missing or invalid token
+ */
+
 `;

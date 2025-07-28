@@ -1,3 +1,5 @@
+import { authenticateUser } from "../middlewares/authenticateUser";
+import { getMeHandler } from "../controllers/auth.controller";
 import { Router } from "express";
 import {
     forgotPasswordHandler,
@@ -18,5 +20,4 @@ authRoutes.post("/refresh", refreshTokenHandler);
 authRoutes.post("/verify-email", verifyEmailHandler);
 authRoutes.post("/forgot-password", forgotPasswordHandler);
 authRoutes.post("/reset-password", resetPasswordHandler);
-
-export default authRoutes;
+authRoutes.get("/me", authenticateUser, getMeHandler);
