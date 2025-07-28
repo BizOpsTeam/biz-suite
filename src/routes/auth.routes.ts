@@ -21,3 +21,5 @@ authRoutes.post("/verify-email", verifyEmailHandler);
 authRoutes.post("/forgot-password", forgotPasswordHandler);
 authRoutes.post("/reset-password", resetPasswordHandler);
 authRoutes.get("/me", authenticateUser, getMeHandler);
+
+export default authRoutes;
