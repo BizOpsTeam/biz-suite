@@ -93,13 +93,16 @@ export const loginHandler = catchErrors(async (req, res) => {
     const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
 
+    console.log("Refresh token: ", refreshToken);
+    console.log("Access token: ", accessToken);
+
     //save the refresh token in the database
     await saveRefreshToken(refreshToken, user.id);
 
     //set refresh token as httpOnly cookie
     setRefreshTokenCookie(refreshToken, res);
 
-    // Add debugging for cookie setting
+    // Add debugging for auth/logincookie setting
     console.log("=== Login Debug Info ===");
     console.log("Setting refresh token cookie for user:", user.id);
     console.log("Cookie value:", `${refreshToken.substring(0, 20)}...`);
@@ -153,18 +156,19 @@ export const refreshTokenHandler = catchErrors(async (req, res) => {
     //verify the refreshToken in the database
     const userId = await verifyRefreshTokenInDB(refreshToken);
     appAssert(userId, UNAUTHORIZED, "Invalid or expired refresh token");
-    await revokeAllRefreshTokensForAUser(userId);
+    // await revokeAllRefreshTokensForAUser(userId);
 
     //generate new access token and refresh token
     const accessToken = generateAccessToken(userId);
-    const newRefreshToken = generateRefreshToken(userId);
-
+    const userProfile = await getUserProfile(userId)
+    // const newRefreshToken = generateRefreshToken(userId);
     //save the new refresh token in the database
-    await saveRefreshToken(newRefreshToken, userId);
-    setRefreshTokenCookie(newRefreshToken, res);
+    // await saveRefreshToken(newRefreshToken, userId);
+    // setRefreshTokenCookie(newRefreshToken, res);
 
-    res.status(OK).json({
+    return res.status(OK).json({
         accessToken,
+        user: userProfile,
         expiresIn: oneHourFromNow(),
         message: "Refreshed successfully",
     });
@@ -196,9 +200,8 @@ export const getMeHandler = catchErrors(async (req, res) => {
     const userId = req.user?.id;
     appAssert(userId, UNAUTHORIZED, "Unauthorized");
     const user = await getUserProfile(userId);
-    // Exclude sensitive fields
-    const { password, emailVerificationToken, emailVerificationExpires, ...safeUser } = user;
-    res.status(200).json({ success: true, data: safeUser });
+    console.log("User: ", user);
+    res.status(200).json({ success: true, data: user, message: "User fetched successfully" });
 });
 
 export const forgotPasswordHandler = catchErrors(async (req, res) => {

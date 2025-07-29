@@ -204,5 +204,4 @@
  *         role:
  *           type: string
  *           example: admin
- *         // ...other user fields as needed
  */

@@ -38,7 +38,11 @@ export const saveRefreshToken = async (token: string, userId: string) => {
 };
 
 export const getUserProfile = async (userId: string) => {
-    const user = await prisma.userModel.findUnique({ where: { id: userId } });
+    const user = await prisma.userModel.findUnique({ 
+        where: { id: userId },
+        select: { email: true, id: true, createdAt: true, name: true, role: true, isEmailVerified: true , logoUrl: true} 
+    });
+    //return without sensitive fields(using prisma's inbuilt functions)
     appAssert(user, UNAUTHORIZED, "User not found");
     return user;
 };

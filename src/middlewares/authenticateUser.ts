@@ -31,6 +31,8 @@ export const authenticateUser: RequestHandler = (
     const payload = verifyAccessToken(accessToken);
     appAssert(payload, UNAUTHORIZED, "Invalid access token");
 
+    console.log("Verified user's Payload: ", payload);
+
     // Attach the user ID to the request object
     req.user = { id: payload.id };
 
