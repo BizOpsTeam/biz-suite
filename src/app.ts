@@ -115,7 +115,7 @@ app.use((err: any, _req: any, res: any, next: any) => {
 // Not found handler for unmatched routes
 app.use(notFoundHandler);
 
-// Error handling middleware should be last
+// Error handling middleware 
 app.use(errorHandler);
 
 export default app;

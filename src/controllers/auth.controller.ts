@@ -156,15 +156,11 @@ export const refreshTokenHandler = catchErrors(async (req, res) => {
     //verify the refreshToken in the database
     const userId = await verifyRefreshTokenInDB(refreshToken);
     appAssert(userId, UNAUTHORIZED, "Invalid or expired refresh token");
-    // await revokeAllRefreshTokensForAUser(userId);
+    
 
-    //generate new access token and refresh token
     const accessToken = generateAccessToken(userId);
     const userProfile = await getUserProfile(userId)
-    // const newRefreshToken = generateRefreshToken(userId);
-    //save the new refresh token in the database
-    // await saveRefreshToken(newRefreshToken, userId);
-    // setRefreshTokenCookie(newRefreshToken, res);
+    
 
     return res.status(OK).json({
         accessToken,
