@@ -102,13 +102,6 @@ export const loginHandler = catchErrors(async (req, res) => {
     //set refresh token as httpOnly cookie
     setRefreshTokenCookie(refreshToken, res);
 
-    // Add debugging for auth/logincookie setting
-    console.log("=== Login Debug Info ===");
-    console.log("Setting refresh token cookie for user:", user.id);
-    console.log("Cookie value:", `${refreshToken.substring(0, 20)}...`);
-    console.log("NODE_ENV:", process.env.NODE_ENV);
-    console.log("=========================");
-
     res.status(OK).json({
         data: user,
         accessToken,
@@ -145,6 +138,8 @@ export const refreshTokenHandler = catchErrors(async (req, res) => {
     //get refreshToken from request cookies
     const refreshToken = req.cookies["refreshToken"];
 
+    console.log("This is the refreshToken: ", refreshToken);
+
     if (!refreshToken) {
         throw new AppError(
             UNAUTHORIZED,
@@ -155,6 +150,7 @@ export const refreshTokenHandler = catchErrors(async (req, res) => {
 
     //verify the refreshToken in the database
     const userId = await verifyRefreshTokenInDB(refreshToken);
+    console.log("This is the userId: ", userId);
     appAssert(userId, UNAUTHORIZED, "Invalid or expired refresh token");
     
 

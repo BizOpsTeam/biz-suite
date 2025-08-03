@@ -52,11 +52,13 @@ export const verifyRefreshTokenInDB = async (token: string) => {
         where: { token },
     });
 
+    console.log("This is the storedToken: ", storedToken);
     // Ensure the token exists
     appAssert(storedToken, UNAUTHORIZED, "Invalid or expired refresh token");
 
     // Check if the token is expired
     const isExpired = new Date(storedToken.expiresAt) < new Date();
+    console.log("This is the isExpired: ", isExpired);
     appAssert(!isExpired, UNAUTHORIZED, "Refresh token expired");
 
     return storedToken.userId;

@@ -66,7 +66,11 @@ export const getCustomersHandler = catchErrors(
     async (req: Request, res: Response, _next: NextFunction) => {
         const userId = req.user?.id;
         appAssert(userId, 401, "Unauthorized");
-        const customers = await getCustomers(userId);
+
+        //let it take params
+        const { page, limit, search } = req.query;
+
+        const customers = await getCustomers(userId, Number(page) || 1, Number(limit) || 10, search as string || "");
         return res.json({ success: true, data: customers });
     },
 );

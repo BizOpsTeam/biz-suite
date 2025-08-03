@@ -21,10 +21,12 @@ export async function createCustomer(data: {
     return prisma.customer.create({ data });
 }
 
-export async function getCustomers(ownerId: string): Promise<Customer[]> {
+export async function getCustomers(ownerId: string, page: number, limit: number, search: string): Promise<Customer[]> {
     return prisma.customer.findMany({
-        where: { ownerId },
+        where: { ownerId, name: { contains: search, mode: "insensitive" } },
         orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
     });
 }
 
