@@ -44,6 +44,7 @@ model UserModel {
   receiptsAudit            ReceiptAudit[]        // Audit logs for user actions on receipts
   expenses                 Expense[]             // Expenses incurred by this user
   expenseCategories        ExpenseCategory[]     // Categories owned by this user
+  budgets                  Budget[]              // Budgets created by this user
   stockAdjustments         StockAdjustment[]
   customerGroups           CustomerGroup[]
   customers                Customer[]
@@ -278,6 +279,7 @@ model ExpenseCategory {
   ownerId     String
   owner       UserModel @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   expenses    Expense[]
+  budgets     Budget[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -290,12 +292,47 @@ model Expense {
   categoryId      String
   category        ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   description     String?
+  vendor          String?         // Vendor/supplier name
+  paymentMethod   PaymentMethod?  // How the expense was paid
+  status          ExpenseStatus   @default(PENDING)
   date            DateTime
   isRecurring     Boolean         @default(false)
   recurrenceType  RecurrenceType? // e.g., MONTHLY, YEARLY
   nextDueDate     DateTime?
+  receiptUrl      String?         // URL to uploaded receipt
+  tags            String[]        // Array of tags
+  notes           String?         // Additional notes
+  approvedBy      String?         // User who approved the expense
+  approvedAt      DateTime?       // When the expense was approved
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+}
+
+model Budget {
+  id          String          @id @default(uuid())
+  ownerId     String
+  owner       UserModel       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  allocated   Float           // Budget allocation amount
+  period      BudgetPeriod    @default(MONTHLY)
+  startDate   DateTime        // When this budget period starts
+  endDate     DateTime        // When this budget period ends
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BudgetPeriod {
+  MONTHLY
+  QUARTERLY
+  YEARLY
 }
 
 enum RecurrenceType {

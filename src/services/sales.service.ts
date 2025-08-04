@@ -48,19 +48,16 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
                 ),
             );
 
-            // 4. Create the sale
+            // 4. Create the sale with all calculated amounts
             const newSale = await tx.sale.create({
                 data: {
                     channel: saleData.channel,
                     customerId: saleData.customerId,
                     discount: saleData.totalDiscount,
                     paymentMethod: saleData.paymentMethod,
-                    taxAmount: saleData.totalAmount,
+                    taxAmount: saleData.totalTax,  // Use the calculated tax amount
                     totalAmount: saleData.totalAmount,
-                    status:
-                        saleData.paymentMethod === "CREDIT"
-                            ? "pending"
-                            : "completed",
+                    status: saleData.paymentMethod === "CREDIT" ? "pending" : "completed",
                     notes: saleData.notes,
                     ownerId: ownerId,
                 },
@@ -78,15 +75,18 @@ export const createSale = async (saleData: TSaleData, ownerId: string) => {
             }));
             await tx.saleItem.createMany({ data: saleItemsData });
 
-            // 6. Create invoice
+            // 6. Create invoice with all financial details
             const invoiceNumber = await generateInvoiceNumber(ownerId);
             const newInvoice = await tx.invoice.create({
                 data: {
                     saleId: newSale.id,
                     invoiceNumber: invoiceNumber,
-                    amountDue: newSale.totalAmount,
+                    amountDue: saleData.paymentMethod === "CREDIT" ? saleData.totalAmount : 0, // Full amount due for credit, 0 for paid
+                    paidAmount: saleData.paymentMethod === "CREDIT" ? 0 : saleData.totalAmount, // 0 for credit, full amount for paid
+                    isPaid: saleData.paymentMethod !== "CREDIT", // Mark as paid if not credit
+                    status: saleData.paymentMethod === "CREDIT" ? "UNPAID" : "PAID",
                     ownerId: ownerId,
-                    dueDate: new Date(), //::Todo: will be updatad later
+                    dueDate: saleData.dueDate ? new Date(saleData.dueDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now if not specified
                     currencyCode: saleData.currencyCode,
                     currencySymbol: saleData.currencySymbol,
                     taxRate: saleData.taxRate,

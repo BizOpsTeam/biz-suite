@@ -11,6 +11,7 @@ import { saleSchema } from "../zodSchema/sale.zondSchema";
 import appAssert from "../utils/appAssert";
 import { getUserProfile } from "../services/user.service";
 import { UserModel } from "@prisma/client";
+import prisma from "../config/db";
 
 export const addSaleHandler = catchErrors(
     async (req: Request, res: Response) => {
@@ -29,23 +30,42 @@ export const addSaleHandler = catchErrors(
             taxRate,
         } = saleSchema.parse(body);
 
-        // No price from client; let backend compute totals
-        const totalAmount = 0;
-        const totalTax = 0;
-        const totalDiscount = 0;
+        // Fetch products to get their prices and user profile in parallel
+        const [products, userProfile] = await Promise.all([
+            prisma.product.findMany({
+                where: { id: { in: items.map(item => item.productId) } },
+                select: { id: true, price: true }
+            }),
+            getUserProfile(userId) as Promise<UserModel>
+        ]);
 
-        // Fetch user profile for defaults
-        const userProfile = (await getUserProfile(userId)) as UserModel;
+        // Calculate subtotal, tax, and discount
+        let subtotal = 0;
+        items.forEach((item: { productId: string; quantity: number; discount?: number }) => {
+            const product = products.find((p: { id: string; price: number }) => p.id === item.productId);
+            if (product) {
+                subtotal += product.price * item.quantity;
+            }
+        });
+
+        // Calculate discount (sum of all item discounts)
+        const totalDiscount = items.reduce((sum: number, item: { discount?: number }) => 
+            sum + (item.discount || 0), 0);
+        
+        // Apply discount to subtotal
+        const amountAfterDiscount = Math.max(0, subtotal - totalDiscount);
+        
+        // Calculate tax
+        const userTaxRate = typeof userProfile.defaultTaxRate === 'number' ? userProfile.defaultTaxRate : 0;
+        const finalTaxRate = typeof taxRate === 'number' ? taxRate : userTaxRate;
+        const totalTax = amountAfterDiscount * (finalTaxRate / 100);
+        
+        // Calculate final total
+        const totalAmount = amountAfterDiscount + totalTax;
         const finalCurrencyCode =
             currencyCode || userProfile.defaultCurrencyCode || "USD";
         const finalCurrencySymbol =
             currencySymbol || userProfile.defaultCurrencySymbol || "$";
-        const finalTaxRate =
-            typeof taxRate === "number"
-                ? taxRate
-                : typeof userProfile.defaultTaxRate === "number"
-                  ? userProfile.defaultTaxRate
-                  : 0;
 
         // Validate currency/tax for credit sales (invoices)
         if (paymentMethod === "CREDIT") {

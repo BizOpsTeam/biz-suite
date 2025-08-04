@@ -1,12 +1,15 @@
 import { Request, Response } from "express";
 import catchErrors from "../utils/catchErrors";
-import { expenseSchema } from "../zodSchema/expense.zodSchema";
+import { expenseSchema, expenseUpdateSchema, expenseApprovalSchema } from "../zodSchema/expense.zodSchema";
 import {
     createExpense,
     getExpenses,
     getExpenseById,
     updateExpense,
     deleteExpense,
+    approveExpense,
+    rejectExpense,
+    getExpenseAnalytics,
 } from "../services/expense.service";
 import { CREATED, OK } from "../constants/http";
 import appAssert from "../utils/appAssert";
@@ -33,12 +36,16 @@ export const getExpensesHandler = catchErrors(
                 ? new Date(req.query.endDate as string)
                 : undefined,
             categoryId: req.query.categoryId as string | undefined,
+            status: req.query.status as string | undefined,
+            paymentMethod: req.query.paymentMethod as string | undefined,
+            vendor: req.query.vendor as string | undefined,
             isRecurring:
                 req.query.isRecurring !== undefined
                     ? req.query.isRecurring === "true"
                     : undefined,
             recurrenceType: req.query.recurrenceType as string | undefined,
             search: req.query.search as string | undefined,
+            tags: req.query.tags ? (req.query.tags as string).split(',') : undefined,
         };
         const expenses = await getExpenses(ownerId, filters);
         res.status(OK).json({ data: expenses, message: "Expenses fetched" });
@@ -60,7 +67,7 @@ export const updateExpenseHandler = catchErrors(
         const ownerId = req.user?.id;
         appAssert(ownerId, 401, "Unauthorized");
         const { id } = req.params;
-        const data = expenseSchema.partial().parse(req.body);
+        const data = expenseUpdateSchema.parse(req.body);
         const expense = await updateExpense(id, ownerId, data);
         res.status(OK).json({ data: expense, message: "Expense updated" });
     },
@@ -73,5 +80,37 @@ export const deleteExpenseHandler = catchErrors(
         const { id } = req.params;
         await deleteExpense(id, ownerId);
         res.status(OK).json({ message: "Expense deleted" });
+    },
+);
+
+export const approveExpenseHandler = catchErrors(
+    async (req: Request, res: Response) => {
+        const ownerId = req.user?.id;
+        appAssert(ownerId, 401, "Unauthorized");
+        const { id } = req.params;
+        const { notes } = expenseApprovalSchema.parse(req.body);
+        const expense = await approveExpense(id, ownerId, ownerId, notes);
+        res.status(OK).json({ data: expense, message: "Expense approved" });
+    },
+);
+
+export const rejectExpenseHandler = catchErrors(
+    async (req: Request, res: Response) => {
+        const ownerId = req.user?.id;
+        appAssert(ownerId, 401, "Unauthorized");
+        const { id } = req.params;
+        const { notes } = expenseApprovalSchema.parse(req.body);
+        const expense = await rejectExpense(id, ownerId, notes);
+        res.status(OK).json({ data: expense, message: "Expense rejected" });
+    },
+);
+
+export const getExpenseAnalyticsHandler = catchErrors(
+    async (req: Request, res: Response) => {
+        const ownerId = req.user?.id;
+        appAssert(ownerId, 401, "Unauthorized");
+        const period = (req.query.period as string) || "month";
+        const analytics = await getExpenseAnalytics(ownerId, period);
+        res.status(OK).json({ data: analytics, message: "Analytics fetched" });
     },
 );
