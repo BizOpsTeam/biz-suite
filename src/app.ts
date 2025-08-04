@@ -11,6 +11,7 @@ import productsRoutes from "./routes/products.routes";
 import { authenticateUser } from "./middlewares/authenticateUser";
 import invoicesRoutes from "./routes/invoices.routes";
 import userRoutes from "./routes/user.routes";
+import userProfileRoutes from "./routes/userProfile.routes";
 import { isAdmin } from "./middlewares/verifyUserRole";
 import analyticsRoutes from "./routes/analytics.routes";
 import receiptsRoutes from "./routes/receipts.routes";
@@ -24,10 +25,11 @@ import stockAdjustmentRoutes from "./routes/stockAdjustment.routes";
 import customerGroupRoutes from "./routes/customerGroup.routes";
 import productCategoryRoutes from "./routes/productCategory.routes";
 import reminderRoutes from "./routes/reminder.routes";
+import aiRoutes from "./routes/ai.routes";
 
 const app = express();
 //----------------cors config-----------------------//
-const allowedOrigins = ["http://localhost:5173"];
+const allowedOrigins = ["http://localhost:5173", "http://localhost:5174"];
 
 app.use(
     cors({
@@ -82,6 +84,12 @@ app.use("/product-categories", authenticateUser, productCategoryRoutes);
 
 //-------user routes---------//
 app.use("/users", authenticateUser, isAdmin, userRoutes);
+
+//-------user profile routes (accessible to all authenticated users)---------//
+app.use("/users", authenticateUser, userProfileRoutes);
+
+//-------AI routes---------//
+app.use("/ai", authenticateUser, aiRoutes);
 
 //-------analytics routes---------//
 app.use("/analytics", authenticateUser, isAdmin, analyticsRoutes);

@@ -40,7 +40,24 @@ export const saveRefreshToken = async (token: string, userId: string) => {
 export const getUserProfile = async (userId: string) => {
     const user = await prisma.userModel.findUnique({ 
         where: { id: userId },
-        select: { email: true, id: true, createdAt: true, name: true, role: true, isEmailVerified: true , logoUrl: true} 
+        select: { 
+            email: true, 
+            id: true, 
+            createdAt: true, 
+            name: true, 
+            role: true, 
+            isEmailVerified: true,
+            logoUrl: true,
+            companyAddress: true,
+            companyPhone: true,
+            defaultCurrencyCode: true,
+            defaultCurrencySymbol: true,
+            defaultTaxRate: true,
+            invoicePrefix: true,
+            invoiceSuffix: true,
+            invoiceSequenceStart: true,
+            invoiceSequenceNext: true
+        } 
     });
     //return without sensitive fields(using prisma's inbuilt functions)
     appAssert(user, UNAUTHORIZED, "User not found");
@@ -103,7 +120,16 @@ export const verifyResetPasswordToken = async (token: string) => {
     return resetPasswordToken.userId;
 };
 
-export const updatePassword = async (userId: string, newPassword: string) => {
+export const updatePassword = async (userId: string, newPassword: string, currentPassword?: string) => {
+    // If currentPassword is provided, verify it first
+    if (currentPassword) {
+        const user = await prisma.userModel.findUnique({ where: { id: userId } });
+        appAssert(user, UNAUTHORIZED, "User not found");
+        
+        const isCurrentPasswordValid = await comparePasswords(currentPassword, user.password);
+        appAssert(isCurrentPasswordValid, UNAUTHORIZED, "Current password is incorrect");
+    }
+    
     const hashedPassword = await hashPassword(newPassword);
     await prisma.userModel.update({
         where: { id: userId },

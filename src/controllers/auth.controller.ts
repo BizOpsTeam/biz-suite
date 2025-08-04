@@ -244,3 +244,37 @@ export const resetPasswordHandler = catchErrors(async (req, res) => {
     await updatePassword(userId, password);
     res.status(OK).json({ message: "Password reset successfully" });
 });
+
+export const changePasswordHandler = catchErrors(async (req, res) => {
+    const userId = req.user?.id;
+    appAssert(userId, UNAUTHORIZED, "Unauthorized");
+
+    const { currentPassword, newPassword } = req.body;
+    
+    appAssert(
+        currentPassword && newPassword,
+        NOT_FOUND,
+        "Current password and new password are required",
+    );
+
+    appAssert(
+        newPassword.length >= 8 && newPassword.length <= 100,
+        NOT_FOUND,
+        "New password must be between 8 and 100 characters",
+    );
+
+    // Verify current password and update to new password
+    await updatePassword(userId, newPassword, currentPassword);
+    
+    res.status(OK).json({ message: "Password changed successfully" });
+});
+
+export const resendVerificationHandler = catchErrors(async (req, res) => {
+    const userId = req.user?.id;
+    appAssert(userId, UNAUTHORIZED, "Unauthorized");
+
+    // Send verification email
+    await sendVerificationEmail(userId);
+    
+    res.status(OK).json({ message: "Verification email sent successfully" });
+});
