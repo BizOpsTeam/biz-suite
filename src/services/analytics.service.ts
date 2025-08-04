@@ -6,6 +6,7 @@ interface AnalyticsOptions {
     period?: string;
     startDate?: Date;
     endDate?: Date;
+    ownerId?: string;
 }
 
 function getDateRange(period: string, startDate?: Date, endDate?: Date) {
@@ -84,19 +85,22 @@ function forecastNext(
 }
 
 export async function getTopProducts(options: AnalyticsOptions = {}) {
-    const { limit = 10, period = "month", startDate, endDate } = options;
+    const { limit = 10, period = "month", startDate, endDate, ownerId } = options;
     const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
-    const saleItems = await prisma.saleItem.findMany({
+    const sales = await prisma.sale.findMany({
         where: {
-            sale: {
-                createdAt: {
-                    ...(rangeStart && { gte: rangeStart }),
-                    ...(rangeEnd && { lte: rangeEnd }),
-                },
+            ...(ownerId && { ownerId }),
+            createdAt: {
+                ...(rangeStart && { gte: rangeStart }),
+                ...(rangeEnd && { lte: rangeEnd }),
             },
         },
         include: {
-            product: true,
+            saleItems: {
+                include: {
+                    product: true,
+                },
+            },
         },
     });
     const productMap: Record<
@@ -108,18 +112,20 @@ export async function getTopProducts(options: AnalyticsOptions = {}) {
             timesSold: number;
         }
     > = {};
-    for (const item of saleItems) {
-        if (!productMap[item.productId]) {
-            productMap[item.productId] = {
-                product: item.product,
-                totalSold: 0,
-                totalRevenue: 0,
-                timesSold: 0,
-            };
+    for (const sale of sales) {
+        for (const item of sale.saleItems) {
+            if (!productMap[item.productId]) {
+                productMap[item.productId] = {
+                    product: item.product,
+                    totalSold: 0,
+                    totalRevenue: 0,
+                    timesSold: 0,
+                };
+            }
+            productMap[item.productId].totalSold += item.quantity;
+            productMap[item.productId].totalRevenue += item.price * item.quantity;
+            productMap[item.productId].timesSold += 1;
         }
-        productMap[item.productId].totalSold += item.quantity;
-        productMap[item.productId].totalRevenue += item.price * item.quantity;
-        productMap[item.productId].timesSold += 1;
     }
     const products = Object.values(productMap)
         .sort((a, b) => b.totalSold - a.totalSold)
@@ -136,10 +142,11 @@ export async function getTopProducts(options: AnalyticsOptions = {}) {
 }
 
 export async function getSalesOverTime(options: AnalyticsOptions = {}) {
-    const { period = "month", startDate, endDate } = options;
+    const { period = "month", startDate, endDate, ownerId } = options;
     const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
     const sales = await prisma.sale.findMany({
         where: {
+            ...(ownerId && { ownerId }),
             createdAt: {
                 ...(rangeStart && { gte: rangeStart }),
                 ...(rangeEnd && { lte: rangeEnd }),
@@ -221,10 +228,11 @@ export async function getSalesByPaymentMethod(options: AnalyticsOptions = {}) {
 }
 
 export async function getTopCustomers(options: AnalyticsOptions = {}) {
-    const { limit = 10, period = "month", startDate, endDate } = options;
+    const { limit = 10, period = "month", startDate, endDate, ownerId } = options;
     const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
     const sales = await prisma.sale.findMany({
         where: {
+            ...(ownerId && { ownerId }),
             createdAt: {
                 ...(rangeStart && { gte: rangeStart }),
                 ...(rangeEnd && { lte: rangeEnd }),

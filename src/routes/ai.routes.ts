@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { authenticateUser } from "../middlewares/authenticateUser";
 import {
     analyzeQueryHandler,
     generateInsightsHandler,
@@ -11,10 +10,10 @@ import {
 const router = Router();
 
 // AI Analysis routes
-router.post("/analyze", authenticateUser, analyzeQueryHandler);
-router.get("/insights", authenticateUser, generateInsightsHandler);
-router.get("/predictions", authenticateUser, predictTrendsHandler);
-router.get("/recommendations", authenticateUser, generateRecommendationsHandler);
-router.get("/dashboard", authenticateUser, getAIDashboardHandler);
+router.post("/analyze", analyzeQueryHandler);
+router.get("/insights", generateInsightsHandler);
+router.get("/predictions", predictTrendsHandler);
+router.get("/recommendations", generateRecommendationsHandler);
+router.get("/dashboard", getAIDashboardHandler);
 
 export default router; 

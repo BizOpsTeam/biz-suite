@@ -8,6 +8,7 @@ import { UNAUTHORIZED } from "../constants/http";
  * Analyze natural language business query
  */
 export const analyzeQueryHandler = catchErrors(async (req: Request, res: Response) => {
+    console.log("analyzeQueryHandler called");
     const userId = req.user?.id;
     appAssert(userId, UNAUTHORIZED, "Unauthorized");
 

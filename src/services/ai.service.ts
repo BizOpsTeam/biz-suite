@@ -6,203 +6,271 @@ configDotenv();
 
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+console.log('GEMINI_API_KEY:', process.env.GEMINI_API_KEY ? 'Set' : 'Not set');
 
 // Types for AI responses
 export interface AIInsight {
-  id: string;
-  type: 'analysis' | 'prediction' | 'recommendation' | 'alert' | 'trend';
-  title: string;
-  description: string;
-  confidence: number;
-  data: any;
-  timestamp: Date;
-  actionable: boolean;
-  category: 'sales' | 'customers' | 'inventory' | 'financial' | 'general';
+    id: string;
+    type: 'analysis' | 'prediction' | 'recommendation' | 'alert' | 'trend';
+    title: string;
+    description: string;
+    confidence: number;
+    data: any;
+    timestamp: Date;
+    actionable: boolean;
+    category: 'sales' | 'customers' | 'inventory' | 'financial' | 'general';
 }
 
 export interface AIQuery {
-  query: string;
-  context: 'sales' | 'customers' | 'inventory' | 'financial' | 'general';
-  response: AIInsight;
+    query: string;
+    context: 'sales' | 'customers' | 'inventory' | 'financial' | 'general';
+    response: AIInsight;
 }
 
 export interface BusinessMetrics {
-  totalSales: number;
-  totalCustomers: number;
-  totalProducts: number;
-  totalExpenses: number;
-  profitMargin: number;
-  averageOrderValue: number;
-  topProducts: any[];
-  topCustomers: any[];
-  recentTransactions: any[];
-  inventoryAlerts: any[];
+    totalSales: number;
+    totalCustomers: number;
+    totalProducts: number;
+    totalExpenses: number;
+    profitMargin: number;
+    averageOrderValue: number;
+    topProducts: any[];
+    topCustomers: any[];
+    recentTransactions: any[];
+    inventoryAlerts: any[];
 }
 
 class BusinessAIService {
-  private model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    private model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
-  /**
-   * Analyze natural language business queries
-   */
-  async analyzeQuery(query: string, userId: string): Promise<AIInsight> {
-    try {
-      // Fetch business data
-      const businessData = await this.getBusinessData(userId);
-      
-      // Build AI prompt
-      const prompt = this.buildAnalysisPrompt(query, businessData);
-      
-      // Generate AI response
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      // Parse and structure the response
-      return this.parseAIResponse(text);
-    } catch (error) {
-      console.error('AI Analysis Error:', error);
-      throw new Error('Failed to analyze business query');
-    }
-  }
+    /**
+     * Analyze natural language business queries
+     */
+    async analyzeQuery(query: string, userId: string): Promise<AIInsight> {
+        try {
+            // Check if API key is set
+            if (!process.env.GEMINI_API_KEY) {
+                throw new Error('GEMINI_API_KEY environment variable is not set');
+            }
 
-  /**
-   * Generate automated business insights
-   */
-  async generateInsights(userId: string): Promise<AIInsight[]> {
-    try {
-      const businessData = await this.getBusinessData(userId);
-      const prompt = this.buildInsightsPrompt(businessData);
-      
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      return this.parseInsightsResponse(text);
-    } catch (error) {
-      console.error('AI Insights Error:', error);
-      throw new Error('Failed to generate business insights');
-    }
-  }
+            // Fetch business data
+            const businessData = await this.getBusinessData(userId);
 
-  /**
-   * Predict business trends
-   */
-  async predictTrends(userId: string, period: string = '30'): Promise<AIInsight[]> {
-    try {
-      const historicalData = await this.getHistoricalData(userId, period);
-      const prompt = this.buildPredictionPrompt(historicalData);
-      
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      return this.parsePredictionResponse(text);
-    } catch (error) {
-      console.error('AI Prediction Error:', error);
-      throw new Error('Failed to predict business trends');
-    }
-  }
+            // Build AI prompt
+            const prompt = this.buildAnalysisPrompt(query, businessData);
 
-  /**
-   * Generate business recommendations
-   */
-  async generateRecommendations(userId: string): Promise<AIInsight[]> {
-    try {
-      const businessData = await this.getBusinessData(userId);
-      const prompt = this.buildRecommendationsPrompt(businessData);
-      
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      return this.parseRecommendationsResponse(text);
-    } catch (error) {
-      console.error('AI Recommendations Error:', error);
-      throw new Error('Failed to generate business recommendations');
-    }
-  }
+            // Generate AI response
+            const result = await this.model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
 
-  /**
-   * Get comprehensive business data for AI analysis
-   */
-  private async getBusinessData(userId: string): Promise<BusinessMetrics> {
-    const [
-      sales,
-      customers,
-      products,
-      expenses,
-      topProducts,
-      topCustomers,
-      recentTransactions,
-      inventoryAlerts
-    ] = await Promise.all([
-      this.getSalesData(userId),
-      this.getCustomersData(userId),
-      this.getProductsData(userId),
-      this.getExpensesData(userId),
-      this.getTopProducts(userId),
-      this.getTopCustomers(userId),
-      this.getRecentTransactions(userId),
-      this.getInventoryAlerts(userId)
-    ]);
+            // Parse and structure the response
+            return this.parseAIResponse(text);
+        } catch (error) {
+            console.error('AI Analysis Error:', error);
 
-    const totalSales = sales.totalAmount || 0;
-    const totalExpenses = expenses.totalAmount || 0;
-    const profitMargin = totalSales > 0 ? ((totalSales - totalExpenses) / totalSales) * 100 : 0;
-    const averageOrderValue = sales.totalOrders > 0 ? totalSales / sales.totalOrders : 0;
-
-    return {
-      totalSales,
-      totalCustomers: customers.total || 0,
-      totalProducts: products.total || 0,
-      totalExpenses,
-      profitMargin,
-      averageOrderValue,
-      topProducts,
-      topCustomers,
-      recentTransactions,
-      inventoryAlerts
-    };
-  }
-
-  /**
-   * Get historical data for trend analysis
-   */
-  private async getHistoricalData(userId: string, days: string): Promise<any> {
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - parseInt(days));
-
-    const sales = await prisma.sale.findMany({
-      where: {
-        ownerId: userId,
-        createdAt: {
-          gte: startDate
+            // Return a fallback response if AI fails
+            return {
+                id: Date.now().toString(),
+                type: 'analysis',
+                title: 'Analysis Unavailable',
+                description: 'AI analysis is currently unavailable. Please check your API configuration.',
+                confidence: 0,
+                data: { error: error instanceof Error ? error.message : 'Unknown error' },
+                timestamp: new Date(),
+                actionable: false,
+                category: 'general'
+            };
         }
-      },
-      select: {
-        totalAmount: true,
-        createdAt: true,
-        saleItems: {
-          select: {
-            quantity: true,
-            price: true
-          }
+    }
+
+    /**
+     * Generate automated business insights
+     */
+    async generateInsights(userId: string): Promise<AIInsight[]> {
+        try {
+            // Check if API key is set
+            if (!process.env.GEMINI_API_KEY) {
+                throw new Error('GEMINI_API_KEY environment variable is not set');
+            }
+
+            const businessData = await this.getBusinessData(userId);
+            const prompt = this.buildInsightsPrompt(businessData);
+
+            const result = await this.model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+
+            return this.parseInsightsResponse(text);
+        } catch (error) {
+            console.error('AI Insights Error:', error);
+
+            // Return fallback insights
+            return [{
+                id: Date.now().toString(),
+                type: 'analysis',
+                title: 'Insights Unavailable',
+                description: 'AI insights are currently unavailable. Please check your API configuration.',
+                confidence: 0,
+                data: { error: error instanceof Error ? error.message : 'Unknown error' },
+                timestamp: new Date(),
+                actionable: false,
+                category: 'general'
+            }];
         }
-      },
-      orderBy: {
-        createdAt: 'asc'
-      }
-    });
+    }
 
-    return sales;
-  }
+    /**
+     * Predict business trends
+     */
+    async predictTrends(userId: string, period: string = '30'): Promise<AIInsight[]> {
+        try {
+            // Check if API key is set
+            if (!process.env.GEMINI_API_KEY) {
+                throw new Error('GEMINI_API_KEY environment variable is not set');
+            }
 
-  /**
-   * Build AI prompt for business analysis
-   */
-  private buildAnalysisPrompt(query: string, businessData: BusinessMetrics): string {
-    return `
+            const historicalData = await this.getHistoricalData(userId, period);
+            const prompt = this.buildPredictionPrompt(historicalData);
+
+            const result = await this.model.generateContent(prompt);
+            const text = result.response.text();
+
+            return this.parsePredictionResponse(text);
+        } catch (error) {
+            console.error('AI Predictions Error:', error);
+
+            // Return fallback predictions
+            return [{
+                id: Date.now().toString(),
+                type: 'prediction',
+                title: 'Predictions Unavailable',
+                description: 'AI predictions are currently unavailable. Please check your API configuration.',
+                confidence: 0,
+                data: { error: error instanceof Error ? error.message : 'Unknown error' },
+                timestamp: new Date(),
+                actionable: false,
+                category: 'general'
+            }];
+        }
+    }
+
+    /**
+     * Generate business recommendations
+     */
+    async generateRecommendations(userId: string): Promise<AIInsight[]> {
+        try {
+            // Check if API key is set
+            if (!process.env.GEMINI_API_KEY) {
+                throw new Error('GEMINI_API_KEY environment variable is not set');
+            }
+
+            const businessData = await this.getBusinessData(userId);
+            const prompt = this.buildRecommendationsPrompt(businessData);
+
+            const result = await this.model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+
+            return this.parseRecommendationsResponse(text);
+        } catch (error) {
+            console.error('AI Recommendations Error:', error);
+
+            // Return fallback recommendations
+            return [{
+                id: Date.now().toString(),
+                type: 'recommendation',
+                title: 'Recommendations Unavailable',
+                description: 'AI recommendations are currently unavailable. Please check your API configuration.',
+                confidence: 0,
+                data: { error: error instanceof Error ? error.message : 'Unknown error' },
+                timestamp: new Date(),
+                actionable: false,
+                category: 'general'
+            }];
+        }
+    }
+
+    /**
+     * Get comprehensive business data for AI analysis
+     */
+    private async getBusinessData(userId: string): Promise<BusinessMetrics> {
+        const [
+            sales,
+            customers,
+            products,
+            expenses,
+            topProducts,
+            topCustomers,
+            recentTransactions,
+            inventoryAlerts
+        ] = await Promise.all([
+            this.getSalesData(userId),
+            this.getCustomersData(userId),
+            this.getProductsData(userId),
+            this.getExpensesData(userId),
+            this.getTopProducts(userId),
+            this.getTopCustomers(userId),
+            this.getRecentTransactions(userId),
+            this.getInventoryAlerts(userId)
+        ]);
+
+        const totalSales = sales.totalAmount || 0;
+        const totalExpenses = expenses.totalAmount || 0;
+        const profitMargin = totalSales > 0 ? ((totalSales - totalExpenses) / totalSales) * 100 : 0;
+        const averageOrderValue = sales.totalOrders > 0 ? totalSales / sales.totalOrders : 0;
+
+        return {
+            totalSales,
+            totalCustomers: customers.total || 0,
+            totalProducts: products.total || 0,
+            totalExpenses,
+            profitMargin,
+            averageOrderValue,
+            topProducts,
+            topCustomers,
+            recentTransactions,
+            inventoryAlerts
+        };
+    }
+
+    /**
+     * Get historical data for trend analysis
+     */
+    private async getHistoricalData(userId: string, days: string): Promise<any> {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - parseInt(days));
+
+        const sales = await prisma.sale.findMany({
+            where: {
+                ownerId: userId,
+                createdAt: {
+                    gte: startDate
+                }
+            },
+            select: {
+                totalAmount: true,
+                createdAt: true,
+                saleItems: {
+                    select: {
+                        quantity: true,
+                        price: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'asc'
+            }
+        });
+
+        return sales;
+    }
+
+    /**
+     * Build AI prompt for business analysis
+     */
+    private buildAnalysisPrompt(query: string, businessData: BusinessMetrics): string {
+        return `
 You are a business intelligence AI assistant. Analyze the following business data and answer the user's question.
 
 Business Data:
@@ -240,13 +308,13 @@ Format your response as JSON:
   }
 }
 `;
-  }
+    }
 
-  /**
-   * Build AI prompt for automated insights
-   */
-  private buildInsightsPrompt(businessData: BusinessMetrics): string {
-    return `
+    /**
+     * Build AI prompt for automated insights
+     */
+    private buildInsightsPrompt(businessData: BusinessMetrics): string {
+        return `
 You are a business intelligence AI assistant. Analyze this business data and generate 3-5 key insights.
 
 Business Data:
@@ -285,13 +353,13 @@ Format as JSON array:
   }
 ]
 `;
-  }
+    }
 
-  /**
-   * Build AI prompt for trend predictions
-   */
-  private buildPredictionPrompt(historicalData: any[]): string {
-    return `
+    /**
+     * Build AI prompt for trend predictions
+     */
+    private buildPredictionPrompt(historicalData: any[]): string {
+        return `
 You are a business intelligence AI assistant. Analyze this historical sales data and predict future trends.
 
 Historical Sales Data (last 30 days):
@@ -321,13 +389,13 @@ Format as JSON array:
   }
 ]
 `;
-  }
+    }
 
-  /**
-   * Build AI prompt for business recommendations
-   */
-  private buildRecommendationsPrompt(businessData: BusinessMetrics): string {
-    return `
+    /**
+     * Build AI prompt for business recommendations
+     */
+    private buildRecommendationsPrompt(businessData: BusinessMetrics): string {
+        return `
 You are a business intelligence AI assistant. Analyze this business data and provide actionable recommendations.
 
 Business Data:
@@ -367,203 +435,203 @@ Format as JSON array:
   }
 ]
 `;
-  }
-
-  /**
-   * Parse AI response for single query
-   */
-  private parseAIResponse(response: string): AIInsight {
-    try {
-      const parsed = JSON.parse(response);
-      return {
-        id: Date.now().toString(),
-        type: parsed.type || 'analysis',
-        title: parsed.title || 'Business Analysis',
-        description: parsed.description || response,
-        confidence: parsed.confidence || 75,
-        data: parsed.data || {},
-        timestamp: new Date(),
-        actionable: parsed.actionable || false,
-        category: parsed.category || 'general'
-      };
-    } catch (error) {
-      // Fallback if JSON parsing fails
-      return {
-        id: Date.now().toString(),
-        type: 'analysis',
-        title: 'Business Analysis',
-        description: response,
-        confidence: 75,
-        data: { rawResponse: response },
-        timestamp: new Date(),
-        actionable: false,
-        category: 'general'
-      };
     }
-  }
 
-  /**
-   * Parse AI response for multiple insights
-   */
-  private parseInsightsResponse(response: string): AIInsight[] {
-    try {
-      const parsed = JSON.parse(response);
-      return parsed.map((insight: any, index: number) => ({
-        id: (Date.now() + index).toString(),
-        type: insight.type || 'analysis',
-        title: insight.title || `Insight ${index + 1}`,
-        description: insight.description || '',
-        confidence: insight.confidence || 75,
-        data: insight.data || {},
-        timestamp: new Date(),
-        actionable: insight.actionable || false,
-        category: insight.category || 'general'
-      }));
-    } catch (error) {
-      return [{
-        id: Date.now().toString(),
-        type: 'analysis',
-        title: 'Business Insights',
-        description: response,
-        confidence: 75,
-        data: { rawResponse: response },
-        timestamp: new Date(),
-        actionable: false,
-        category: 'general'
-      }];
+    /**
+     * Parse AI response for single query
+     */
+    private parseAIResponse(response: string): AIInsight {
+        try {
+            const parsed = JSON.parse(response);
+            return {
+                id: Date.now().toString(),
+                type: parsed.type || 'analysis',
+                title: parsed.title || 'Business Analysis',
+                description: parsed.description || response,
+                confidence: parsed.confidence || 75,
+                data: parsed.data || {},
+                timestamp: new Date(),
+                actionable: parsed.actionable || false,
+                category: parsed.category || 'general'
+            };
+        } catch (error) {
+            // Fallback if JSON parsing fails
+            return {
+                id: Date.now().toString(),
+                type: 'analysis',
+                title: 'Business Analysis',
+                description: response,
+                confidence: 75,
+                data: { rawResponse: response },
+                timestamp: new Date(),
+                actionable: false,
+                category: 'general'
+            };
+        }
     }
-  }
 
-  /**
-   * Parse AI response for predictions
-   */
-  private parsePredictionResponse(response: string): AIInsight[] {
-    return this.parseInsightsResponse(response);
-  }
-
-  /**
-   * Parse AI response for recommendations
-   */
-  private parseRecommendationsResponse(response: string): AIInsight[] {
-    return this.parseInsightsResponse(response);
-  }
-
-  // Data fetching methods
-  private async getSalesData(userId: string) {
-    const sales = await prisma.sale.aggregate({
-      where: { ownerId: userId },
-      _sum: { totalAmount: true },
-      _count: { id: true }
-    });
-
-    return {
-      totalAmount: sales._sum?.totalAmount || 0,
-      totalOrders: sales._count?.id || 0
-    };
-  }
-
-  private async getCustomersData(userId: string) {
-    const customers = await prisma.customer.aggregate({
-      where: { ownerId: userId },
-      _count: { id: true }
-    });
-
-    return { total: customers._count?.id || 0 };
-  }
-
-  private async getProductsData(userId: string) {
-    const products = await prisma.product.aggregate({
-      where: { ownerId: userId },
-      _count: { id: true }
-    });
-
-    return { total: products._count?.id || 0 };
-  }
-
-  private async getExpensesData(userId: string) {
-    const expenses = await prisma.expense.aggregate({
-      where: { ownerId: userId },
-      _sum: { amount: true }
-    });
-
-    return { totalAmount: expenses._sum?.amount || 0 };
-  }
-
-  private async getTopProducts(userId: string) {
-    return await prisma.saleItem.groupBy({
-      by: ['productId'],
-      where: {
-        sale: { ownerId: userId }
-      },
-      _sum: {
-        quantity: true,
-        price: true
-      },
-      orderBy: {
-        _sum: {
-          price: 'desc'
+    /**
+     * Parse AI response for multiple insights
+     */
+    private parseInsightsResponse(response: string): AIInsight[] {
+        try {
+            const parsed = JSON.parse(response);
+            return parsed.map((insight: any, index: number) => ({
+                id: (Date.now() + index).toString(),
+                type: insight.type || 'analysis',
+                title: insight.title || `Insight ${index + 1}`,
+                description: insight.description || '',
+                confidence: insight.confidence || 75,
+                data: insight.data || {},
+                timestamp: new Date(),
+                actionable: insight.actionable || false,
+                category: insight.category || 'general'
+            }));
+        } catch (error) {
+            return [{
+                id: Date.now().toString(),
+                type: 'analysis',
+                title: 'Business Insights',
+                description: response,
+                confidence: 75,
+                data: { rawResponse: response },
+                timestamp: new Date(),
+                actionable: false,
+                category: 'general'
+            }];
         }
-      },
-      take: 10
-    });
-  }
+    }
 
-  private async getTopCustomers(userId: string) {
-    return await prisma.sale.groupBy({
-      by: ['customerId'],
-      where: { ownerId: userId },
-      _sum: {
-        totalAmount: true
-      },
-      _count: {
-        id: true
-      },
-      orderBy: {
-        _sum: {
-          totalAmount: 'desc'
-        }
-      },
-      take: 10
-    });
-  }
+    /**
+     * Parse AI response for predictions
+     */
+    private parsePredictionResponse(response: string): AIInsight[] {
+        return this.parseInsightsResponse(response);
+    }
 
-  private async getRecentTransactions(userId: string) {
-    return await prisma.sale.findMany({
-      where: { ownerId: userId },
-      select: {
-        id: true,
-        totalAmount: true,
-        createdAt: true,
-        customer: {
-          select: {
-            name: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: 10
-    });
-  }
+    /**
+     * Parse AI response for recommendations
+     */
+    private parseRecommendationsResponse(response: string): AIInsight[] {
+        return this.parseInsightsResponse(response);
+    }
 
-  private async getInventoryAlerts(userId: string) {
-    return await prisma.product.findMany({
-      where: {
-        ownerId: userId,
-        stock: {
-          lte: 10
-        }
-      },
-      select: {
-        id: true,
-        name: true,
-        stock: true,
-        price: true
-      },
-      take: 10
-    });
-  }
+    // Data fetching methods
+    private async getSalesData(userId: string) {
+        const sales = await prisma.sale.aggregate({
+            where: { ownerId: userId },
+            _sum: { totalAmount: true },
+            _count: { id: true }
+        });
+
+        return {
+            totalAmount: sales._sum?.totalAmount || 0,
+            totalOrders: sales._count?.id || 0
+        };
+    }
+
+    private async getCustomersData(userId: string) {
+        const customers = await prisma.customer.aggregate({
+            where: { ownerId: userId },
+            _count: { id: true }
+        });
+
+        return { total: customers._count?.id || 0 };
+    }
+
+    private async getProductsData(userId: string) {
+        const products = await prisma.product.aggregate({
+            where: { ownerId: userId },
+            _count: { id: true }
+        });
+
+        return { total: products._count?.id || 0 };
+    }
+
+    private async getExpensesData(userId: string) {
+        const expenses = await prisma.expense.aggregate({
+            where: { ownerId: userId },
+            _sum: { amount: true }
+        });
+
+        return { totalAmount: expenses._sum?.amount || 0 };
+    }
+
+    private async getTopProducts(userId: string) {
+        return await prisma.saleItem.groupBy({
+            by: ['productId'],
+            where: {
+                sale: { ownerId: userId }
+            },
+            _sum: {
+                quantity: true,
+                price: true
+            },
+            orderBy: {
+                _sum: {
+                    price: 'desc'
+                }
+            },
+            take: 10
+        });
+    }
+
+    private async getTopCustomers(userId: string) {
+        return await prisma.sale.groupBy({
+            by: ['customerId'],
+            where: { ownerId: userId },
+            _sum: {
+                totalAmount: true
+            },
+            _count: {
+                id: true
+            },
+            orderBy: {
+                _sum: {
+                    totalAmount: 'desc'
+                }
+            },
+            take: 10
+        });
+    }
+
+    private async getRecentTransactions(userId: string) {
+        return await prisma.sale.findMany({
+            where: { ownerId: userId },
+            select: {
+                id: true,
+                totalAmount: true,
+                createdAt: true,
+                customer: {
+                    select: {
+                        name: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            take: 10
+        });
+    }
+
+    private async getInventoryAlerts(userId: string) {
+        return await prisma.product.findMany({
+            where: {
+                ownerId: userId,
+                stock: {
+                    lte: 10
+                }
+            },
+            select: {
+                id: true,
+                name: true,
+                stock: true,
+                price: true
+            },
+            take: 10
+        });
+    }
 }
 
 export const businessAIService = new BusinessAIService(); 

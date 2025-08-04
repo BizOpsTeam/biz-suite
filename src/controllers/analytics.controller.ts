@@ -45,11 +45,13 @@ export const getTopProductsHandler = catchErrors(
             });
         }
 
+        const ownerId = (req as any).user?.id;
         const products = await getTopProducts({
             limit,
             period,
             startDate,
             endDate,
+            ownerId,
         });
         return res.json({ success: true, data: products });
     },
@@ -64,7 +66,8 @@ export const getSalesOverTimeHandler = catchErrors(
         const endDate = req.query.endDate
             ? new Date(req.query.endDate as string)
             : undefined;
-        const data = await getSalesOverTime({ period, startDate, endDate });
+        const ownerId = (req as any).user?.id;
+        const data = await getSalesOverTime({ period, startDate, endDate, ownerId });
         res.json({ success: true, data });
     },
 );
@@ -113,11 +116,13 @@ export const getTopCustomersHandler = catchErrors(
         const endDate = req.query.endDate
             ? new Date(req.query.endDate as string)
             : undefined;
+        const ownerId = (req as any).user?.id;
         const data = await getTopCustomers({
             limit,
             period,
             startDate,
             endDate,
+            ownerId,
         });
         res.json({ success: true, data });
     },
