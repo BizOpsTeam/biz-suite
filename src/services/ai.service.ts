@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { configDotenv } from 'dotenv';
 import prisma from '../config/db';
 
@@ -19,6 +19,8 @@ export interface AIInsight {
     timestamp: Date;
     actionable: boolean;
     category: 'sales' | 'customers' | 'inventory' | 'financial' | 'general';
+    content?: string; // Add content field for clean responses
+    markdown?: string; // Add markdown field
 }
 
 export interface AIQuery {
@@ -41,7 +43,11 @@ export interface BusinessMetrics {
 }
 
 class BusinessAIService {
-    private model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    private model: GenerativeModel;
+
+    constructor() {
+        this.model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    }
 
     /**
      * Analyze natural language business queries
@@ -271,123 +277,96 @@ class BusinessAIService {
      */
     private buildAnalysisPrompt(query: string, businessData: BusinessMetrics): string {
         return `
-You are a business intelligence AI assistant. Analyze the following business data and answer the user's question.
+You are a helpful business intelligence AI assistant. Analyze the following business data and provide a clear, conversational answer to the user's question.
 
-Business Data:
-- Total Sales: $${businessData.totalSales.toFixed(2)}
-- Total Customers: ${businessData.totalCustomers}
-- Total Products: ${businessData.totalProducts}
-- Total Expenses: $${businessData.totalExpenses.toFixed(2)}
-- Profit Margin: ${businessData.profitMargin.toFixed(2)}%
-- Average Order Value: $${businessData.averageOrderValue.toFixed(2)}
+## Business Data
+- **Total Sales**: $${businessData.totalSales.toFixed(2)}
+- **Total Customers**: ${businessData.totalCustomers}
+- **Total Products**: ${businessData.totalProducts}
+- **Total Expenses**: $${businessData.totalExpenses.toFixed(2)}
+- **Profit Margin**: ${businessData.profitMargin.toFixed(2)}%
+- **Average Order Value**: $${businessData.averageOrderValue.toFixed(2)}
 
-Top Products: ${JSON.stringify(businessData.topProducts.slice(0, 5))}
-Top Customers: ${JSON.stringify(businessData.topCustomers.slice(0, 5))}
-Recent Transactions: ${JSON.stringify(businessData.recentTransactions.slice(0, 10))}
+## Top Products
+${businessData.topProducts.slice(0, 5).map(p => `- ${p.name}: $${p.totalSales} (${p.quantitySold} sold)`).join('\n')}
 
-User Question: "${query}"
+## Recent Transactions
+${businessData.recentTransactions.slice(0, 5).map(t => `- ${t.date}: $${t.amount} - ${t.status}`).join('\n')}
 
-Please provide a detailed analysis with:
-1. Direct answer to the question
-2. Key insights and patterns
-3. Actionable recommendations
-4. Confidence level (0-100)
+## User Question
+"${query}"
 
-Format your response as JSON:
-{
-  "title": "Brief title",
-  "description": "Detailed analysis",
-  "confidence": 85,
-  "type": "analysis|prediction|recommendation|alert|trend",
-  "category": "sales|customers|inventory|financial|general",
-  "actionable": true,
-  "data": {
-    "keyMetrics": {},
-    "insights": [],
-    "recommendations": []
-  }
-}
+## Instructions
+Provide a clear, conversational response that directly answers the user's question. Focus on being helpful and actionable. Write as if you're having a conversation with a business owner who wants straightforward insights.
+
+Your response should be:
+1. Direct and conversational
+2. Easy to understand
+3. Actionable when possible
+4. Based on the actual data provided
+5. Honest about limitations when data is insufficient
+
+Do NOT include YAML frontmatter, JSON blocks, or complex formatting. Just provide a clean, readable response that a business owner would find useful.
 `;
     }
 
-    /**
-     * Build AI prompt for automated insights
-     */
-    private buildInsightsPrompt(businessData: BusinessMetrics): string {
-        return `
-You are a business intelligence AI assistant. Analyze this business data and generate 3-5 key insights.
+/**
+ * Build AI prompt for automated insights
+ */
+private buildInsightsPrompt(businessData: BusinessMetrics): string {
+    return `
+You are a helpful business intelligence AI assistant. Analyze this business data and provide clear, actionable insights.
 
-Business Data:
-- Total Sales: $${businessData.totalSales.toFixed(2)}
-- Total Customers: ${businessData.totalCustomers}
-- Total Products: ${businessData.totalProducts}
-- Total Expenses: $${businessData.totalExpenses.toFixed(2)}
-- Profit Margin: ${businessData.profitMargin.toFixed(2)}%
-- Average Order Value: $${businessData.averageOrderValue.toFixed(2)}
+## Business Data
 
-Top Products: ${JSON.stringify(businessData.topProducts.slice(0, 5))}
-Top Customers: ${JSON.stringify(businessData.topCustomers.slice(0, 5))}
-Recent Transactions: ${JSON.stringify(businessData.recentTransactions.slice(0, 10))}
+### Key Metrics
+- **Total Sales**: $${businessData.totalSales.toFixed(2)}
+- **Total Customers**: ${businessData.totalCustomers}
+- **Total Products**: ${businessData.totalProducts}
+- **Total Expenses**: $${businessData.totalExpenses.toFixed(2)}
+- **Profit Margin**: ${businessData.profitMargin.toFixed(2)}%
+- **Average Order Value**: $${businessData.averageOrderValue.toFixed(2)}
 
-Generate insights about:
+### Top Products
+${businessData.topProducts.slice(0, 5).map(p => `- ${p.name}: ${p.quantity} units ($${p.revenue})`).join('\n')}
+
+### Top Customers
+${businessData.topCustomers.slice(0, 5).map(c => `- ${c.name}: $${c.totalSpent} (${c.orderCount} orders)`).join('\n')}
+
+### Recent Activity
+${businessData.recentTransactions.slice(0, 5).map(t => 
+    `- ${t.date}: ${t.type} - $${t.amount} (${t.status})`
+).join('\n')}
+
+## Instructions
+
+Provide 3-5 key insights based on this data, focusing on:
 1. Sales performance and trends
 2. Customer behavior and patterns
 3. Product performance
 4. Financial health
 5. Growth opportunities
 
-Format as JSON array:
-[
-  {
-    "title": "Insight title",
-    "description": "Detailed insight",
-    "confidence": 85,
-    "type": "analysis|prediction|recommendation|alert|trend",
-    "category": "sales|customers|inventory|financial|general",
-    "actionable": true,
-    "data": {
-      "keyMetrics": {},
-      "insights": [],
-      "recommendations": []
-    }
-  }
-]
-`;
-    }
+Write in a clear, conversational tone that a business owner would find easy to understand. Focus on being helpful and actionable. Do NOT include YAML frontmatter, JSON blocks, or complex formatting. Just provide clean, readable insights.`;
+}
 
-    /**
-     * Build AI prompt for trend predictions
-     */
-    private buildPredictionPrompt(historicalData: any[]): string {
-        return `
-You are a business intelligence AI assistant. Analyze this historical sales data and predict future trends.
+/**
+ * Build AI prompt for trend predictions
+ */
+private buildPredictionPrompt(historicalData: any[]): string {
+    return `
+You are a helpful business intelligence AI assistant. Analyze this historical sales data and provide clear predictions about future trends.
 
 Historical Sales Data (last 30 days):
 ${JSON.stringify(historicalData.slice(0, 10))}
 
-Generate predictions for:
+Provide predictions for:
 1. Sales trends for the next 30 days
 2. Seasonal patterns
 3. Growth opportunities
 4. Potential risks
 
-Format as JSON array:
-[
-  {
-    "title": "Prediction title",
-    "description": "Detailed prediction",
-    "confidence": 85,
-    "type": "prediction",
-    "category": "sales|customers|inventory|financial|general",
-    "actionable": true,
-    "data": {
-      "predictedValue": 0,
-      "confidence": 85,
-      "factors": [],
-      "recommendations": []
-    }
-  }
-]
+Write in a clear, conversational tone that a business owner would find easy to understand. Be honest about the limitations of the data and provide actionable insights where possible. Do NOT include YAML frontmatter, JSON blocks, or complex formatting. Just provide clean, readable predictions.
 `;
     }
 
@@ -396,7 +375,7 @@ Format as JSON array:
      */
     private buildRecommendationsPrompt(businessData: BusinessMetrics): string {
         return `
-You are a business intelligence AI assistant. Analyze this business data and provide actionable recommendations.
+You are a helpful business intelligence AI assistant. Analyze this business data and provide clear, actionable recommendations.
 
 Business Data:
 - Total Sales: $${businessData.totalSales.toFixed(2)}
@@ -416,58 +395,57 @@ Provide recommendations for:
 4. Reducing costs and expenses
 5. Business growth strategies
 
-Format as JSON array:
-[
-  {
-    "title": "Recommendation title",
-    "description": "Detailed recommendation",
-    "confidence": 85,
-    "type": "recommendation",
-    "category": "sales|customers|inventory|financial|general",
-    "actionable": true,
-    "data": {
-      "impact": "high|medium|low",
-      "effort": "high|medium|low",
-      "timeline": "immediate|short-term|long-term",
-      "steps": [],
-      "expectedOutcome": ""
+Write in a clear, conversational tone that a business owner would find easy to understand. Focus on practical, actionable advice. Do NOT include YAML frontmatter, JSON blocks, or complex formatting. Just provide clean, readable recommendations.`;
     }
-  }
-]
-`;
-    }
+
+
+
+
 
     /**
      * Parse AI response for single query
      */
     private parseAIResponse(response: string): AIInsight {
-        try {
-            const parsed = JSON.parse(response);
-            return {
-                id: Date.now().toString(),
-                type: parsed.type || 'analysis',
-                title: parsed.title || 'Business Analysis',
-                description: parsed.description || response,
-                confidence: parsed.confidence || 75,
-                data: parsed.data || {},
-                timestamp: new Date(),
-                actionable: parsed.actionable || false,
-                category: parsed.category || 'general'
-            };
-        } catch (error) {
-            // Fallback if JSON parsing fails
-            return {
-                id: Date.now().toString(),
-                type: 'analysis',
-                title: 'Business Analysis',
-                description: response,
-                confidence: 75,
-                data: { rawResponse: response },
-                timestamp: new Date(),
-                actionable: false,
-                category: 'general'
-            };
-        }
+        // Clean the response by removing any YAML frontmatter or JSON blocks
+        const cleanResponse = this.cleanAIResponse(response);
+        
+        return {
+            id: Date.now().toString(),
+            type: 'analysis',
+            title: 'AI Analysis',
+            description: 'Analysis of your business query',
+            confidence: 85,
+            data: {
+                content: cleanResponse,
+                analysis: cleanResponse
+            },
+            timestamp: new Date(),
+            actionable: true,
+            category: 'general',
+            content: cleanResponse
+        };
+    }
+
+    /**
+     * Clean AI response by removing YAML/JSON formatting
+     */
+    private cleanAIResponse(response: string): string {
+        // Remove YAML frontmatter
+        let cleaned = response.replace(/^---\s*\n[\s\S]*?\n---\s*\n?/g, '');
+        
+        // Remove JSON code blocks
+        cleaned = cleaned.replace(/```json\s*\n[\s\S]*?\n```/g, '');
+        
+        // Remove YAML code blocks
+        cleaned = cleaned.replace(/```yaml\s*\n[\s\S]*?\n```/g, '');
+        
+        // Remove any remaining code blocks
+        cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
+        
+        // Clean up extra whitespace and newlines
+        cleaned = cleaned.trim().replace(/\n\s*\n\s*\n/g, '\n\n');
+        
+        return cleaned;
     }
 
     /**
@@ -475,26 +453,59 @@ Format as JSON array:
      */
     private parseInsightsResponse(response: string): AIInsight[] {
         try {
-            const parsed = JSON.parse(response);
-            return parsed.map((insight: any, index: number) => ({
-                id: (Date.now() + index).toString(),
-                type: insight.type || 'analysis',
-                title: insight.title || `Insight ${index + 1}`,
-                description: insight.description || '',
-                confidence: insight.confidence || 75,
-                data: insight.data || {},
-                timestamp: new Date(),
-                actionable: insight.actionable || false,
-                category: insight.category || 'general'
-            }));
-        } catch (error) {
+            // Clean the response
+            const cleanResponse = this.cleanAIResponse(response);
+            
+            // Split the response into individual insights (assuming they're separated by headers)
+            const insights = cleanResponse.split(/(?=^#+\s)/m).filter(insight => insight.trim().length > 0);
+            
+            if (insights.length > 0) {
+                return insights.map((insight, index) => ({
+                    id: (Date.now() + index).toString(),
+                    type: 'analysis' as const,
+                    title: `Business Insight ${index + 1}`,
+                    description: 'Automated business insight',
+                    confidence: 85,
+                    data: {
+                        content: insight.trim(),
+                        analysis: insight.trim()
+                    },
+                    timestamp: new Date(),
+                    actionable: true,
+                    category: 'general' as const,
+                    content: insight.trim()
+                }));
+            }
+            
+            // If no clear insights found, return the whole response as one insight
             return [{
                 id: Date.now().toString(),
                 type: 'analysis',
                 title: 'Business Insights',
-                description: response,
-                confidence: 75,
-                data: { rawResponse: response },
+                description: 'Analysis of your business data',
+                confidence: 85,
+                data: {
+                    content: cleanResponse,
+                    analysis: cleanResponse
+                },
+                timestamp: new Date(),
+                actionable: true,
+                category: 'general',
+                content: cleanResponse
+            }];
+            
+        } catch (error) {
+            console.error('Error parsing insights response:', error);
+            return [{
+                id: Date.now().toString(),
+                type: 'analysis',
+                title: 'Insights Unavailable',
+                description: 'Failed to parse insights',
+                confidence: 0,
+                data: { 
+                    error: error instanceof Error ? error.message : 'Invalid response format',
+                    rawResponse: response
+                },
                 timestamp: new Date(),
                 actionable: false,
                 category: 'general'
@@ -506,14 +517,126 @@ Format as JSON array:
      * Parse AI response for predictions
      */
     private parsePredictionResponse(response: string): AIInsight[] {
-        return this.parseInsightsResponse(response);
+        try {
+            const cleanResponse = this.cleanAIResponse(response);
+            
+            // Split the response into individual predictions
+            const predictions = cleanResponse.split(/(?=^#+\s)/m).filter(prediction => prediction.trim().length > 0);
+            
+            if (predictions.length > 0) {
+                return predictions.map((prediction, index) => ({
+                    id: (Date.now() + index).toString(),
+                    type: 'prediction' as const,
+                    title: `Business Prediction ${index + 1}`,
+                    description: 'Trend prediction based on historical data',
+                    confidence: 75,
+                    data: {
+                        content: prediction.trim(),
+                        analysis: prediction.trim()
+                    },
+                    timestamp: new Date(),
+                    actionable: true,
+                    category: 'general' as const,
+                    content: prediction.trim()
+                }));
+            }
+            
+            return [{
+                id: Date.now().toString(),
+                type: 'prediction',
+                title: 'Business Predictions',
+                description: 'Predictions based on your business data',
+                confidence: 75,
+                data: {
+                    content: cleanResponse,
+                    analysis: cleanResponse
+                },
+                timestamp: new Date(),
+                actionable: true,
+                category: 'general',
+                content: cleanResponse
+            }];
+            
+        } catch (error) {
+            console.error('Error parsing predictions response:', error);
+            return [{
+                id: Date.now().toString(),
+                type: 'prediction',
+                title: 'Predictions Unavailable',
+                description: 'Failed to parse predictions',
+                confidence: 0,
+                data: { 
+                    error: error instanceof Error ? error.message : 'Invalid response format',
+                    rawResponse: response
+                },
+                timestamp: new Date(),
+                actionable: false,
+                category: 'general'
+            }];
+        }
     }
 
     /**
      * Parse AI response for recommendations
      */
     private parseRecommendationsResponse(response: string): AIInsight[] {
-        return this.parseInsightsResponse(response);
+        try {
+            const cleanResponse = this.cleanAIResponse(response);
+            
+            // Split the response into individual recommendations
+            const recommendations = cleanResponse.split(/(?=^#+\s)/m).filter(rec => rec.trim().length > 0);
+            
+            if (recommendations.length > 0) {
+                return recommendations.map((recommendation, index) => ({
+                    id: (Date.now() + index).toString(),
+                    type: 'recommendation' as const,
+                    title: `Business Recommendation ${index + 1}`,
+                    description: 'Actionable business recommendation',
+                    confidence: 85,
+                    data: {
+                        content: recommendation.trim(),
+                        analysis: recommendation.trim()
+                    },
+                    timestamp: new Date(),
+                    actionable: true,
+                    category: 'general' as const,
+                    content: recommendation.trim()
+                }));
+            }
+            
+            return [{
+                id: Date.now().toString(),
+                type: 'recommendation',
+                title: 'Business Recommendations',
+                description: 'Recommendations based on your business data',
+                confidence: 85,
+                data: {
+                    content: cleanResponse,
+                    analysis: cleanResponse
+                },
+                timestamp: new Date(),
+                actionable: true,
+                category: 'general',
+                content: cleanResponse
+            }];
+            
+        } catch (error) {
+            console.error('Error parsing recommendations response:', error);
+            return [{
+                id: Date.now().toString(),
+                type: 'recommendation',
+                title: 'Recommendations Unavailable',
+                description: 'Failed to parse recommendations',
+                confidence: 0,
+                data: { 
+                    error: error instanceof Error ? error.message : 'Invalid response format',
+                    rawResponse: response
+                },
+                timestamp: new Date(),
+                actionable: false,
+                category: 'general'
+            }];
+        }
     }
 
     // Data fetching methods
@@ -634,4 +757,4 @@ Format as JSON array:
     }
 }
 
-export const businessAIService = new BusinessAIService(); 
+export const businessAIService = new BusinessAIService();

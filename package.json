@@ -50,6 +50,7 @@
         "@types/cookie-parser": "^1.4.8",
         "@types/cors": "^2.8.17",
         "@types/express": "^5.0.1",
+        "@types/js-yaml": "^4.0.9",
         "@types/jsonwebtoken": "^9.0.9",
         "@types/multer": "^2.0.0",
         "@types/node": "^22.15.3",
