@@ -52,13 +52,40 @@ export const createCustomerHandler = catchErrors(
     async (req: Request, res: Response): Promise<any> => {
         const userId = req.user?.id;
         appAssert(userId, 401, "Unauthorized");
+        
+        console.log("Received customer data:", req.body);
+        
         const validated = createCustomerSchema.parse(req.body);
-        const customer = await createCustomer({
-            ...validated,
-            ownerId: userId,
-        });
-        return res.status(201).json({ success: true, data: customer });
-        return null;
+        console.log("Validated customer data:", validated);
+        
+        try {
+            const customer = await createCustomer({
+                ...validated,
+                ownerId: userId,
+            });
+            
+            console.log("Created customer:", customer);
+            
+            return res.status(201).json({ 
+                success: true, 
+                data: customer,
+                message: "Customer created successfully"
+            });
+        } catch (error: any) {
+            console.error("Error creating customer:", error);
+            
+            // Handle specific error cases
+            if (error.message.includes("already exists")) {
+                return res.status(409).json({
+                    success: false,
+                    message: error.message,
+                    errorCode: "DUPLICATE_EMAIL"
+                });
+            }
+            
+            // Re-throw other errors to be handled by catchErrors
+            throw error;
+        }
     },
 );
 

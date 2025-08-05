@@ -7,18 +7,19 @@ const prisma = new PrismaClient();
 export async function createCustomer(data: {
     name: string;
     email: string;
+    phone?: string;
+    address?: string;
     ownerId: string;
 }): Promise<Customer> {
-    // Check for existing email for this owner
-    const existing = await prisma.customer.findFirst({
-        where: { email: data.email, ownerId: data.ownerId },
-    });
-    appAssert(
-        !existing,
-        CONFLICT,
-        "A customer with this email already exists for your business.",
-    );
-    return prisma.customer.create({ data });
+    try {
+        return await prisma.customer.create({ data });
+    } catch (error: any) {
+        // Handle unique constraint violation
+        if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+            throw new Error("A customer with this email already exists for your business.");
+        }
+        throw error;
+    }
 }
 
 export async function getCustomers(ownerId: string, page: number, limit: number, search: string): Promise<Customer[]> {
