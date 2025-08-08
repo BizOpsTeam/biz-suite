@@ -81,7 +81,8 @@ export const getSalesByChannelHandler = catchErrors(
         const endDate = req.query.endDate
             ? new Date(req.query.endDate as string)
             : undefined;
-        const data = await getSalesByChannel({ period, startDate, endDate });
+        const ownerId = (req as any).user?.id;
+        const data = await getSalesByChannel({ period, startDate, endDate, ownerId });
         res.json({ success: true, data });
     },
 );
@@ -95,10 +96,12 @@ export const getSalesByPaymentMethodHandler = catchErrors(
         const endDate = req.query.endDate
             ? new Date(req.query.endDate as string)
             : undefined;
+        const ownerId = (req as any).user?.id;
         const data = await getSalesByPaymentMethod({
             period,
             startDate,
             endDate,
+            ownerId,
         });
         res.json({ success: true, data });
     },
@@ -137,7 +140,8 @@ export const getAverageOrderValueHandler = catchErrors(
         const endDate = req.query.endDate
             ? new Date(req.query.endDate as string)
             : undefined;
-        const data = await getAverageOrderValue({ period, startDate, endDate });
+        const ownerId = (req as any).user?.id;
+        const data = await getAverageOrderValue({ period, startDate, endDate, ownerId });
         res.json({ success: true, data });
     },
 );
@@ -151,7 +155,8 @@ export const getDiscountImpactHandler = catchErrors(
         const endDate = req.query.endDate
             ? new Date(req.query.endDate as string)
             : undefined;
-        const data = await getDiscountImpact({ period, startDate, endDate });
+        const ownerId = (req as any).user?.id;
+        const data = await getDiscountImpact({ period, startDate, endDate, ownerId });
         res.json({ success: true, data });
     },
 );
@@ -165,7 +170,8 @@ export const getStockoutsHandler = catchErrors(
         const endDate = req.query.endDate
             ? new Date(req.query.endDate as string)
             : undefined;
-        const data = await getStockouts({ period, startDate, endDate });
+        const ownerId = (req as any).user?.id;
+        const data = await getStockouts({ period, startDate, endDate, ownerId });
         res.json({ success: true, data });
     },
 );
@@ -182,11 +188,13 @@ export const getSlowMovingInventoryHandler = catchErrors(
         const threshold = req.query.threshold
             ? parseInt(req.query.threshold as string, 10)
             : 5;
+        const ownerId = (req as any).user?.id;
         const data = await getSlowMovingInventory({
             period,
             startDate,
             endDate,
             threshold,
+            ownerId,
         });
         res.json({ success: true, data });
     },
@@ -199,7 +207,8 @@ export const getSalesForecastHandler = catchErrors(
             ? parseInt(req.query.horizon as string, 10)
             : 3;
         const method = (req.query.method as string) || "auto"; // 'moving-average', 'linear', or 'auto'
-        const data = await getSalesForecast({ period, horizon, method });
+        const ownerId = (req as any).user?.id;
+        const data = await getSalesForecast({ period, horizon, method, ownerId });
         res.json({ success: true, data });
     },
 );
@@ -212,11 +221,13 @@ export const getProductSalesForecastHandler = catchErrors(
             : 3;
         const method = (req.query.method as string) || "auto";
         const productId = req.query.productId as string | undefined;
+        const ownerId = (req as any).user?.id;
         const data = await getProductSalesForecast({
             period,
             horizon,
             method,
             productId,
+            ownerId,
         });
         res.json({ success: true, data });
     },
@@ -229,7 +240,8 @@ export const getStockoutForecastHandler = catchErrors(
             ? parseInt(req.query.horizon as string, 10)
             : 3;
         const method = (req.query.method as string) || "auto";
-        const data = await getStockoutForecast({ period, horizon, method });
+        const ownerId = (req as any).user?.id;
+        const data = await getStockoutForecast({ period, horizon, method, ownerId });
         res.json({ success: true, data });
     },
 );
@@ -238,7 +250,8 @@ export const getSeasonalityHandler = catchErrors(
     async (req: Request, res: Response) => {
         const period = (req.query.period as string) || "month";
         const productId = req.query.productId as string | undefined;
-        const data = await getSeasonality({ period, productId });
+        const ownerId = (req as any).user?.id;
+        const data = await getSeasonality({ period, productId, ownerId });
         res.json({ success: true, data });
     },
 );
@@ -287,12 +300,14 @@ export const getRevenueForecastHandler = catchErrors(async (req, res) => {
         ? new Date(req.query.endDate as string)
         : undefined;
     const method = (req.query.method as string) || "auto";
+    const ownerId = (req as any).user?.id;
     const data = await getRevenueForecast({
         period,
         horizon,
         startDate,
         endDate,
         method,
+        ownerId,
     });
     res.json({ success: true, data });
 });

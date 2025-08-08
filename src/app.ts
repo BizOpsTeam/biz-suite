@@ -12,7 +12,6 @@ import { authenticateUser } from "./middlewares/authenticateUser";
 import invoicesRoutes from "./routes/invoices.routes";
 import userRoutes from "./routes/user.routes";
 import userProfileRoutes from "./routes/userProfile.routes";
-import { isAdmin } from "./middlewares/verifyUserRole";
 import analyticsRoutes from "./routes/analytics.routes";
 import receiptsRoutes from "./routes/receipts.routes";
 import expenseCategoryRoutes from "./routes/expenseCategory.routes";
@@ -92,7 +91,7 @@ app.use("/users", authenticateUser, userProfileRoutes);
 app.use("/ai", authenticateUser, aiRoutes);
 
 //-------analytics routes---------//
-app.use("/analytics", authenticateUser, isAdmin, analyticsRoutes);
+app.use("/analytics", authenticateUser, analyticsRoutes);
 
 //-------campaign routes---------//
 app.use("/campaigns", authenticateUser, campaignRoutes);

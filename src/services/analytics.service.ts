@@ -184,10 +184,11 @@ export async function getSalesOverTime(options: AnalyticsOptions = {}) {
 }
 
 export async function getSalesByChannel(options: AnalyticsOptions = {}) {
-    const { period = "month", startDate, endDate } = options;
+    const { period = "month", startDate, endDate, ownerId } = options;
     const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
     const sales = await prisma.sale.findMany({
         where: {
+            ...(ownerId && { ownerId }),
             createdAt: {
                 ...(rangeStart && { gte: rangeStart }),
                 ...(rangeEnd && { lte: rangeEnd }),
@@ -206,10 +207,11 @@ export async function getSalesByChannel(options: AnalyticsOptions = {}) {
 }
 
 export async function getSalesByPaymentMethod(options: AnalyticsOptions = {}) {
-    const { period = "month", startDate, endDate } = options;
+    const { period = "month", startDate, endDate, ownerId } = options;
     const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
     const sales = await prisma.sale.findMany({
         where: {
+            ...(ownerId && { ownerId }),
             createdAt: {
                 ...(rangeStart && { gte: rangeStart }),
                 ...(rangeEnd && { lte: rangeEnd }),
@@ -271,10 +273,11 @@ export async function getTopCustomers(options: AnalyticsOptions = {}) {
 }
 
 export async function getAverageOrderValue(options: AnalyticsOptions = {}) {
-    const { period = "month", startDate, endDate } = options;
+    const { period = "month", startDate, endDate, ownerId } = options;
     const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
     const sales = await prisma.sale.findMany({
         where: {
+            ...(ownerId && { ownerId }),
             createdAt: {
                 ...(rangeStart && { gte: rangeStart }),
                 ...(rangeEnd && { lte: rangeEnd }),
@@ -294,10 +297,11 @@ export async function getAverageOrderValue(options: AnalyticsOptions = {}) {
 }
 
 export async function getDiscountImpact(options: AnalyticsOptions = {}) {
-    const { period = "month", startDate, endDate } = options;
+    const { period = "month", startDate, endDate, ownerId } = options;
     const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
     const sales = await prisma.sale.findMany({
         where: {
+            ...(ownerId && { ownerId }),
             createdAt: {
                 ...(rangeStart && { gte: rangeStart }),
                 ...(rangeEnd && { lte: rangeEnd }),
@@ -323,12 +327,13 @@ export async function getDiscountImpact(options: AnalyticsOptions = {}) {
 }
 
 export async function getStockouts(options: AnalyticsOptions = {}) {
-    const { period = "month", startDate, endDate } = options;
+    const { period = "month", startDate, endDate, ownerId } = options;
     const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
     // Find products that have hit stock=0 at any point in the period
     // This requires a StockoutLog table for full accuracy, but as a proxy, we can return products with stock=0 now and last sale in period
     const products = await prisma.product.findMany({
         where: {
+            ...(ownerId && { ownerId }),
             stock: 0,
             saleItems: {
                 some: {
@@ -379,10 +384,13 @@ export async function getStockouts(options: AnalyticsOptions = {}) {
 export async function getSlowMovingInventory(
     options: AnalyticsOptions & { threshold?: number } = {},
 ) {
-    const { period = "month", startDate, endDate, threshold = 5 } = options;
+    const { period = "month", startDate, endDate, threshold = 5, ownerId } = options;
     const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
     // Find all products
     const products = await prisma.product.findMany({
+        where: {
+            ...(ownerId && { ownerId }),
+        },
         include: {
             saleItems: {
                 where: {
@@ -419,13 +427,15 @@ export async function getSalesForecast({
     period = "month",
     horizon = 3,
     method = "auto",
+    ownerId,
 }: {
     period?: string;
     horizon?: number;
     method?: string;
+    ownerId?: string;
 }) {
     // Aggregate sales by period
-    const sales = await getSalesOverTime({ period });
+    const sales = await getSalesOverTime({ period, ownerId });
     const history = sales.map((s) => s.totalAmount);
     const forecast = forecastNext(history, horizon, method);
     const lastPeriod =
@@ -441,11 +451,13 @@ export async function getProductSalesForecast({
     horizon = 3,
     method = "auto",
     productId,
+    ownerId,
 }: {
     period?: string;
     horizon?: number;
     method?: string;
     productId?: string;
+    ownerId?: string;
 }) {
     // Aggregate sales by period for each product
     let products: any[] = [];
@@ -454,7 +466,11 @@ export async function getProductSalesForecast({
             await prisma.product.findUnique({ where: { id: productId } }),
         ].filter(Boolean);
     } else {
-        products = await prisma.product.findMany();
+        products = await prisma.product.findMany({
+            where: {
+                ...(ownerId && { ownerId }),
+            },
+        });
     }
     const results = await Promise.all(
         products.map(async (product) => {
@@ -509,13 +525,19 @@ export async function getStockoutForecast({
     period = "month",
     horizon = 3,
     method = "auto",
+    ownerId,
 }: {
     period?: string;
     horizon?: number;
     method?: string;
+    ownerId?: string;
 }) {
     // For each product, forecast sales and compare to current stock
-    const products = await prisma.product.findMany();
+    const products = await prisma.product.findMany({
+        where: {
+            ...(ownerId && { ownerId }),
+        },
+    });
     const results = await Promise.all(
         products.map(async (product) => {
             const saleItems = await prisma.saleItem.findMany({
@@ -566,9 +588,11 @@ export async function getStockoutForecast({
 export async function getSeasonality({
     period = "month",
     productId,
+    ownerId,
 }: {
     period?: string;
     productId?: string;
+    ownerId?: string;
 }) {
     // Get sales or saleItems for the product or all products
     let sales: any[] = [];
@@ -582,7 +606,11 @@ export async function getSeasonality({
             amount: si.price * si.quantity,
         }));
     } else {
-        sales = await prisma.sale.findMany();
+        sales = await prisma.sale.findMany({
+            where: {
+                ...(ownerId && { ownerId }),
+            },
+        });
     }
 
     // Group by sub-period
@@ -700,17 +728,20 @@ export async function getRevenueForecast({
     startDate,
     endDate,
     method = "auto",
+    ownerId,
 }: {
     period?: string;
     horizon?: number;
     startDate?: Date;
     endDate?: Date;
     method?: string;
+    ownerId?: string;
 }) {
     // Aggregate sales by period
     const { rangeStart, rangeEnd } = getDateRange(period, startDate, endDate);
     const sales = await prisma.sale.findMany({
         where: {
+            ...(ownerId && { ownerId }),
             createdAt: {
                 ...(rangeStart && { gte: rangeStart }),
                 ...(rangeEnd && { lte: rangeEnd }),
