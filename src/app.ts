@@ -25,6 +25,7 @@ import customerGroupRoutes from "./routes/customerGroup.routes";
 import productCategoryRoutes from "./routes/productCategory.routes";
 import reminderRoutes from "./routes/reminder.routes";
 import aiRoutes from "./routes/ai.routes";
+import globalSearchRoutes from "./routes/globalSearch.routes";
 
 const app = express();
 //----------------cors config-----------------------//
@@ -98,6 +99,9 @@ app.use("/campaigns", authenticateUser, campaignRoutes);
 
 //-------reminder routes---------//
 app.use("/reminders", authenticateUser, reminderRoutes);
+
+//-------global search routes---------//
+app.use("/search", authenticateUser, globalSearchRoutes);
 
 // Schedule recurring expense processing every day at midnight
 cron.schedule("0 0 * * *", async () => {

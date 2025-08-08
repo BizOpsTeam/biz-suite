@@ -156,3 +156,171 @@ export async function getCustomerStatement(
         outstandingBalance,
     };
 }
+
+export async function getCustomerDetails(customerId: string, ownerId: string) {
+    const customer = await prisma.customer.findFirst({
+        where: {
+            id: customerId,
+            ownerId,
+        },
+        include: {
+            sales: {
+                orderBy: { createdAt: 'desc' },
+                take: 10,
+            },
+            memberships: {
+                include: {
+                    group: true,
+                },
+            },
+            campaignRecipients: {
+                include: {
+                    campaign: true,
+                },
+            },
+            reminders: {
+                orderBy: { due: 'desc' },
+                take: 10,
+            },
+        },
+    });
+
+    if (!customer) return null;
+
+    // Get customer's invoices through sales
+    const invoices = await prisma.invoice.findMany({
+        where: {
+            sale: {
+                customerId: customerId,
+            },
+            ownerId,
+        },
+        include: {
+            sale: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+    });
+
+    // Calculate financial summary
+    const totalSpent = customer.sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+    const averageOrderValue = customer.sales.length > 0 ? totalSpent / customer.sales.length : 0;
+    const totalOrders = customer.sales.length;
+    const lastOrderDate = customer.sales.length > 0 ? customer.sales[0].createdAt : null;
+
+    // Get total invoices and amounts
+    const totalInvoices = invoices.length;
+    const totalInvoiced = invoices.reduce((sum, invoice) => sum + invoice.amountDue, 0);
+    const paidInvoices = invoices.filter(invoice => invoice.isPaid).length;
+    const totalPaid = invoices
+        .filter(invoice => invoice.isPaid)
+        .reduce((sum, invoice) => sum + invoice.paidAmount, 0);
+
+    return {
+        customer,
+        sales: customer.sales,
+        invoices,
+        customerGroups: customer.memberships.map(m => m.group),
+        campaigns: customer.campaignRecipients.map(cr => cr.campaign),
+        reminders: customer.reminders,
+        financialSummary: {
+            totalSpent,
+            averageOrderValue,
+            totalOrders,
+            lastOrderDate,
+            totalInvoices,
+            totalInvoiced,
+            paidInvoices,
+            totalPaid,
+            outstandingAmount: totalInvoiced - totalPaid,
+        },
+    };
+}
+
+export async function getCustomerSales(customerId: string, ownerId: string, page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    
+    const [sales, total] = await Promise.all([
+        prisma.sale.findMany({
+            where: {
+                customerId,
+                ownerId,
+            },
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: limit,
+        }),
+        prisma.sale.count({
+            where: {
+                customerId,
+                ownerId,
+            },
+        }),
+    ]);
+
+    return {
+        sales,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+    };
+}
+
+export async function getCustomerInvoices(customerId: string, ownerId: string, page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    
+    const [invoices, total] = await Promise.all([
+        prisma.invoice.findMany({
+            where: {
+                sale: {
+                    customerId,
+                },
+                ownerId,
+            },
+            include: {
+                sale: true,
+            },
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: limit,
+        }),
+        prisma.invoice.count({
+            where: {
+                sale: {
+                    customerId,
+                },
+                ownerId,
+            },
+        }),
+    ]);
+
+    return {
+        invoices,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+    };
+}
+
+export async function getCustomerCampaigns(customerId: string, ownerId: string) {
+    const campaigns = await prisma.campaignRecipient.findMany({
+        where: {
+            customerId,
+            campaign: {
+                ownerId,
+            },
+        },
+        include: {
+            campaign: true,
+        },
+        orderBy: {
+            campaign: {
+                createdAt: 'desc',
+            },
+        },
+    });
+
+    return campaigns.map(cr => cr.campaign);
+}

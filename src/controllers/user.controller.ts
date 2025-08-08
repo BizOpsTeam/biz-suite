@@ -13,6 +13,10 @@ import {
     deleteCustomer,
     updateUserProfile,
     getCustomerStatement,
+    getCustomerDetails,
+    getCustomerSales,
+    getCustomerInvoices,
+    getCustomerCampaigns,
 } from "../services/user.service";
 import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErrors";
@@ -182,3 +186,57 @@ export const getCustomerStatementHandler = catchErrors(async (req, res) => {
         .status(200)
         .json({ data, message: "Customer statement fetched" });
 });
+
+export const getCustomerDetailsHandler = catchErrors(
+    async (req: Request, res: Response) => {
+        const userId = req.user?.id;
+        appAssert(userId, 401, "Unauthorized");
+        const { id } = req.params;
+        
+        const customerDetails = await getCustomerDetails(id, userId);
+        if (!customerDetails) {
+            return res
+                .status(404)
+                .json({ success: false, message: "Customer not found" });
+        }
+        
+        return res.json({ success: true, data: customerDetails });
+    },
+);
+
+export const getCustomerSalesHandler = catchErrors(
+    async (req: Request, res: Response) => {
+        const userId = req.user?.id;
+        appAssert(userId, 401, "Unauthorized");
+        const { id } = req.params;
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+        
+        const salesData = await getCustomerSales(id, userId, page, limit);
+        return res.json({ success: true, data: salesData });
+    },
+);
+
+export const getCustomerInvoicesHandler = catchErrors(
+    async (req: Request, res: Response) => {
+        const userId = req.user?.id;
+        appAssert(userId, 401, "Unauthorized");
+        const { id } = req.params;
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 10;
+        
+        const invoicesData = await getCustomerInvoices(id, userId, page, limit);
+        return res.json({ success: true, data: invoicesData });
+    },
+);
+
+export const getCustomerCampaignsHandler = catchErrors(
+    async (req: Request, res: Response) => {
+        const userId = req.user?.id;
+        appAssert(userId, 401, "Unauthorized");
+        const { id } = req.params;
+        
+        const campaigns = await getCustomerCampaigns(id, userId);
+        return res.json({ success: true, data: campaigns });
+    },
+);
