@@ -83,7 +83,7 @@ app.use("/customer-groups", authenticateUser, customerGroupRoutes);
 app.use("/product-categories", authenticateUser, productCategoryRoutes);
 
 //-------user routes---------//
-app.use("/users", authenticateUser, isAdmin, userRoutes);
+app.use("/users", authenticateUser, userRoutes);
 
 //-------user profile routes (accessible to all authenticated users)---------//
 app.use("/users", authenticateUser, userProfileRoutes);

@@ -107,7 +107,7 @@ export const getTotalCustomersHandler = catchErrors(
         const userId = req.user?.id;
         appAssert(userId, 401, "Unauthorized");
         const total = await getTotalCustomers(userId);
-        return res.json({ success: true, total });
+        return res.json({ success: true, data: { total } });
     },
 );
 
