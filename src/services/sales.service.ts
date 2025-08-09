@@ -273,6 +273,17 @@ export const getSales = async (query: SalesQuery) => {
             take,
             include: {
                 customer: true,
+                saleItems: {
+                    include: {
+                        product: {
+                            select: {
+                                id: true,
+                                name: true,
+                                price: true,
+                            },
+                        },
+                    },
+                },
             },
         }),
         prisma.sale.count({ where }),

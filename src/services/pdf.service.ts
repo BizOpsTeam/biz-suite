@@ -52,6 +52,18 @@ function fillTemplate(template: string, data: InvoicePdfData): string {
                 .map((item, idx) => {
                     let row = rowTemplate;
                     row = row.replace(/{{@index}}/g, (idx + 1).toString());
+                    
+                    // Replace @root.xxx with root-level data
+                    Object.entries(data).forEach(([key, value]) => {
+                        if (typeof value !== "object") {
+                            row = row.replace(
+                                new RegExp(`{{@root\\.${key}}}`, "g"),
+                                String(value),
+                            );
+                        }
+                    });
+                    
+                    // Replace item-level data
                     Object.entries(item).forEach(([key, value]) => {
                         row = row.replace(
                             new RegExp(`{{${key}}}`, "g"),

@@ -3,219 +3,382 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Invoice</title>
+  <title>Invoice {{invoiceNumber}}</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-      background: #f6f8fa;
+      font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+      background: #ffffff;
       margin: 0;
       padding: 0;
-      color: #222;
+      color: #1a202c;
+      line-height: 1.6;
+      font-size: 14px;
     }
     .invoice-container {
-      max-width: 700px;
-      margin: 40px auto;
+      max-width: 800px;
+      margin: 0 auto;
       background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      padding: 40px 32px 32px 32px;
+      padding: 40px;
+      min-height: 100vh;
     }
+    /* Header Styling */
     .header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #eaeaea;
-      padding-bottom: 18px;
-      margin-bottom: 32px;
+      align-items: flex-start;
+      margin-bottom: 40px;
+      padding-bottom: 25px;
+      border-bottom: 3px solid #3182ce;
     }
-    .company-details {
-      font-size: 1.1em;
-      line-height: 1.5;
+    .company-section {
+      flex: 1;
     }
     .company-logo {
-      height: 60px;
+      height: 70px;
+      width: auto;
       object-fit: contain;
+      margin-bottom: 15px;
     }
-    .invoice-title {
-      font-size: 2em;
+    .company-details {
+      font-size: 15px;
+      line-height: 1.5;
+      color: #4a5568;
+    }
+    .company-name {
+      font-size: 24px;
       font-weight: 700;
       color: #2d3748;
-      margin-bottom: 8px;
+      margin-bottom: 5px;
     }
-    .info-table {
-      width: 100%;
-      margin-bottom: 32px;
-      font-size: 1em;
+    .invoice-section {
+      text-align: right;
+      flex: 1;
     }
-    .info-table td {
-      padding: 4px 0;
+    .invoice-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: #3182ce;
+      margin-bottom: 10px;
+      letter-spacing: -1px;
+    }
+    .invoice-meta {
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .invoice-meta .label {
+      font-weight: 600;
+      color: #2d3748;
+    }
+    .invoice-meta .value {
+      color: #4a5568;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+    .status-paid { background: #c6f6d5; color: #22543d; }
+    .status-unpaid { background: #fed7d7; color: #742a2a; }
+    .status-partial { background: #ffeaa7; color: #744210; }
+    
+    /* Billing Section */
+    .billing-section {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 35px;
+      gap: 40px;
+    }
+    .billing-info {
+      flex: 1;
     }
     .section-title {
-      font-size: 1.1em;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 700;
+      color: #2d3748;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 5px;
+    }
+    .billing-details {
+      font-size: 14px;
+      line-height: 1.6;
       color: #4a5568;
-      margin-bottom: 8px;
-      margin-top: 24px;
+    }
+    .billing-name {
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 16px;
+    }
+    
+    /* Items Table */
+    .items-section {
+      margin-bottom: 30px;
     }
     .items-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 24px;
-    }
-    .items-table th, .items-table td {
-      border: 1px solid #e2e8f0;
-      padding: 10px 8px;
-      text-align: left;
+      margin-bottom: 25px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
     }
     .items-table th {
-      background: #f7fafc;
+      background: linear-gradient(135deg, #3182ce 0%, #2c5282 100%);
+      color: white;
+      font-weight: 600;
+      padding: 15px 12px;
+      text-align: left;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .items-table th:first-child { text-align: center; }
+    .items-table th:nth-child(3) { text-align: center; }
+    .items-table th:nth-child(4), 
+    .items-table th:nth-child(5) { text-align: right; }
+    
+    .items-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 14px;
+    }
+    .items-table tbody tr:hover {
+      background-color: #f7fafc;
+    }
+    .items-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .item-number {
+      text-align: center;
+      font-weight: 600;
+      color: #718096;
+    }
+    .item-description {
+      font-weight: 500;
+      color: #2d3748;
+    }
+    .item-quantity {
+      text-align: center;
+      font-weight: 600;
+    }
+    .item-price, .item-total {
+      text-align: right;
       font-weight: 600;
       color: #2d3748;
     }
-    .items-table tr:last-child td {
-      border-bottom: 2px solid #2b6cb0;
+    
+    /* Summary Section */
+    .summary-section {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 40px;
     }
     .summary-table {
-      width: 100%;
-      margin-bottom: 24px;
-      font-size: 1em;
+      width: 300px;
+      font-size: 15px;
     }
     .summary-table td {
-      padding: 6px 0;
+      padding: 8px 0;
+      border-bottom: 1px solid #e2e8f0;
     }
     .summary-table .label {
       color: #4a5568;
+      font-weight: 500;
     }
     .summary-table .value {
       text-align: right;
       font-weight: 600;
+      color: #2d3748;
     }
-    .total-row td {
-      font-size: 1.2em;
-      font-weight: 700;
-      color: #2b6cb0;
-      border-top: 2px solid #2b6cb0;
+    .summary-subtotal td {
       padding-top: 12px;
     }
+    .summary-total td {
+      font-size: 18px;
+      font-weight: 700;
+      color: #3182ce;
+      border-top: 2px solid #3182ce;
+      border-bottom: 2px solid #3182ce;
+      padding: 15px 0;
+    }
+    .summary-balance td {
+      color: #e53e3e;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    
+    /* Footer */
     .footer {
-      margin-top: 32px;
+      margin-top: 50px;
       text-align: center;
-      color: #718096;
-      font-size: 0.95em;
+      padding-top: 25px;
+      border-top: 2px solid #e2e8f0;
     }
     .thank-you {
-      font-size: 1.1em;
-      color: #2b6cb0;
-      font-weight: 600;
-      margin-top: 18px;
+      font-size: 20px;
+      color: #3182ce;
+      font-weight: 700;
+      margin-bottom: 15px;
     }
-    @media (max-width: 600px) {
+    .footer-note {
+      font-size: 14px;
+      color: #718096;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .support-info {
+      font-size: 13px;
+      color: #a0aec0;
+    }
+    .support-info a {
+      color: #3182ce;
+      text-decoration: none;
+    }
+    
+    /* Utilities */
+    .text-muted { color: #718096; }
+    .text-bold { font-weight: 600; }
+    .mb-2 { margin-bottom: 8px; }
+    .mb-3 { margin-bottom: 12px; }
+    
+    /* Print Styles */
+    @media print {
+      body { 
+        background: white;
+        -webkit-print-color-adjust: exact;
+        color-adjust: exact;
+      }
       .invoice-container {
-        padding: 16px 4px;
+        box-shadow: none;
+        padding: 20px;
+        max-width: none;
       }
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .company-logo {
-        margin-bottom: 12px;
-      }
+      .header { page-break-after: avoid; }
+      .items-table { page-break-inside: avoid; }
+      .summary-section { page-break-inside: avoid; }
     }
   </style>
 </head>
 <body>
   <div class="invoice-container">
+    <!-- Header Section -->
     <div class="header">
-      <div class="company-details">
+      <div class="company-section">
         <img src="{{companyLogoUrl}}" alt="Company Logo" class="company-logo" />
-        <div><strong>{{companyName}}</strong></div>
-        <div>{{companyAddress}}</div>
-        <div>{{companyEmail}}</div>
-        <div>{{companyPhone}}</div>
+        <div class="company-name">{{companyName}}</div>
+        <div class="company-details">
+          <div>{{companyAddress}}</div>
+          <div>{{companyEmail}}</div>
+          <div>{{companyPhone}}</div>
+        </div>
       </div>
-      <div style="text-align: right;">
+      <div class="invoice-section">
         <div class="invoice-title">INVOICE</div>
-        <div><strong>Invoice #:</strong> {{invoiceNumber}}</div>
-        <div><strong>Date:</strong> {{invoiceDate}}</div>
-        <div><strong>Due Date:</strong> {{dueDate}}</div>
-        <div><strong>Status:</strong> {{status}}</div>
-        <div><strong>Currency:</strong> {{currencyCode}}</div>
+        <div class="invoice-meta">
+          <div class="mb-2"><span class="label">Invoice #:</span> <span class="value">{{invoiceNumber}}</span></div>
+          <div class="mb-2"><span class="label">Date:</span> <span class="value">{{invoiceDate}}</span></div>
+          <div class="mb-2"><span class="label">Due Date:</span> <span class="value">{{dueDate}}</span></div>
+          <div class="mb-2"><span class="label">Currency:</span> <span class="value">{{currencyCode}}</span></div>
+          <div class="status-badge status-{{status}}">{{status}}</div>
+        </div>
       </div>
     </div>
 
-    <table class="info-table">
-      <tr>
-        <td>
-          <div class="section-title">Billed To</div>
-          <div><strong>{{customerName}}</strong></div>
+    <!-- Billing Information -->
+    <div class="billing-section">
+      <div class="billing-info">
+        <div class="section-title">Bill To</div>
+        <div class="billing-details">
+          <div class="billing-name">{{customerName}}</div>
           <div>{{customerAddress}}</div>
           <div>{{customerEmail}}</div>
           <div>{{customerPhone}}</div>
-        </td>
-        <td>
-          <div class="section-title">Payment</div>
-          <div><strong>Method:</strong> {{paymentMethod}}</div>
-          <div><strong>Reference:</strong> {{paymentReference}}</div>
-        </td>
-      </tr>
-    </table>
+        </div>
+      </div>
+      <div class="billing-info">
+        <div class="section-title">Payment Information</div>
+        <div class="billing-details">
+          <div><span class="text-bold">Method:</span> {{paymentMethod}}</div>
+          <div><span class="text-bold">Reference:</span> {{paymentReference}}</div>
+        </div>
+      </div>
+    </div>
 
-    <div class="section-title">Items</div>
-    <table class="items-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Description</th>
-          <th>Qty</th>
-          <th>Unit Price</th>
-          <th>Total</th>
+    <!-- Items Section -->
+    <div class="items-section">
+      <div class="section-title">Invoice Items</div>
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Description</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each items}}
+          <tr>
+            <td class="item-number">{{@index}}</td>
+            <td class="item-description">{{description}}</td>
+            <td class="item-quantity">{{quantity}}</td>
+            <td class="item-price">{{@root.currencySymbol}}{{unitPrice}}</td>
+            <td class="item-total">{{@root.currencySymbol}}{{total}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="summary-section">
+      <table class="summary-table">
+        <tr class="summary-subtotal">
+          <td class="label">Subtotal</td>
+          <td class="value">{{currencySymbol}}{{subtotal}}</td>
         </tr>
-      </thead>
-      <tbody>
-        {{#each items}}
         <tr>
-          <td>{{@index}}</td>
-          <td>{{description}}</td>
-          <td>{{quantity}}</td>
-          <td>{{currencySymbol}}{{unitPrice}}</td>
-          <td>{{currencySymbol}}{{total}}</td>
+          <td class="label">Discount</td>
+          <td class="value">-{{currencySymbol}}{{discount}}</td>
         </tr>
-        {{/each}}
-      </tbody>
-    </table>
+        <tr>
+          <td class="label">Tax</td>
+          <td class="value">{{currencySymbol}}{{tax}}</td>
+        </tr>
+        <tr class="summary-total">
+          <td class="label">Total Amount</td>
+          <td class="value">{{currencySymbol}}{{total}}</td>
+        </tr>
+        <tr>
+          <td class="label">Amount Paid</td>
+          <td class="value">{{currencySymbol}}{{amountPaid}}</td>
+        </tr>
+        <tr class="summary-balance">
+          <td class="label">Balance Due</td>
+          <td class="value">{{currencySymbol}}{{balanceDue}}</td>
+        </tr>
+      </table>
+    </div>
 
-    <table class="summary-table">
-      <tr>
-        <td class="label">Subtotal</td>
-        <td class="value">{{currencySymbol}}{{subtotal}}</td>
-      </tr>
-      <tr>
-        <td class="label">Discount</td>
-        <td class="value">{{currencySymbol}}{{discount}}</td>
-      </tr>
-      <tr>
-        <td class="label">Tax</td>
-        <td class="value">{{currencySymbol}}{{tax}}</td>
-      </tr>
-      <tr class="total-row">
-        <td class="label">Total</td>
-        <td class="value">{{currencySymbol}}{{total}}</td>
-      </tr>
-      <tr>
-        <td class="label">Amount Paid</td>
-        <td class="value">{{currencySymbol}}{{amountPaid}}</td>
-      </tr>
-      <tr>
-        <td class="label">Balance Due</td>
-        <td class="value">{{currencySymbol}}{{balanceDue}}</td>
-      </tr>
-    </table>
-
-    <div class="thank-you">Thank you for your business!</div>
+    <!-- Footer -->
     <div class="footer">
-      <div>{{footerNote}}</div>
-      <div>For support, contact <a href="mailto:{{supportEmail}}">{{supportEmail}}</a></div>
+      <div class="thank-you">Thank You For Your Business!</div>
+      <div class="footer-note">{{footerNote}}</div>
+      <div class="support-info">
+        For questions regarding this invoice, please contact us at 
+        <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>
+      </div>
     </div>
   </div>
 </body>
-</html> 
+</html>

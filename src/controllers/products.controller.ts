@@ -12,7 +12,7 @@ import {
     updateProduct,
     deleteProduct,
 } from "../services/products.service";
-import { searchProducts } from "../services/invoices.service";
+
 import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErrors";
 import { productSchema } from "../zodSchema/product.zodSchema";
@@ -208,18 +208,18 @@ export const productsSearchHandler = catchErrors(async (req, res) => {
     const parsedMaxPrice =
         maxPrice !== undefined ? Number(maxPrice) : undefined;
 
-    // You can customize the service call for products-specific logic if needed
-    const searchResults = await searchProducts(
-        userId,
-        query as string,
-        categoryId as string,
-        inStock as string,
-        parsedPage,
-        parsedLimit,
-        parsedMinPrice,
-        parsedMaxPrice,
-        sort as string,
-    );
+    // Use getMyProducts for search functionality
+    const searchResults = await getMyProducts({
+        ownerId: userId,
+        search: query as string,
+        categoryId: categoryId as string,
+        inStock: inStock === 'true',
+        minPrice: parsedMinPrice,
+        maxPrice: parsedMaxPrice,
+        sort: sort as string,
+        page: parsedPage,
+        limit: parsedLimit,
+    });
 
     return res.status(OK).json({
         data: searchResults,
