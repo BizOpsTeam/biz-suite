@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balance Sheet - {{companyName}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background-color: #ffffff;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styling */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 25px;
+            border-bottom: 3px solid #1a365d;
+        }
+
+        .company-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 5px;
+        }
+
+        .company-details {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .statement-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 5px;
+        }
+
+        .date-info {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .generation-date {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        /* Financial Table Styling */
+        .financial-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .financial-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .financial-table th,
+        .financial-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .financial-table th {
+            background-color: #f7fafc;
+            font-weight: bold;
+            color: #2d3748;
+            border-bottom: 2px solid #cbd5e0;
+        }
+
+        .financial-table .amount-column {
+            text-align: right;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .financial-table .label-column {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .indent-1 {
+            padding-left: 30px;
+            font-style: italic;
+            color: #718096;
+        }
+
+        .total-row {
+            background-color: #edf2f7;
+            font-weight: bold;
+            border-top: 2px solid #1a365d;
+            border-bottom: 2px solid #1a365d;
+        }
+
+        .total-row td {
+            color: #1a365d;
+            font-size: 16px;
+        }
+
+        .subtotal-row {
+            background-color: #f7fafc;
+            font-weight: 600;
+            border-top: 1px solid #cbd5e0;
+        }
+
+        .grand-total-row {
+            background-color: #1a365d;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Balance Sheet Layout */
+        .balance-sheet-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .assets-section {
+            border-right: 2px solid #e2e8f0;
+            padding-right: 15px;
+        }
+
+        .liabilities-equity-section {
+            padding-left: 15px;
+        }
+
+        /* Summary Section */
+        .balance-check {
+            background-color: #f0fff4;
+            border: 2px solid #38a169;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .balance-check.balanced {
+            background-color: #f0fff4;
+            border-color: #38a169;
+        }
+
+        .balance-check.unbalanced {
+            background-color: #fed7d7;
+            border-color: #e53e3e;
+        }
+
+        .balance-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #22543d;
+            margin-bottom: 10px;
+        }
+
+        .balance-amounts {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .balance-item {
+            text-align: center;
+        }
+
+        .balance-label {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+
+        .balance-amount {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a365d;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .disclaimer {
+            background-color: #fffaf0;
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 11px;
+            color: #7c2d12;
+        }
+
+        /* Print Styles */
+        @media print {
+            .container {
+                padding: 0;
+            }
+            
+            .header {
+                page-break-after: avoid;
+            }
+            
+            .balance-sheet-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .assets-section {
+                border-right: none;
+                padding-right: 0;
+                margin-bottom: 30px;
+            }
+            
+            .liabilities-equity-section {
+                padding-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .balance-sheet-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+            
+            .assets-section {
+                border-right: none;
+                border-bottom: 2px solid #e2e8f0;
+                padding-right: 0;
+                padding-bottom: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .liabilities-equity-section {
+                padding-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-name">{{companyName}}</div>
+            <div class="company-details">
+                {{companyAddress}}<br>
+                {{companyPhone}} | {{companyEmail}}
+            </div>
+            <div class="statement-title">BALANCE SHEET</div>
+            <div class="date-info">As of {{asOfDate}}</div>
+            <div class="generation-date">Generated on {{generationDate}}</div>
+        </div>
+
+        <!-- Balance Check -->
+        <div class="balance-check balanced">
+            <div class="balance-title">BALANCE VERIFICATION</div>
+            <div class="balance-amounts">
+                <div class="balance-item">
+                    <div class="balance-label">Total Assets</div>
+                    <div class="balance-amount">{{totalAssets}}</div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">=</div>
+                    <div class="balance-amount">=</div>
+                </div>
+                <div class="balance-item">
+                    <div class="balance-label">Total Liabilities + Equity</div>
+                    <div class="balance-amount">{{totalLiabilitiesAndEquity}}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balance Sheet Grid -->
+        <div class="balance-sheet-grid">
+            <!-- Assets Section -->
+            <div class="assets-section">
+                <div class="financial-section">
+                    <div class="section-title">ASSETS</div>
+                    
+                    <!-- Current Assets -->
+                    <div class="section-title" style="font-size: 16px; color: #4a5568;">Current Assets</div>
+                    <table class="financial-table">
+                        <tr>
+                            <td class="label-column">Cash and Cash Equivalents</td>
+                            <td class="amount-column">{{cash}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-column">Accounts Receivable</td>
+                            <td class="amount-column">{{accountsReceivable}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-column">Inventory</td>
+                            <td class="amount-column">{{inventory}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-column">Other Current Assets</td>
+                            <td class="amount-column">{{otherCurrentAssets}}</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td class="label-column">Total Current Assets</td>
+                            <td class="amount-column">{{totalCurrentAssets}}</td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Fixed Assets -->
+                    <div class="section-title" style="font-size: 16px; color: #4a5568;">Fixed Assets</div>
+                    <table class="financial-table">
+                        <tr>
+                            <td class="label-column">Equipment and Machinery</td>
+                            <td class="amount-column">{{equipment}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-column indent-1">Less: Accumulated Depreciation</td>
+                            <td class="amount-column">({{accumulatedDepreciation}})</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td class="label-column">Net Fixed Assets</td>
+                            <td class="amount-column">{{netFixedAssets}}</td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Total Assets -->
+                    <table class="financial-table">
+                        <tr class="total-row">
+                            <td class="label-column">TOTAL ASSETS</td>
+                            <td class="amount-column">{{totalAssets}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Liabilities and Equity Section -->
+            <div class="liabilities-equity-section">
+                <div class="financial-section">
+                    <div class="section-title">LIABILITIES AND EQUITY</div>
+                    
+                    <!-- Current Liabilities -->
+                    <div class="section-title" style="font-size: 16px; color: #4a5568;">Current Liabilities</div>
+                    <table class="financial-table">
+                        <tr>
+                            <td class="label-column">Accounts Payable</td>
+                            <td class="amount-column">{{accountsPayable}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-column">Accrued Expenses</td>
+                            <td class="amount-column">{{accrualExpenses}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-column">Other Current Liabilities</td>
+                            <td class="amount-column">{{otherCurrentLiabilities}}</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td class="label-column">Total Current Liabilities</td>
+                            <td class="amount-column">{{totalCurrentLiabilities}}</td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Long-term Liabilities -->
+                    <div class="section-title" style="font-size: 16px; color: #4a5568;">Long-term Liabilities</div>
+                    <table class="financial-table">
+                        <tr>
+                            <td class="label-column">Long-term Loans</td>
+                            <td class="amount-column">{{loans}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-column">Other Long-term Liabilities</td>
+                            <td class="amount-column">{{otherLongTerm}}</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td class="label-column">Total Long-term Liabilities</td>
+                            <td class="amount-column">{{totalLongTermLiabilities}}</td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Total Liabilities -->
+                    <table class="financial-table">
+                        <tr class="subtotal-row">
+                            <td class="label-column">TOTAL LIABILITIES</td>
+                            <td class="amount-column">{{totalLiabilities}}</td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Equity -->
+                    <div class="section-title" style="font-size: 16px; color: #4a5568;">Owner's Equity</div>
+                    <table class="financial-table">
+                        <tr>
+                            <td class="label-column">Owner's Capital</td>
+                            <td class="amount-column">{{ownerEquity}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-column">Retained Earnings</td>
+                            <td class="amount-column">{{retainedEarnings}}</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td class="label-column">Total Owner's Equity</td>
+                            <td class="amount-column">{{totalEquity}}</td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Total Liabilities and Equity -->
+                    <table class="financial-table">
+                        <tr class="total-row">
+                            <td class="label-column">TOTAL LIABILITIES AND EQUITY</td>
+                            <td class="amount-column">{{totalLiabilitiesAndEquity}}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>
+                <strong>{{companyName}}</strong><br>
+                Financial Statement prepared using CentralSync Business Suite<br>
+                Currency: {{currency}} ({{currencySymbol}})
+            </div>
+            
+            <div class="disclaimer">
+                <strong>DISCLAIMER:</strong> This balance sheet has been prepared based on the data recorded in the CentralSync Business Suite. 
+                This document is intended for loan application and business analysis purposes. The accuracy of this statement depends on the 
+                completeness and accuracy of the data entered into the system. For official audited financial statements, please consult with 
+                a certified public accountant or chartered accountant.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

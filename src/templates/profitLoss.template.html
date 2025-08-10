@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profit & Loss Statement - {{companyName}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background-color: #ffffff;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styling */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 25px;
+            border-bottom: 3px solid #1a365d;
+        }
+
+        .company-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 5px;
+        }
+
+        .company-details {
+            font-size: 14px;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .statement-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 5px;
+        }
+
+        .period-info {
+            font-size: 16px;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .generation-date {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        /* Financial Table Styling */
+        .financial-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .financial-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .financial-table th,
+        .financial-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .financial-table th {
+            background-color: #f7fafc;
+            font-weight: bold;
+            color: #2d3748;
+            border-bottom: 2px solid #cbd5e0;
+        }
+
+        .financial-table .amount-column {
+            text-align: right;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .financial-table .label-column {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .total-row {
+            background-color: #edf2f7;
+            font-weight: bold;
+            border-top: 2px solid #1a365d;
+            border-bottom: 2px solid #1a365d;
+        }
+
+        .total-row td {
+            color: #1a365d;
+            font-size: 16px;
+        }
+
+        .subtotal-row {
+            background-color: #f7fafc;
+            font-weight: 600;
+            border-top: 1px solid #cbd5e0;
+        }
+
+        .negative-amount {
+            color: #e53e3e;
+        }
+
+        .positive-amount {
+            color: #38a169;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 30px;
+        }
+
+        .summary-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a365d;
+            margin-bottom: 15px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .summary-label {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .summary-value {
+            font-weight: bold;
+            color: #1a365d;
+        }
+
+        /* Breakdown Tables */
+        .breakdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+
+        .breakdown-table th,
+        .breakdown-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .breakdown-table th {
+            background-color: #edf2f7;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .breakdown-category {
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .breakdown-amount {
+            text-align: right;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .breakdown-percentage {
+            text-align: right;
+            color: #4a5568;
+        }
+
+        .breakdown-count {
+            text-align: right;
+            color: #718096;
+        }
+
+        /* Growth Indicators */
+        .growth-section {
+            background-color: #f0fff4;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #c6f6d5;
+            margin-bottom: 30px;
+        }
+
+        .growth-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #22543d;
+            margin-bottom: 15px;
+        }
+
+        .growth-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+        }
+
+        .growth-positive {
+            color: #38a169;
+            font-weight: bold;
+        }
+
+        .growth-negative {
+            color: #e53e3e;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .disclaimer {
+            background-color: #fffaf0;
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 11px;
+            color: #7c2d12;
+        }
+
+        /* Print Styles */
+        @media print {
+            .container {
+                padding: 0;
+            }
+            
+            .header {
+                page-break-after: avoid;
+            }
+            
+            .financial-section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-name">{{companyName}}</div>
+            <div class="company-details">
+                {{companyAddress}}<br>
+                {{companyPhone}} | {{companyEmail}}
+            </div>
+            <div class="statement-title">PROFIT & LOSS STATEMENT</div>
+            <div class="period-info">{{periodName}}</div>
+            <div class="period-info">{{startDate}} to {{endDate}}</div>
+            <div class="generation-date">Generated on {{generationDate}}</div>
+        </div>
+
+        <!-- Revenue Section -->
+        <div class="financial-section">
+            <div class="section-title">REVENUE</div>
+            <table class="financial-table">
+                <tr>
+                    <td class="label-column">Total Sales</td>
+                    <td class="amount-column">{{totalSales}}</td>
+                </tr>
+                <tr>
+                    <td class="label-column">Less: Sales Tax</td>
+                    <td class="amount-column negative-amount">({{salesTax}})</td>
+                </tr>
+                <tr>
+                    <td class="label-column">Less: Discounts</td>
+                    <td class="amount-column negative-amount">({{discounts}})</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="label-column">NET REVENUE</td>
+                    <td class="amount-column">{{netRevenue}}</td>
+                </tr>
+            </table>
+
+            <!-- Revenue Breakdown -->
+            <div class="section-title">Revenue by Category</div>
+            <table class="breakdown-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Percentage</th>
+                        <th>Items Sold</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{revenueBreakdownRows}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Cost of Goods Sold Section -->
+        <div class="financial-section">
+            <div class="section-title">COST OF GOODS SOLD</div>
+            <table class="financial-table">
+                <tr>
+                    <td class="label-column">Total Cost of Goods Sold</td>
+                    <td class="amount-column negative-amount">{{totalCOGS}}</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="label-column">GROSS PROFIT</td>
+                    <td class="amount-column positive-amount">{{grossProfit}}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Operating Expenses Section -->
+        <div class="financial-section">
+            <div class="section-title">OPERATING EXPENSES</div>
+            <table class="financial-table">
+                <tr>
+                    <td class="label-column">Total Operating Expenses</td>
+                    <td class="amount-column negative-amount">{{totalExpenses}}</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="label-column">OPERATING INCOME</td>
+                    <td class="amount-column">{{operatingIncome}}</td>
+                </tr>
+            </table>
+
+            <!-- Expense Breakdown -->
+            <div class="section-title">Expenses by Category</div>
+            <table class="breakdown-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Percentage</th>
+                        <th>Number of Expenses</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{expenseBreakdownRows}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Net Income Section -->
+        <div class="financial-section">
+            <div class="section-title">NET INCOME</div>
+            <table class="financial-table">
+                <tr>
+                    <td class="label-column">Operating Income</td>
+                    <td class="amount-column">{{operatingIncome}}</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="label-column">NET INCOME</td>
+                    <td class="amount-column positive-amount">{{netIncome}}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Financial Ratios Summary -->
+        <div class="summary-section">
+            <div class="summary-title">KEY FINANCIAL RATIOS</div>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span class="summary-label">Gross Margin:</span>
+                    <span class="summary-value">{{grossMargin}}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Operating Margin:</span>
+                    <span class="summary-value">{{operatingMargin}}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Net Margin:</span>
+                    <span class="summary-value">{{netMargin}}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total Sales Count:</span>
+                    <span class="summary-value">{{salesCount}}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Growth Analysis -->
+        <div class="growth-section">
+            <div class="growth-title">GROWTH ANALYSIS (vs. Previous Period)</div>
+            <div class="growth-item">
+                <span>Revenue Growth:</span>
+                <span class="growth-positive">{{revenueGrowth}}</span>
+            </div>
+            <div class="growth-item">
+                <span>Gross Profit Growth:</span>
+                <span class="growth-positive">{{grossProfitGrowth}}</span>
+            </div>
+            <div class="growth-item">
+                <span>Net Income Growth:</span>
+                <span class="growth-positive">{{netIncomeGrowth}}</span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div>
+                <strong>{{companyName}}</strong><br>
+                Financial Statement prepared using CentralSync Business Suite<br>
+                Currency: {{currency}} ({{currencySymbol}})
+            </div>
+            
+            <div class="disclaimer">
+                <strong>DISCLAIMER:</strong> This financial statement has been prepared based on the data recorded in the CentralSync Business Suite. 
+                This document is intended for loan application and business analysis purposes. The accuracy of this statement depends on the 
+                completeness and accuracy of the data entered into the system. For official audited financial statements, please consult with 
+                a certified public accountant or chartered accountant.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

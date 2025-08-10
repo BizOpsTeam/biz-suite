@@ -26,10 +26,11 @@ import productCategoryRoutes from "./routes/productCategory.routes";
 import reminderRoutes from "./routes/reminder.routes";
 import aiRoutes from "./routes/ai.routes";
 import globalSearchRoutes from "./routes/globalSearch.routes";
+import financialStatementsRoutes from "./routes/financialStatements.routes";
 
 const app = express();
 //----------------cors config-----------------------//
-const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "https://bizopsclient.vercel.app"];
+const allowedOrigins = ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "https://bizopsclient.vercel.app"];
 
 app.use(
     cors({
@@ -102,6 +103,9 @@ app.use("/reminders", authenticateUser, reminderRoutes);
 
 //-------global search routes---------//
 app.use("/search", authenticateUser, globalSearchRoutes);
+
+//-------financial statements routes---------//
+app.use("/financial-statements", authenticateUser, financialStatementsRoutes);
 
 // Schedule recurring expense processing every day at midnight
 cron.schedule("0 0 * * *", async () => {
