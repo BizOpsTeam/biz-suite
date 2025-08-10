@@ -697,6 +697,8 @@ export async function getProfitAndLoss({
         expenseWhere.date = { lte: endDate };
     }
     if (ownerId) expenseWhere.ownerId = ownerId;
+    // Only include APPROVED expenses for financial calculations
+    expenseWhere.status = 'APPROVED';
 
     const expenses = await prisma.expense.findMany({
         where: expenseWhere,
@@ -708,18 +710,19 @@ export async function getProfitAndLoss({
     );
     const netProfit = grossProfit - totalExpenses;
 
-    return {
-        revenue,
-        cogs,
-        grossProfit,
-        expenses: totalExpenses,
-        netProfit,
-        breakdown: {
-            salesCount: sales.length,
-            saleItemsCount: saleItems.length,
-            expenseCount: expenses.length,
-        },
-    };
+            return {
+            revenue,
+            cogs,
+            grossProfit,
+            expenses: totalExpenses,
+            netProfit,
+            breakdown: {
+                salesCount: sales.length,
+                saleItemsCount: saleItems.length,
+                expenseCount: expenses.length,
+                approvedExpenseCount: expenses.length, // Only approved expenses are included
+            },
+        };
 }
 
 export async function getRevenueForecast({
