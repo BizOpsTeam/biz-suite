@@ -1,4 +1,4 @@
-import { startOfToday, subDays, subWeeks, subYears } from "date-fns";
+import { startOfMonth, startOfToday, subDays, subMonths, subWeeks, subYears } from "date-fns";
 import prisma from "../config/db";
 import { BAD_REQUEST } from "../constants/http";
 import { TSaleData } from "../constants/types";
@@ -355,7 +355,48 @@ export const getTodaySales = async (ownerId: string) => {
         return { totalSales, percentageDifference: "0%" };
     }
     const percentageDifferenceFormatted = percentageDifference.toFixed(2);
-    const percentageDifferenceSign = percentageDifference > 0 ? "+" : "-";
+    const percentageDifferenceSign = percentageDifference > 0 ? "+" : "";
+
+    return { totalSales, percentageDifference: `${percentageDifferenceSign}${percentageDifferenceFormatted}%` };
+};
+
+export const getThisMonthSales = async (ownerId: string) => {
+    let totalSales = 0;
+    totalSales = await prisma.sale.count({
+        where: {
+            createdAt: {
+                gte: startOfMonth(new Date()),
+            },
+            ownerId: ownerId,
+        },
+    });
+
+    //calculate percentage difference from last month
+    const lastMonthSales = await prisma.sale.count({
+        where: {
+            createdAt: {
+                gte: subMonths(startOfMonth(new Date()), 1),
+                lt: startOfMonth(new Date()),
+            },
+            ownerId: ownerId,
+        },
+    });
+
+    // Handle division by zero when lastMonthSales is 0
+    if (lastMonthSales === 0) {
+        if (totalSales === 0) {
+            return { totalSales, percentageDifference: "0%" };
+        } else {
+            return { totalSales, percentageDifference: "+∞%" };
+        }
+    }
+
+    const percentageDifference = ((totalSales - lastMonthSales) / lastMonthSales) * 100;
+    if (isNaN(percentageDifference)) {
+        return { totalSales, percentageDifference: "0%" };
+    }
+    const percentageDifferenceFormatted = percentageDifference.toFixed(2);
+    const percentageDifferenceSign = percentageDifference > 0 ? "+" : "";
 
     return { totalSales, percentageDifference: `${percentageDifferenceSign}${percentageDifferenceFormatted}%` };
 };
