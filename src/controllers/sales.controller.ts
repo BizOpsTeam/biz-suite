@@ -6,6 +6,7 @@ import {
     deleteSale,
     getSales,
     getSalesStats,
+    getThisMonthSales,
     getTodaySales,
 } from "../services/sales.service";
 import { saleSchema } from "../zodSchema/sale.zondSchema";
@@ -190,5 +191,16 @@ export const getTodaySalesCountHandler = catchErrors(async (req, res) => {
     res.status(OK).json({
         data: todaySales,
         message: "Today's sales count retrieved successfully",
+    });
+});
+
+export const getThisMonthSalesCountHandler = catchErrors(async (req, res) => {
+    const userId = req.user?.id;
+    appAssert(userId, UNAUTHORIZED, "Unathorized, login to get this month's sales count");
+
+    const thisMonthSales = await getThisMonthSales(userId);
+    res.status(OK).json({
+        data: thisMonthSales,
+        message: "This month's sales count retrieved successfully",
     });
 });

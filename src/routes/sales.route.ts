@@ -4,6 +4,7 @@ import {
     deleteSaleHandler,
     getAllSalesHandler,
     getSalesStatsHandler,
+    getThisMonthSalesCountHandler,
     getTodaySalesCountHandler,
 } from "../controllers/sales.controller";
 
@@ -14,5 +15,6 @@ salesRoutes.get("/stats", getSalesStatsHandler);
 salesRoutes.get("/", getAllSalesHandler);
 salesRoutes.delete("/:saleId", deleteSaleHandler);
 salesRoutes.get("/today-sales", getTodaySalesCountHandler);
+salesRoutes.get("/this-month-sales", getThisMonthSalesCountHandler);
 
 export default salesRoutes;
