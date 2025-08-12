@@ -316,3 +316,46 @@ export const deleteSale = async (saleId: string, ownerId: string) => {
 
     return await prisma.sale.delete({ where: { id: saleId } });
 };
+
+
+export const getTodaySales = async (ownerId: string) => {
+    //count the total amount of sales for today
+    let totalSales = 0;
+    totalSales = await prisma.sale.count({
+        where: {
+            createdAt: {
+                gte: startOfToday(),
+            },
+            ownerId: ownerId,
+        },
+    });
+
+    //calculate percentage difference from yesterday
+    const yesterdaySales = await prisma.sale.count({
+        where: {
+            createdAt: {
+                gte: subDays(startOfToday(), 1),
+                lte: startOfToday(),
+            },  
+            ownerId: ownerId,
+        },
+    });
+
+    // Handle division by zero when yesterdaySales is 0
+    if (yesterdaySales === 0) {
+        if (totalSales === 0) {
+            return { totalSales, percentageDifference: "0%" };
+        } else {
+            return { totalSales, percentageDifference: "+∞%" };
+        }
+    }
+
+    const percentageDifference = ((totalSales - yesterdaySales) / yesterdaySales) * 100;
+    if (isNaN(percentageDifference)) {
+        return { totalSales, percentageDifference: "0%" };
+    }
+    const percentageDifferenceFormatted = percentageDifference.toFixed(2);
+    const percentageDifferenceSign = percentageDifference > 0 ? "+" : "-";
+
+    return { totalSales, percentageDifference: `${percentageDifferenceSign}${percentageDifferenceFormatted}%` };
+};

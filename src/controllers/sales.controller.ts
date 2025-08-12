@@ -6,6 +6,7 @@ import {
     deleteSale,
     getSales,
     getSalesStats,
+    getTodaySales,
 } from "../services/sales.service";
 import { saleSchema } from "../zodSchema/sale.zondSchema";
 import appAssert from "../utils/appAssert";
@@ -179,4 +180,15 @@ export const deleteSaleHandler = catchErrors(async (req, res) => {
 
     await deleteSale(String(saleId), userId);
     res.status(OK).json({ message: "Saled deleted successfully" });
+});
+
+export const getTodaySalesCountHandler = catchErrors(async (req, res) => {
+    const userId = req.user?.id;
+    appAssert(userId, UNAUTHORIZED, "Unathorized, login to get today's sales count");
+
+    const todaySales = await getTodaySales(userId);
+    res.status(OK).json({
+        data: todaySales,
+        message: "Today's sales count retrieved successfully",
+    });
 });
