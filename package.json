@@ -9,7 +9,8 @@
         "start": "tsc && node dist/index.js",
         "dev": "nodemon",
         "format": "prettier --write \"src/**/*.{ts,js,tsx,jsx,json,md}\"",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "seed": "ts-node prisma/seed.ts"
     },
     "repository": {
         "type": "git",
